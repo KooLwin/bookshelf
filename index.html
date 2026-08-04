@@ -8,15 +8,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     
-    <!-- JSZip Library for extracting ZIP files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <title>Kreative Bookshelf</title>
@@ -512,23 +509,6 @@
                 margin: 0 auto;
             }
         }
-        .storage-permission {
-            padding: 20px;
-            text-align: center;
-            background: #fef3c7;
-            border-radius: 12px;
-            margin: 10px;
-        }
-        .storage-permission button {
-            background: #4a6fa5;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
         .download-progress {
             position: fixed;
             bottom: 80px;
@@ -605,7 +585,6 @@
             STORAGE_KEY: 'kreative_books_data',
             CACHE_VERSION: '1.0.0',
             
-            // GitHub Pages URL
             BASE_URL: 'https://koolwin.github.io/bookshelf/',
             
             BUILTIN_BOOKS: {
@@ -630,57 +609,136 @@
         };
 
         // ============================================================
-        // 2. WEB2APK NATIVE BRIDGE
+        // 2. STORAGE HELPER (PC + Mobile)
         // ============================================================
-        class AndroidBridge {
+        class StorageHelper {
             constructor() {
                 this.isAndroid = typeof window.android !== 'undefined';
+                this.isPC = !this.isAndroid;
+                this.PC_PREFIX = 'pc_file_';
+                this.bookCache = {}; // Cache for book content
+                
+                console.log('Platform:', this.isAndroid ? 'Android (Web2Apk)' : 'PC Browser');
             }
 
             isAvailable() {
-                return this.isAndroid;
+                return true;
             }
 
-            requestStoragePermission() {
-                if (this.isAndroid) {
-                    window.android.requestPermission();
-                }
-            }
-
-            saveFile(filename, content) {
+            saveFileWithPath(path, content) {
                 if (this.isAndroid) {
                     try {
-                        window.android.saveFile(filename, content);
+                        window.android.saveFileWithPath(path, content);
                         return true;
                     } catch (e) {
-                        console.warn('Save file failed:', e);
+                        console.warn('Android save failed:', e);
+                        return false;
+                    }
+                } else {
+                    try {
+                        const key = this.PC_PREFIX + path.replace(/\//g, '_');
+                        localStorage.setItem(key, content);
+                        // Cache the content
+                        this.bookCache[path] = content;
+                        return true;
+                    } catch (e) {
+                        console.warn('PC save failed:', e);
                         return false;
                     }
                 }
-                return false;
             }
 
-            loadFile(filename) {
+            fileExists(path) {
                 if (this.isAndroid) {
                     try {
-                        return window.android.loadFile(filename);
+                        return window.android.fileExists(path);
                     } catch (e) {
-                        console.warn('Load file failed:', e);
+                        return false;
+                    }
+                } else {
+                    try {
+                        const key = this.PC_PREFIX + path.replace(/\//g, '_');
+                        return localStorage.getItem(key) !== null;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            }
+
+            getFileContent(path) {
+                if (this.isAndroid) {
+                    try {
+                        return window.android.loadFile(path);
+                    } catch (e) {
+                        return null;
+                    }
+                } else {
+                    try {
+                        const key = this.PC_PREFIX + path.replace(/\//g, '_');
+                        const content = localStorage.getItem(key);
+                        if (content) {
+                            this.bookCache[path] = content;
+                        }
+                        return content;
+                    } catch (e) {
                         return null;
                     }
                 }
-                return null;
             }
 
-            fileExists(filename) {
+            getFileUrl(path) {
+                if (this.isAndroid) {
+                    // Android: return file path for WebView
+                    return '/storage/emulated/0/Android/data/com.koolwin.kreativebooks/files/' + path;
+                } else {
+                    // PC: Get content and create blob URL
+                    let content = this.getFileContent(path);
+                    if (!content) {
+                        // Try cache
+                        content = this.bookCache[path] || null;
+                    }
+                    
+                    if (content) {
+                        try {
+                            // Try to decode base64 if it's base64 encoded
+                            let decoded = content;
+                            try {
+                                // Check if it looks like base64
+                                if (content.length > 0 && !content.includes('<') && !content.includes('{')) {
+                                    decoded = atob(content);
+                                }
+                            } catch (e) {
+                                // Not base64, use as is
+                                decoded = content;
+                            }
+                            
+                            // Create blob URL
+                            const blob = new Blob([decoded], { type: 'text/html; charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            
+                            // Store URL for later use
+                            this.bookCache['url_' + path] = url;
+                            return url;
+                        } catch (e) {
+                            console.warn('Failed to create blob URL:', e);
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+            }
+
+            createDirectory(path) {
                 if (this.isAndroid) {
                     try {
-                        return window.android.fileExists(filename);
+                        window.android.createDirectory(path);
+                        return true;
                     } catch (e) {
                         return false;
                     }
+                } else {
+                    return true;
                 }
-                return false;
             }
 
             getDownloadedFiles() {
@@ -690,48 +748,30 @@
                     } catch (e) {
                         return [];
                     }
+                } else {
+                    const files = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith(this.PC_PREFIX)) {
+                            const path = key.replace(this.PC_PREFIX, '').replace(/_/g, '/');
+                            files.push(path);
+                        }
+                    }
+                    return files;
                 }
-                return [];
             }
 
-            // For Web2Apk - save file with path
-            saveFileWithPath(path, content) {
-                if (this.isAndroid) {
-                    try {
-                        window.android.saveFileWithPath(path, content);
-                        return true;
-                    } catch (e) {
-                        console.warn('Save file with path failed:', e);
-                        return false;
+            // Clean up blob URLs (for PC)
+            cleanupBlobUrls() {
+                if (this.isPC) {
+                    for (const key in this.bookCache) {
+                        if (key.startsWith('url_')) {
+                            try {
+                                URL.revokeObjectURL(this.bookCache[key]);
+                            } catch (e) {}
+                        }
                     }
                 }
-                return false;
-            }
-
-            // For Web2Apk - check if directory exists
-            directoryExists(path) {
-                if (this.isAndroid) {
-                    try {
-                        return window.android.directoryExists(path);
-                    } catch (e) {
-                        return false;
-                    }
-                }
-                return false;
-            }
-
-            // For Web2Apk - create directory
-            createDirectory(path) {
-                if (this.isAndroid) {
-                    try {
-                        window.android.createDirectory(path);
-                        return true;
-                    } catch (e) {
-                        console.warn('Create directory failed:', e);
-                        return false;
-                    }
-                }
-                return false;
             }
         }
 
@@ -743,7 +783,6 @@
                 this.data = this.loadData();
                 this.today = this.getToday();
                 this.todayCount = this.getTodayCount();
-                this.remaining = CONFIG.DAILY_LIMIT - this.todayCount;
             }
 
             getToday() {
@@ -771,9 +810,7 @@
             saveData() {
                 try {
                     localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(this.data));
-                } catch (e) {
-                    console.warn('Save failed:', e);
-                }
+                } catch (e) {}
             }
 
             getTodayCount() {
@@ -789,15 +826,12 @@
                 if (todayReads.includes(bookId)) {
                     return { allowed: true, reason: 'already_read_today' };
                 }
-                
                 if (this.data.readBooks[bookId]) {
                     return { allowed: true, reason: 'already_read_before' };
                 }
-                
                 if (this.todayCount >= CONFIG.DAILY_LIMIT) {
                     return { allowed: false, reason: 'daily_limit_reached' };
                 }
-                
                 return { allowed: true, reason: 'new_book' };
             }
 
@@ -813,7 +847,6 @@
                 
                 this.data.readBooks[bookId] = today;
                 this.todayCount = this.getTodayCount();
-                this.remaining = CONFIG.DAILY_LIMIT - this.todayCount;
                 
                 this.saveData();
                 this.updateUI();
@@ -828,10 +861,6 @@
                 const today = this.getToday();
                 const todayReads = this.data.history[today] || [];
                 return todayReads.includes(bookId);
-            }
-
-            getRemainingToday() {
-                return CONFIG.DAILY_LIMIT - this.getTodayCount();
             }
 
             updateUI() {
@@ -851,21 +880,22 @@
         }
 
         // ============================================================
-        // 4. BOOK MANAGER
+        // 4. BOOK MANAGER (FIXED - Opens book immediately after extract)
         // ============================================================
         class BookManager {
             constructor() {
-                this.android = new AndroidBridge();
+                this.storage = new StorageHelper();
                 this.books = {};
                 this.readingTracker = new ReadingTracker();
                 this.isSyncing = false;
+                this.downloadingBooks = {};
+                this.pendingOpenBook = null; // Book to open after download
                 this.init();
             }
 
             init() {
                 this.books = { ...CONFIG.BUILTIN_BOOKS };
                 
-                // Load cached remote books
                 const cached = localStorage.getItem('kreative_remote_books');
                 if (cached) {
                     try {
@@ -900,7 +930,6 @@
                     if (remoteData.books && Array.isArray(remoteData.books)) {
                         for (const book of remoteData.books) {
                             if (!this.books[book.id]) {
-                                // Check if book exists as ZIP
                                 const zipUrl = `${CONFIG.REMOTE_BASE_URL}${book.id}.zip`;
                                 this.books[book.id] = {
                                     title: book.title,
@@ -912,13 +941,12 @@
                                 };
                                 newBooksCount++;
                                 
-                                // Auto-download ZIP
+                                // Auto download
                                 await this.downloadBookZip(book.id);
                             }
                         }
                     }
                     
-                    // Save remote books cache
                     const remoteCache = {};
                     Object.keys(this.books).forEach(key => {
                         if (!this.books[key].isBuiltin) {
@@ -947,29 +975,58 @@
                 }
             }
 
-            async downloadBookZip(bookId) {
+            // ============================================================
+            // FIXED: Download + Extract + Auto Open
+            // ============================================================
+            async downloadBookZip(bookId, autoOpen = false) {
+                if (this.downloadingBooks[bookId]) {
+                    // If already downloading, wait and then open
+                    return new Promise((resolve) => {
+                        const checkInterval = setInterval(() => {
+                            if (!this.downloadingBooks[bookId]) {
+                                clearInterval(checkInterval);
+                                if (autoOpen) {
+                                    this.openBook(bookId);
+                                }
+                                resolve(true);
+                            }
+                        }, 500);
+                    });
+                }
+                
+                this.downloadingBooks[bookId] = true;
+                
                 const book = this.books[bookId];
-                if (!book || !book.isZip) return false;
+                if (!book || !book.isZip) {
+                    delete this.downloadingBooks[bookId];
+                    return false;
+                }
+                
+                // Check if already exists
+                const bookFolder = `books/${bookId}/`;
+                const indexPath = bookFolder + 'index.html';
+                if (this.storage.fileExists(indexPath)) {
+                    delete this.downloadingBooks[bookId];
+                    if (autoOpen) {
+                        this.openBook(bookId);
+                    }
+                    return true;
+                }
                 
                 try {
                     this.showProgress(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်...`, 0);
                     
-                    // Download ZIP
                     const response = await fetch(book.remoteUrl);
                     if (!response.ok) throw new Error('Download failed');
                     
                     const zipBlob = await response.blob();
-                    const totalSize = zipBlob.size;
+                    this.showProgress(`📦 ZIP ဖိုင်ကို ဖြည်နေသည်...`, 30);
                     
-                    this.showProgress(`📦 ZIP ဖိုင်ကို ဖြည်နေသည်...`, 50);
-                    
-                    // Extract ZIP using JSZip
                     const zip = await JSZip.loadAsync(zipBlob);
                     const files = Object.keys(zip.files);
                     let extracted = 0;
                     
-                    // Create book folder
-                    const bookFolder = `books/${bookId}/`;
+                    this.storage.createDirectory(bookFolder);
                     
                     for (const filename of files) {
                         const file = zip.files[filename];
@@ -978,23 +1035,16 @@
                                 const content = await file.async('blob');
                                 const filePath = bookFolder + filename;
                                 
-                                // Save to external storage
                                 const reader = new FileReader();
                                 const contentBase64 = await new Promise((resolve) => {
                                     reader.onload = () => resolve(reader.result.split(',')[1]);
                                     reader.readAsDataURL(content);
                                 });
                                 
-                                if (this.android.isAvailable()) {
-                                    this.android.saveFileWithPath(filePath, contentBase64);
-                                } else {
-                                    // Fallback: save to localStorage
-                                    const text = await file.async('text');
-                                    localStorage.setItem(`file_${filePath}`, text);
-                                }
+                                this.storage.saveFileWithPath(filePath, contentBase64);
                                 
                                 extracted++;
-                                const progress = 50 + (extracted / files.length) * 50;
+                                const progress = 30 + (extracted / files.length) * 70;
                                 this.showProgress(`📄 ${filename} ဖြည်နေသည်...`, progress);
                                 
                             } catch (e) {
@@ -1003,7 +1053,6 @@
                         }
                     }
                     
-                    // Save metadata
                     const metadata = {
                         id: bookId,
                         title: book.title,
@@ -1014,13 +1063,118 @@
                     
                     this.hideProgress();
                     this.updateUI();
+                    showNotification(`✅ ${book.title} ဒေါင်းလုဒ်ပြီးပါပြီ`);
+                    
+                    delete this.downloadingBooks[bookId];
+                    
+                    // ============================================================
+                    // AUTO OPEN: Open book immediately after download
+                    // ============================================================
+                    if (autoOpen) {
+                        // Small delay to ensure UI updates
+                        setTimeout(() => {
+                            this.openBook(bookId);
+                        }, 300);
+                    }
+                    
                     return true;
                     
                 } catch (error) {
                     console.error('Download failed:', error);
                     this.hideProgress();
                     showNotification(`❌ ${book.title} ဒေါင်းလုဒ်မရပါ`);
+                    delete this.downloadingBooks[bookId];
                     return false;
+                }
+            }
+
+            // ============================================================
+            // FIXED: getBookUrl - PC + Mobile
+            // ============================================================
+            getBookUrl(bookId) {
+                const book = this.books[bookId];
+                if (!book) return null;
+                
+                // Built-in book
+                if (book.isBuiltin) {
+                    return book.localPath;
+                }
+                
+                // Check if extracted book exists
+                const bookFolder = `books/${bookId}/`;
+                const indexPath = bookFolder + 'index.html';
+                
+                if (this.storage.fileExists(indexPath)) {
+                    const url = this.storage.getFileUrl(indexPath);
+                    if (url) {
+                        return url;
+                    }
+                }
+                
+                // Not downloaded
+                return null;
+            }
+
+            isBookDownloaded(bookId) {
+                const book = this.books[bookId];
+                if (!book) return false;
+                if (book.isBuiltin) return true;
+                
+                const bookFolder = `books/${bookId}/`;
+                const indexPath = bookFolder + 'index.html';
+                
+                return this.storage.fileExists(indexPath);
+            }
+
+            // ============================================================
+            // FIXED: Open book - Downloads if needed, then opens
+            // ============================================================
+            async openBook(bookId) {
+                const book = this.books[bookId];
+                if (!book) {
+                    showNotification('❌ စာအုပ်မတွေ့ပါ');
+                    return;
+                }
+                
+                // Check reading limit
+                const canRead = this.readingTracker.canRead(bookId);
+                if (!canRead.allowed && !this.readingTracker.isReadBefore(bookId)) {
+                    if (canRead.reason === 'daily_limit_reached') {
+                        showNotification('⚠️ ယနေ့ စာအုပ် ၃ အုပ် ဖတ်ပြီးပါပြီ။ မနက်ဖြန်မှ ပြန်ဖတ်ပါ။');
+                    } else {
+                        showNotification('🔒 ဤစာအုပ်ကို ယနေ့ဖတ်ခွင့်မရသေးပါ');
+                    }
+                    return;
+                }
+                
+                // Check if downloaded
+                if (!this.isBookDownloaded(bookId)) {
+                    if (navigator.onLine) {
+                        // Download and then auto-open
+                        showNotification(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်... ခဏစောင့်ပါ`);
+                        const success = await this.downloadBookZip(bookId, true); // autoOpen = true
+                        if (!success) {
+                            showNotification(`❌ ${book.title} ဒေါင်းလုဒ်မရပါ`);
+                        }
+                        // downloadBookZip will call openBook again when done
+                        return;
+                    } else {
+                        showNotification('⚠️ အင်တာနက်မရှိပါ၊ စာအုပ်ဖွင့်မရပါ');
+                        return;
+                    }
+                }
+                
+                // Get URL and open
+                const url = this.getBookUrl(bookId);
+                if (url) {
+                    // Mark as read
+                    if (!this.readingTracker.isReadToday(bookId)) {
+                        this.readingTracker.markAsRead(bookId);
+                        this.updateUI();
+                    }
+                    openWebView(url, book.title);
+                } else {
+                    showNotification('❌ စာအုပ်ဖွင့်မရပါ');
                 }
             }
 
@@ -1033,61 +1187,6 @@
                     id: key,
                     ...this.books[key]
                 }));
-            }
-
-            getBookUrl(bookId) {
-                const book = this.books[bookId];
-                if (!book) return null;
-                
-                // Built-in book
-                if (book.isBuiltin) {
-                    return book.localPath;
-                }
-                
-                // Check external storage for extracted book
-                const bookFolder = `books/${bookId}/index.html`;
-                
-                if (this.android.isAvailable()) {
-                    // Check if index.html exists in external storage
-                    const exists = this.android.fileExists(bookFolder);
-                    if (exists) {
-                        // For Web2Apk, return file path
-                        return `file:///storage/emulated/0/Android/data/com.yourname.kreativebooks/files/${bookFolder}`;
-                    }
-                } else {
-                    // Check localStorage fallback
-                    const cached = localStorage.getItem(`file_books/${bookId}/index.html`);
-                    if (cached) {
-                        const blob = new Blob([cached], { type: 'text/html' });
-                        return URL.createObjectURL(blob);
-                    }
-                }
-                
-                // Not downloaded yet - try to download
-                if (book.isZip && navigator.onLine) {
-                    this.downloadBookZip(bookId);
-                    return null;
-                }
-                
-                // Online fallback
-                return book.remoteUrl;
-            }
-
-            isBookDownloaded(bookId) {
-                const book = this.books[bookId];
-                if (!book) return false;
-                if (book.isBuiltin) return true;
-                
-                // Check external storage
-                const bookFolder = `books/${bookId}/index.html`;
-                if (this.android.isAvailable()) {
-                    if (this.android.fileExists(bookFolder)) return true;
-                }
-                
-                // Check localStorage
-                if (localStorage.getItem(`file_books/${bookId}/index.html`)) return true;
-                
-                return false;
             }
 
             canReadBook(bookId) {
@@ -1228,31 +1327,7 @@
             container.querySelectorAll('.book-card').forEach(el => {
                 el.addEventListener('click', function() {
                     const bookId = this.dataset.book;
-                    const book = manager.getBook(bookId);
-                    if (!book) return;
-                    
-                    // Check if can read
-                    const canRead = manager.canReadBook(bookId);
-                    
-                    if (!canRead.allowed && !manager.isBookReadBefore(bookId)) {
-                        if (canRead.reason === 'daily_limit_reached') {
-                            showNotification('⚠️ ယနေ့ စာအုပ် ၃ အုပ် ဖတ်ပြီးပါပြီ။ မနက်ဖြန်မှ ပြန်ဖတ်ပါ။');
-                        } else {
-                            showNotification('🔒 ဤစာအုပ်ကို ယနေ့ဖတ်ခွင့်မရသေးပါ');
-                        }
-                        return;
-                    }
-                    
-                    // Get URL and open
-                    const url = manager.getBookUrl(bookId);
-                    if (url) {
-                        if (!manager.isBookReadToday(bookId)) {
-                            manager.markBookAsRead(bookId);
-                        }
-                        openWebView(url, book.title);
-                    } else {
-                        showNotification('⏳ စာအုပ်ဒေါင်းလုဒ်လုပ်နေသည်... ခဏစောင့်ပါ');
-                    }
+                    bookManager.openBook(bookId);
                 });
             });
         }
@@ -1280,6 +1355,8 @@
             try {
                 if (title) showNotification(`⏳ ${title} ဖွင့်နေပါသည်...`);
                 
+                // For PC: if it's a blob URL, it should work directly
+                // For Android: file path
                 iframe.src = url;
                 container.style.display = 'block';
                 
@@ -1328,6 +1405,12 @@
                 }
                 
                 container.style.display = 'none';
+                
+                // Clean up blob URLs (PC)
+                if (bookManager && bookManager.storage) {
+                    bookManager.storage.cleanupBlobUrls();
+                }
+                
                 iframe.src = '';
                 iframe.srcdoc = '';
             });
