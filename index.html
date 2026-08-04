@@ -7,1025 +7,844 @@
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <link rel="manifest" href="manifest.json">
-    
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Kreative Bookshelf</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #1a1a2e;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-        #app {
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            background: #f8f9fc;
-            overflow: hidden;
-            padding: 10px 16px 6px 16px;
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 4px 10px 4px;
-            flex-shrink: 0;
-            border-bottom: 2px solid #e8ecf1;
-            flex-wrap: wrap;
-            gap: 6px 10px;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .header h1 {
-            font-size: clamp(18px, 2.8vh, 32px);
-            font-weight: 800;
-            color: #1a1a2e;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .header h1 span {
-            color: #e94560;
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .daily-limit-info {
-            font-size: clamp(9px, 1.1vh, 12px);
-            color: #6c7a8e;
-            padding: 4px 12px;
-            background: #eef1f5;
-            border-radius: 12px;
-            white-space: nowrap;
-        }
-        .daily-limit-info .count {
-            font-weight: 700;
-            color: #1a1a2e;
-        }
-        .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: clamp(8px, 1vh, 11px);
-            color: #6c7a8e;
-            padding: 2px 10px;
-            background: #eef1f5;
-            border-radius: 12px;
-            white-space: nowrap;
-        }
-        .btn-sync {
-            background: #4a6fa5;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: clamp(10px, 1.2vh, 13px);
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-            touch-action: manipulation;
-        }
-        .btn-sync:active {
-            transform: scale(0.95);
-        }
-        .btn-sync.syncing {
-            background: #f59e0b;
-            pointer-events: none;
-        }
-        .btn-buy-code {
-            background: #e94560;
-            color: #ffffff;
-            border: none;
-            padding: 6px 18px;
-            border-radius: 24px;
-            font-size: clamp(10px, 1.3vh, 14px);
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 12px rgba(233, 69, 96, 0.25);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            touch-action: manipulation;
-        }
-        .btn-buy-code:active {
-            transform: scale(0.94);
-        }
-        .shelf-container {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 12px 0 8px 0;
-            scroll-behavior: smooth;
-            scrollbar-width: thin;
-            scrollbar-color: #d0d5dd #f0f2f5;
-            -webkit-overflow-scrolling: touch;
-        }
-        .shelf-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .shelf-container::-webkit-scrollbar-track {
-            background: #f0f2f5;
-            border-radius: 4px;
-        }
-        .shelf-container::-webkit-scrollbar-thumb {
-            background: #d0d5dd;
-            border-radius: 4px;
-        }
-        .shelf-row {
-            margin-bottom: 28px;
-            position: relative;
-        }
-        .shelf-row::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 2%;
-            width: 96%;
-            height: 10px;
-            background: linear-gradient(180deg, #d4a373, #b8895c);
-            border-radius: 0 0 6px 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            z-index: 0;
-        }
-        .shelf-row::before {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 4%;
-            width: 92%;
-            height: 14px;
-            background: radial-gradient(ellipse at 50% 0%, rgba(0, 0, 0, 0.06) 0%, transparent 70%);
-            z-index: 0;
-            filter: blur(4px);
-        }
-        .book-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px 14px;
-            padding: 0 6px 4px 6px;
-            position: relative;
-            z-index: 1;
-        }
-        .book-card {
-            background: #ffffff;
-            border-radius: 10px 10px 6px 6px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: 0.25s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            touch-action: manipulation;
-        }
-        .book-card:active {
-            transform: scale(0.95) translateY(-2px);
-        }
-        
-        .book-card .cover-wrap {
-            position: relative;
-            width: 100%;
-            background: #f0f2f5;
-            overflow: hidden;
-        }
-        .book-card .cover-wrap img {
-            display: block;
-            width: 100%;
-            height: auto;
-            background: #f0f2f5;
-            transition: 0.3s;
-            object-fit: contain;
-        }
-        .book-card .cover-wrap img:hover {
-            transform: scale(1.02);
-        }
-        .book-card .cover-wrap .placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #e8ecf1, #d5dbe4);
-            font-size: clamp(28px, 5vh, 50px);
-            color: rgba(0, 0, 0, 0.10);
-        }
-        .book-card .book-info {
-            padding: 6px 8px 8px 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 6px;
-            background: #ffffff;
-            flex-shrink: 0;
-        }
-        .book-card .book-title {
-            font-size: clamp(10px, 1.3vh, 14px);
-            font-weight: 600;
-            color: #1a1a2e;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex: 1;
-            min-width: 0;
-        }
-        .status-badge {
-            font-size: clamp(8px, 1vh, 11px);
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: 0.3s;
-        }
-        .status-badge.ready {
-            background: #e6f7ed;
-            color: #1a9c5e;
-        }
-        .status-badge.pending {
-            background: #f0f2f5;
-            color: #8a9aa8;
-        }
-        .status-badge.downloaded {
-            background: #dbeafe;
-            color: #1a56db;
-        }
-        .status-badge.locked {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .status-badge.read {
-            background: #fef3c7;
-            color: #d4880f;
-        }
-        .book-card .lock-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3;
-            border-radius: 10px 10px 0 0;
-        }
-        .book-card .lock-overlay .lock-icon {
-            font-size: 40px;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-        .book-card .lock-overlay .lock-text {
-            position: absolute;
-            bottom: 20px;
-            color: white;
-            font-size: 12px;
-            background: rgba(0,0,0,0.7);
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-        .book-card .offline-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 8px;
-            z-index: 2;
-        }
-        #notification {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: #1a1a2e;
-            color: #fff;
-            padding: 10px 28px;
-            border-radius: 30px;
-            font-size: clamp(12px, 1.4vh, 15px);
-            opacity: 0;
-            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-            max-width: 92%;
-            text-align: center;
-            z-index: 999;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
-            font-weight: 500;
-        }
-        #notification.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0px);
-        }
-        #webview-container {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            background: #ffffff;
-            overflow: hidden;
-        }
-        #webview-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-            background: #ffffff;
-        }
-        #close-btn {
-            position: absolute;
-            top: 14px;
-            right: 18px;
-            font-size: clamp(22px, 3.5vh, 32px);
-            color: #1a1a2e;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 50%;
-            width: clamp(38px, 5.5vh, 48px);
-            height: clamp(38px, 5.5vh, 48px);
-            cursor: pointer;
-            z-index: 1001;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
-            font-weight: 700;
-            touch-action: manipulation;
-        }
-        #close-btn:active {
-            transform: scale(0.88);
-        }
-        .footer {
-            text-align: center;
-            font-size: clamp(8px, 1vh, 11px);
-            color: #b0b8c4;
-            padding: 6px 0 2px 0;
-            flex-shrink: 0;
-            border-top: 1px solid #e8ecf1;
-            letter-spacing: 0.3px;
-            background: #f8f9fc;
-        }
-        .scroll-hint {
-            text-align: center;
-            font-size: clamp(10px, 1.2vh, 13px);
-            color: #b0b8c4;
-            padding: 4px 0 2px 0;
-            opacity: 0.6;
-            flex-shrink: 0;
-        }
-        .scroll-hint .arrow {
-            display: inline-block;
-            animation: bounce 1.8s infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(4px); }
-        }
-        @media (orientation: landscape) {
-            .book-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 16px 12px;
-            }
-        }
-        @media (orientation: portrait) {
-            .book-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 14px 10px;
-            }
-        }
-        @media (max-width: 480px) and (orientation: portrait) {
-            .book-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px 8px;
-            }
-            .header h1 {
-                font-size: 16px;
-            }
-            .btn-buy-code {
-                padding: 4px 12px;
-                font-size: 10px;
-            }
-            .btn-sync {
-                padding: 4px 10px;
-                font-size: 10px;
-            }
-            .daily-limit-info {
-                font-size: 8px;
-                padding: 2px 8px;
-            }
-        }
-        @media (min-width: 1024px) {
-            .book-grid {
-                gap: 24px 20px;
-                padding: 0 12px 4px 12px;
-            }
-        }
-        @media (min-width: 1440px) {
-            .book-grid {
-                grid-template-columns: repeat(4, 1fr);
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1a1a2e;position:fixed;top:0;left:0}
+        #app{width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#f8f9fc;overflow:hidden;padding:10px 16px 6px 16px}
+        .header{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 10px 4px;flex-shrink:0;border-bottom:2px solid #e8ecf1;flex-wrap:wrap;gap:6px 10px}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .header h1{font-size:clamp(18px,2.8vh,32px);font-weight:800;color:#1a1a2e;letter-spacing:.5px;white-space:nowrap}
+        .header h1 span{color:#e94560}
+        .header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+        .points-display{font-size:clamp(9px,1.1vh,13px);padding:4px 12px;background:#fef3c7;border-radius:20px;color:#d4880f;font-weight:700;white-space:nowrap}
+        .streak-display{font-size:clamp(9px,1.1vh,13px);padding:4px 12px;background:#dbeafe;border-radius:20px;color:#1a56db;font-weight:700;white-space:nowrap}
+        .btn-header{padding:6px 14px;border:none;border-radius:20px;font-size:clamp(10px,1.2vh,13px);font-weight:600;cursor:pointer;touch-action:manipulation;white-space:nowrap;transition:.2s}
+        .btn-header:active{transform:scale(.95)}
+        .btn-header.sync{background:#4a6fa5;color:#fff}
+        .btn-header.sync.syncing{background:#f59e0b;pointer-events:none}
+        .btn-header.buy{background:#e94560;color:#fff;box-shadow:0 4px 12px rgba(233,69,96,.25)}
+        .btn-header.rewards{background:#8b5cf6;color:#fff}
+        .btn-header.log{background:#0ea5e9;color:#fff}
+        .btn-header.badges{background:#f59e0b;color:#fff}
+        .btn-header.stickers{background:#ec4899;color:#fff}
+        .daily-limit-info{font-size:clamp(9px,1.1vh,12px);color:#6c7a8e;padding:4px 12px;background:#eef1f5;border-radius:12px;white-space:nowrap}
+        .daily-limit-info .count{font-weight:700;color:#1a1a2e}
+        .sync-status{font-size:clamp(8px,1vh,11px);color:#6c7a8e;padding:2px 10px;background:#eef1f5;border-radius:12px;white-space:nowrap}
+        .shelf-container{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 0 8px 0;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#d0d5dd #f0f2f5;-webkit-overflow-scrolling:touch}
+        .shelf-container::-webkit-scrollbar{width:6px}
+        .shelf-container::-webkit-scrollbar-track{background:#f0f2f5;border-radius:4px}
+        .shelf-container::-webkit-scrollbar-thumb{background:#d0d5dd;border-radius:4px}
+        .shelf-row{margin-bottom:28px;position:relative}
+        .shelf-row::after{content:'';position:absolute;bottom:-6px;left:2%;width:96%;height:10px;background:linear-gradient(180deg,#d4a373,#b8895c);border-radius:0 0 6px 6px;box-shadow:0 4px 12px rgba(0,0,0,.08);z-index:0}
+        .shelf-row::before{content:'';position:absolute;bottom:-10px;left:4%;width:92%;height:14px;background:radial-gradient(ellipse at 50% 0%,rgba(0,0,0,.06) 0%,transparent 70%);z-index:0;filter:blur(4px)}
+        .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 14px;padding:0 6px 4px 6px;position:relative;z-index:1}
+        .book-card{background:#fff;border-radius:10px 10px 6px 6px;overflow:hidden;cursor:pointer;transition:.25s ease;box-shadow:0 2px 8px rgba(0,0,0,.06),0 4px 20px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);display:flex;flex-direction:column;position:relative;touch-action:manipulation}
+        .book-card:active{transform:scale(.95) translateY(-2px)}
+        .book-card .cover-wrap{position:relative;width:100%;background:#f0f2f5;overflow:hidden}
+        .book-card .cover-wrap img{display:block;width:100%;height:auto;background:#f0f2f5;transition:.3s;object-fit:contain}
+        .book-card .cover-wrap img:hover{transform:scale(1.02)}
+        .book-card .cover-wrap .placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8ecf1,#d5dbe4);font-size:clamp(28px,5vh,50px);color:rgba(0,0,0,.1)}
+        .book-card .book-info{padding:6px 8px 8px 8px;display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;flex-shrink:0}
+        .book-card .book-title{font-size:clamp(10px,1.3vh,14px);font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+        .status-badge{font-size:clamp(8px,1vh,11px);padding:1px 8px;border-radius:12px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:.3s}
+        .status-badge.ready{background:#e6f7ed;color:#1a9c5e}
+        .status-badge.pending{background:#f0f2f5;color:#8a9aa8}
+        .status-badge.locked{background:#fee2e2;color:#dc2626}
+        .status-badge.read{background:#fef3c7;color:#d4880f}
+        .status-badge.completed{background:#dbeafe;color:#1a56db}
+        .book-card .offline-badge{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:8px;padding:2px 6px;border-radius:8px;z-index:2}
+        .book-card .lock-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:3;border-radius:10px 10px 0 0}
+        .book-card .lock-overlay .lock-icon{font-size:40px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+        .book-card .lock-overlay .lock-text{position:absolute;bottom:20px;color:#fff;font-size:12px;background:rgba(0,0,0,.7);padding:4px 12px;border-radius:20px}
+        .book-card .badge-icon{position:absolute;top:8px;left:8px;font-size:18px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+        #notification{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a2e;color:#fff;padding:10px 28px;border-radius:30px;font-size:clamp(12px,1.4vh,15px);opacity:0;transition:.5s cubic-bezier(.16,1,.3,1);pointer-events:none;max-width:92%;text-align:center;z-index:999;box-shadow:0 8px 40px rgba(0,0,0,.2);font-weight:500}
+        #notification.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        #webview-container{display:none;width:100vw;height:100vh;height:100dvh;position:fixed;top:0;left:0;z-index:1000;background:#fff;overflow:hidden}
+        #webview-container iframe{width:100%;height:100%;border:none;display:block;background:#fff}
+        #close-btn{position:absolute;top:14px;right:18px;font-size:clamp(22px,3.5vh,32px);color:#1a1a2e;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.08);border-radius:50%;width:clamp(38px,5.5vh,48px);height:clamp(38px,5.5vh,48px);cursor:pointer;z-index:1001;transition:.2s;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 4px 20px rgba(0,0,0,.1);font-weight:700;touch-action:manipulation}
+        #close-btn:active{transform:scale(.88)}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;justify-content:center;align-items:center}
+        .modal-overlay.active{display:flex}
+        .modal-content{background:#fff;border-radius:20px;padding:24px;max-width:600px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative}
+        .modal-content h2{font-size:clamp(20px,2.5vh,28px);margin-bottom:16px;color:#1a1a2e}
+        .modal-close{position:absolute;top:12px;right:16px;font-size:24px;cursor:pointer;color:#999;background:none;border:none}
+        .modal-close:hover{color:#333}
+        .reward-item{background:#f8f9fc;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e8ecf1}
+        .reward-item .info{flex:1}
+        .reward-item .name{font-weight:600;font-size:14px}
+        .reward-item .desc{font-size:12px;color:#6c7a8e}
+        .reward-item .cost{font-weight:700;color:#d4880f;margin:0 8px}
+        .reward-item .btn-redeem{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:12px;cursor:pointer;transition:.2s}
+        .reward-item .btn-redeem:active{transform:scale(.95)}
+        .reward-item .btn-redeem.available{background:#4a6fa5;color:#fff}
+        .reward-item .btn-redeem.unavailable{background:#e8ecf1;color:#999;cursor:not-allowed}
+        .reward-item .btn-redeem.redeemed{background:#e6f7ed;color:#1a9c5e}
+        .log-entry{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8ecf1;font-size:14px}
+        .log-entry .date{color:#6c7a8e}
+        .log-entry .book{font-weight:500}
+        .log-entry .points{color:#d4880f;font-weight:600}
+        .badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+        .badge-item{text-align:center;padding:12px 8px;background:#f8f9fc;border-radius:12px;border:2px solid #e8ecf1;transition:.3s}
+        .badge-item.unlocked{border-color:#f59e0b;background:#fef3c7}
+        .badge-item.locked{opacity:.5;filter:grayscale(1)}
+        .badge-item .icon{font-size:42px;display:block;margin-bottom:4px}
+        .badge-item .icon img{width:52px;height:52px;object-fit:contain;border-radius:50%}
+        .badge-item .name{font-size:10px;font-weight:600;margin-top:4px}
+        .badge-item .desc{font-size:9px;color:#6c7a8e}
+        .sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+        .sticker-item{text-align:center;padding:12px 8px;background:#f8f9fc;border-radius:12px;border:2px solid #e8ecf1;transition:.3s}
+        .sticker-item.unlocked{border-color:#ec4899;background:#fdf2f8}
+        .sticker-item.locked{opacity:.5;filter:grayscale(1)}
+        .sticker-item .icon{font-size:48px;display:block;margin-bottom:4px}
+        .sticker-item .icon img{width:56px;height:56px;object-fit:contain}
+        .sticker-item .name{font-size:10px;font-weight:600;margin-top:4px}
+        .sticker-item .desc{font-size:9px;color:#6c7a8e}
+        .chart-container{background:#f8f9fc;border-radius:12px;padding:16px;margin:12px 0;overflow-x:auto}
+        .chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding-bottom:20px;position:relative}
+        .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+        .chart-bar{width:100%;max-width:30px;background:linear-gradient(180deg,#4a6fa5,#6c8fc7);border-radius:4px 4px 0 0;transition:height .5s ease;min-height:4px}
+        .chart-bar-label{font-size:9px;color:#6c7a8e;margin-top:4px;text-align:center}
+        .chart-bar-value{font-size:8px;font-weight:600;color:#1a1a2e;margin-bottom:2px}
+        .certificate-container{background:linear-gradient(135deg,#fef9e7,#fdebd0);border:4px solid #d4a373;border-radius:16px;padding:30px;text-align:center;margin:12px 0;box-shadow:0 4px 20px rgba(0,0,0,.08);position:relative}
+        .certificate-container .title{font-size:28px;font-weight:800;color:#b8895c;margin-bottom:4px;letter-spacing:2px}
+        .certificate-container .subtitle{font-size:16px;color:#6c7a8e;margin-bottom:8px}
+        .certificate-container .name{font-size:24px;font-weight:700;color:#1a1a2e;margin:8px 0}
+        .certificate-container .date{font-size:14px;color:#6c7a8e}
+        .certificate-container .stamp{font-size:64px;margin-top:12px}
+        .certificate-container .border-decoration{position:absolute;top:8px;left:8px;right:8px;bottom:8px;border:2px dashed #d4a373;border-radius:12px;pointer-events:none}
+        .btn-export{padding:8px 20px;border:none;border-radius:20px;font-weight:600;font-size:14px;cursor:pointer;transition:.2s;margin:4px}
+        .btn-export:active{transform:scale(.95)}
+        .btn-export.pdf{background:#dc2626;color:#fff}
+        .btn-export.png{background:#4a6fa5;color:#fff}
+        .btn-export:hover{opacity:.85}
+        .footer{text-align:center;font-size:clamp(8px,1vh,11px);color:#b0b8c4;padding:6px 0 2px 0;flex-shrink:0;border-top:1px solid #e8ecf1;letter-spacing:.3px;background:#f8f9fc}
+        .scroll-hint{text-align:center;font-size:clamp(10px,1.2vh,13px);color:#b0b8c4;padding:4px 0 2px 0;opacity:.6;flex-shrink:0}
+        .scroll-hint .arrow{display:inline-block;animation:bounce 1.8s infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+        @media(orientation:landscape){.book-grid{grid-template-columns:repeat(4,1fr);gap:16px 12px}}
+        @media(orientation:portrait){.book-grid{grid-template-columns:repeat(2,1fr);gap:14px 10px}}
+        @media(max-width:480px)and(orientation:portrait){.book-grid{grid-template-columns:repeat(2,1fr);gap:10px 8px}.header h1{font-size:16px}.btn-header{padding:4px 10px;font-size:10px}.daily-limit-info{font-size:8px;padding:2px 8px}.points-display,.streak-display{font-size:8px;padding:2px 8px}.badge-grid,.sticker-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(min-width:1024px){.book-grid{gap:24px 20px;padding:0 12px 4px 12px}}
+        @media(min-width:1440px){.book-grid{grid-template-columns:repeat(4,1fr);max-width:1200px;margin:0 auto}}
+        .badge-icon-img{width:48px;height:48px;object-fit:contain;border-radius:50%;display:block;margin:0 auto}
+        .sticker-icon-img{width:56px;height:56px;object-fit:contain;display:block;margin:0 auto}
     </style>
 </head>
 <body>
-
     <div id="app">
         <div class="header">
             <div class="header-left">
                 <h1>📚 <span>Kreative</span>Bookshelf</h1>
-                <span class="daily-limit-info" id="dailyLimitInfo">📖 Today <span class="count" id="todayCount">0</span>/3 books</span>
+                <span class="daily-limit-info">📖 Today <span class="count" id="todayCount">0</span>/3</span>
             </div>
             <div class="header-right">
+                <span class="points-display" id="pointsDisplay">⭐ 0 pts</span>
+                <span class="streak-display" id="streakDisplay">🔥 0 days</span>
+                <button class="btn-header badges" id="btnBadges">🏆 Badges</button>
+                <button class="btn-header stickers" id="btnStickers">🎨 Stickers</button>
+                <button class="btn-header rewards" id="btnRewards">🎁 Rewards</button>
+                <button class="btn-header log" id="btnLog">📖 Log</button>
                 <span class="sync-status" id="syncStatus">✅ Up to date</span>
-                <button class="btn-sync" id="btnSync">🔄 Sync</button>
-                <button class="btn-buy-code" id="btnBuyCode">🔑 Buy Code</button>
+                <button class="btn-header sync" id="btnSync">🔄 Sync</button>
+                <button class="btn-header buy" id="btnBuyCode">🔑 Buy Code</button>
             </div>
         </div>
         <div class="shelf-container" id="shelf-container">
             <div id="shelf-rows"></div>
-            <div class="scroll-hint" id="scroll-hint">
-                <span class="arrow">⬇</span> Scroll down to browse <span class="arrow">⬇</span>
-            </div>
+            <div class="scroll-hint"><span class="arrow">⬇</span> Scroll to browse <span class="arrow">⬇</span></div>
         </div>
-        <div class="footer">📡 Internet connection required to open books</div>
+        <div class="footer">📡 Internet required • Read, Earn Points, Unlock Badges &amp; Stickers!</div>
     </div>
-
     <div id="notification"></div>
-
     <div id="webview-container">
         <button id="close-btn">✕</button>
         <iframe id="book-iframe" allowfullscreen></iframe>
     </div>
-
+    <div class="modal-overlay" id="rewardsModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('rewardsModal')">✕</button>
+            <h2>🎁 Rewards Shop</h2>
+            <p style="margin-bottom:12px;">Your Points: <strong id="modalPoints">0</strong></p>
+            <div id="rewards-list"></div>
+            <p style="font-size:12px;color:#6c7a8e;margin-top:12px;">💡 Read books to earn points. Redeem for extra books and special items!</p>
+        </div>
+    </div>
+    <div class="modal-overlay" id="logModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('logModal')">✕</button>
+            <h2>📖 Reading Log</h2>
+            <div id="reading-log-list"></div>
+            <div style="margin-top:16px;">
+                <p style="font-weight:600;">📊 Weekly Progress</p>
+                <div class="chart-container"><div class="chart-bars" id="chartBars"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="badgesModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('badgesModal')">✕</button>
+            <h2>🏆 Your Badges</h2>
+            <p style="font-size:12px;color:#6c7a8e;margin-bottom:12px;">Collect all 25 badges by reading books and achieving milestones!</p>
+            <div id="badgeGrid"></div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="stickersModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('stickersModal')">✕</button>
+            <h2>🎨 Your Stickers</h2>
+            <p style="font-size:12px;color:#6c7a8e;margin-bottom:12px;">Collect stickers by reading books and redeeming points!</p>
+            <div id="stickerGrid"></div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="certificateModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('certificateModal')">✕</button>
+            <h2>📜 Certificate</h2>
+            <div id="certificateContainer"></div>
+            <div style="text-align:center;margin-top:12px;">
+                <button class="btn-export pdf" onclick="exportCertificate('pdf')">📄 Download PDF</button>
+                <button class="btn-export png" onclick="exportCertificate('png')">🖼️ Download PNG</button>
+            </div>
+        </div>
+    </div>
     <script>
-        // ============================================================
-        // 1. CONFIGURATION
-        // ============================================================
-        const CONFIG = {
-            DAILY_LIMIT: 3,
-            STORAGE_KEY: 'kreative_books_data',
-            CACHE_VERSION: '1.0.0',
-            
-            BASE_URL: 'https://koolwin.github.io/bookshelf/',
-            
-            BUILTIN_BOOKS: {
-                book1: { title: 'Pre-KG English-1', cover: 'covers/book1.png', localPath: 'books/book1/index.html', isBuiltin: true },
-                book2: { title: 'Pre-KG English-2', cover: 'covers/book2.png', localPath: 'books/book2/index.html', isBuiltin: true },
-                book3: { title: 'Pre-KG English-3', cover: 'covers/book3.png', localPath: 'books/book3/index.html', isBuiltin: true },
-                book4: { title: 'Pre-KG English-4', cover: 'covers/book4.png', localPath: 'books/book4/index.html', isBuiltin: true },
-                book5: { title: 'Pre-KG English-5', cover: 'covers/book5.png', localPath: 'books/book5/index.html', isBuiltin: true },
-                book6: { title: 'Pre-KG English-6', cover: 'covers/book6.png', localPath: 'books/book6/index.html', isBuiltin: true },
-                book7: { title: 'Pre-KG English-7', cover: 'covers/book7.png', localPath: 'books/book7/index.html', isBuiltin: true },
-                book8: { title: 'Pre-KG English-8', cover: 'covers/book8.png', localPath: 'books/book8/index.html', isBuiltin: true },
-                book9: { title: 'Pre-KG English-9', cover: 'covers/book9.png', localPath: 'books/book9/index.html', isBuiltin: true },
-                book10: { title: 'Pre-KG English-10', cover: 'covers/book10.png', localPath: 'books/book10/index.html', isBuiltin: true },
-                book11: { title: 'Pre-KG English-11', cover: 'covers/book11.png', localPath: 'books/book11/index.html', isBuiltin: true },
-                book12: { title: 'Pre-KG English-12', cover: 'covers/book12.png', localPath: 'books/book12/index.html', isBuiltin: true },
-                book13: { title: 'Pre-KG English-13', cover: 'covers/book13.png', localPath: 'books/book13/index.html', isBuiltin: true },
-                book14: { title: 'Pre-KG English-14', cover: 'covers/book14.png', localPath: 'books/book14/index.html', isBuiltin: true }
+        const CONFIG={
+            DAILY_LIMIT:3,
+            STORAGE_KEY:'kreative_books_data',
+            POINTS_KEY:'kreative_points_data',
+            BADGE_ICONS_KEY:'kreative_badge_icons',
+            STICKER_ICONS_KEY:'kreative_sticker_icons',
+            CACHE_VERSION:'1.0.0',
+            BASE_URL:window.location.href.includes('github.io')?'https://koolwin.github.io/bookshelf/':'./',
+            POINTS:{PER_BOOK:10,FIRST_BOOK_BONUS:5,STREAK_BONUS:2,STREAK_THRESHOLD:3},
+            BADGES:{
+                page_hopper:{name:'Page Hopper',desc:'Read 5 books',threshold:5,icon:'badges/page_hopper.png'},
+                bookworm:{name:'Bookworm',desc:'Read 10 books',threshold:10,icon:'badges/bookworm.png'},
+                rookie_library:{name:'Rookie Library',desc:'Read 15 books',threshold:15,icon:'badges/rookie_library.png'},
+                keymaster:{name:'Keymaster',desc:'Read 20 books',threshold:20,icon:'badges/keymaster.png'},
+                cover_inspector:{name:'Cover Inspector',desc:'Read 25 books',threshold:25,icon:'badges/cover_inspector.png'},
+                clock_crusher:{name:'Clock Crusher',desc:'Read 30 books',threshold:30,icon:'badges/clock_crusher.png'},
+                midnight_miner:{name:'Midnight Miner',desc:'Read 35 books',threshold:35,icon:'badges/midnight_miner.png'},
+                sunrise_scholar:{name:'Sunrise Scholar',desc:'Read 40 books',threshold:40,icon:'badges/sunrise_scholar.png'},
+                speed_demon:{name:'Speed Demon',desc:'Read 45 books',threshold:45,icon:'badges/speed_demon.png'},
+                double_trouble:{name:'Double Trouble',desc:'Read 50 books',threshold:50,icon:'badges/double_trouble.png'},
+                weekly_warrior:{name:'Weekly Warrior',desc:'Read 7 days in a row',threshold:7,type:'streak',icon:'badges/weekly_warrior.png'},
+                streak_master:{name:'Streak Master',desc:'Read 14 days in a row',threshold:14,type:'streak',icon:'badges/streak_master.png'},
+                weekend_wonder:{name:'Weekend Wonder',desc:'Read 21 days in a row',threshold:21,type:'streak',icon:'badges/weekend_wonder.png'},
+                dino_discoverer:{name:'Dino Discoverer',desc:'Read 28 days in a row',threshold:28,type:'streak',icon:'badges/dino_discoverer.png'},
+                sci_fi_cadet:{name:'Sci-Fi Cadet',desc:'Read 35 days in a row',threshold:35,type:'streak',icon:'badges/sci_fi_cadet.png'},
+                mystery_detective:{name:'Mystery Detective',desc:'Read 42 days in a row',threshold:42,type:'streak',icon:'badges/mystery_detective.png'},
+                fantasy_wizard:{name:'Fantasy Wizard',desc:'Read 49 days in a row',threshold:49,type:'streak',icon:'badges/fantasy_wizard.png'},
+                quiz_whiz:{name:'Quiz Whiz',desc:'Read 100 books',threshold:100,icon:'badges/quiz_whiz.png'},
+                brain_boss:{name:'Brain Boss',desc:'Read 120 books',threshold:120,icon:'badges/brain_boss.png'},
+                word_collector:{name:'Word Collector',desc:'Read 140 books',threshold:140,icon:'badges/word_collector.png'},
+                review_royalty:{name:'Review Royalty',desc:'Read 160 books',threshold:160,icon:'badges/review_royalty.png'},
+                stack_starter:{name:'Stack Starter',desc:'Read 180 books',threshold:180,icon:'badges/stack_starter.png'},
+                chapter_champion:{name:'Chapter Champion',desc:'Read 200 books',threshold:200,icon:'badges/chapter_champion.png'},
+                book_mountain_climber:{name:'Book Mountain Climber',desc:'Read 250 books',threshold:250,icon:'badges/book_mountain_climber.png'},
+                ultimate_legend:{name:'Ultimate Legend',desc:'Read 300 books',threshold:300,icon:'badges/ultimate_legend.png'}
             },
-            
-            REMOTE_BOOKS_URL: 'https://koolwin.github.io/bookshelf/books-list.json'
+            STICKERS:{
+                star_sticker:{name:'⭐ Star Sticker',desc:'First book reward',cost:0,type:'auto',icon:'stickers/star_sticker.png'},
+                rainbow_sticker:{name:'🌈 Rainbow Sticker',desc:'Read 5 books',cost:0,type:'auto',icon:'stickers/rainbow_sticker.png'},
+                heart_sticker:{name:'❤️ Heart Sticker',desc:'Read 10 books',cost:0,type:'auto',icon:'stickers/heart_sticker.png'},
+                rocket_sticker:{name:'🚀 Rocket Sticker',desc:'Read 15 books',cost:0,type:'auto',icon:'stickers/rocket_sticker.png'},
+                unicorn_sticker:{name:'🦄 Unicorn Sticker',desc:'Read 20 books',cost:0,type:'auto',icon:'stickers/unicorn_sticker.png'},
+                dragon_sticker:{name:'🐉 Dragon Sticker',desc:'Read 30 books',cost:0,type:'auto',icon:'stickers/dragon_sticker.png'},
+                crown_sticker:{name:'👑 Crown Sticker',desc:'Read 40 books',cost:0,type:'auto',icon:'stickers/crown_sticker.png'},
+                diamond_sticker:{name:'💎 Diamond Sticker',desc:'Read 50 books',cost:0,type:'auto',icon:'stickers/diamond_sticker.png'},
+                glow_sticker:{name:'✨ Glow Sticker',desc:'Redeem 20 points',cost:20,type:'redeem',icon:'stickers/glow_sticker.png'},
+                sparkle_sticker:{name:'🌟 Sparkle Sticker',desc:'Redeem 30 points',cost:30,type:'redeem',icon:'stickers/sparkle_sticker.png'},
+                gold_sticker:{name:'🏅 Gold Sticker',desc:'Redeem 40 points',cost:40,type:'redeem',icon:'stickers/gold_sticker.png'},
+                legend_sticker:{name:'👑 Legend Sticker',desc:'Redeem 50 points',cost:50,type:'redeem',icon:'stickers/legend_sticker.png'}
+            },
+            REWARDS:{
+                extra_book:{name:'📚 Extra Book',desc:'Read 1 extra book today',cost:20,type:'extra_book'},
+                glow_sticker:{name:'✨ Glow Sticker',desc:'Unlock glow sticker',cost:20,type:'sticker'},
+                sparkle_sticker:{name:'🌟 Sparkle Sticker',desc:'Unlock sparkle sticker',cost:30,type:'sticker'},
+                gold_sticker:{name:'🏅 Gold Sticker',desc:'Unlock gold sticker',cost:40,type:'sticker'},
+                legend_sticker:{name:'👑 Legend Sticker',desc:'Unlock legend sticker',cost:50,type:'sticker'}
+            }
         };
-
-        // ============================================================
-        // 2. READING TRACKER
-        // ============================================================
-        class ReadingTracker {
-            constructor() {
-                this.data = this.loadData();
-                this.today = this.getToday();
-                this.todayCount = this.getTodayCount();
+        const BUILTIN_COUNT=18;
+        CONFIG.BUILTIN_BOOKS={};
+        for(let i=1;i<=BUILTIN_COUNT;i++){
+            CONFIG.BUILTIN_BOOKS['book'+i]={
+                title:'Pre-KG English-'+i,
+                cover:'covers/book'+i+'.png',
+                localPath:'books/book'+i+'/index.html',
+                isBuiltin:true
+            };
+        }
+        class PointsManager{
+            constructor(){
+                this.data=this.loadData();
+                this.badges=this.loadBadges();
+                this.stickers=this.loadStickers();
+                this.redeemed=this.loadRedeemed();
+                this.certificates=this.loadCertificates();
+                this.baseUrl=CONFIG.BASE_URL;
             }
-
-            getToday() {
-                return new Date().toISOString().split('T')[0];
+            loadData(){
+                try{
+                    const raw=localStorage.getItem(CONFIG.POINTS_KEY);
+                    if(raw){
+                        const data=JSON.parse(raw);
+                        if(data.version===CONFIG.CACHE_VERSION)return data;
+                    }
+                }catch(e){}
+                return{version:CONFIG.CACHE_VERSION,totalPoints:0,booksRead:[],streak:0,lastReadDate:null,extraBooksToday:0};
             }
-
-            loadData() {
-                try {
-                    const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
-                    if (raw) {
-                        const data = JSON.parse(raw);
-                        if (data.version === CONFIG.CACHE_VERSION) {
-                            return data;
+            saveData(){localStorage.setItem(CONFIG.POINTS_KEY,JSON.stringify(this.data));}
+            loadBadges(){
+                try{const raw=localStorage.getItem('kreative_badges');return raw?JSON.parse(raw):{};}catch(e){return{};}
+            }
+            saveBadges(){localStorage.setItem('kreative_badges',JSON.stringify(this.badges));}
+            loadStickers(){
+                try{const raw=localStorage.getItem('kreative_stickers');return raw?JSON.parse(raw):{};}catch(e){return{};}
+            }
+            saveStickers(){localStorage.setItem('kreative_stickers',JSON.stringify(this.stickers));}
+            loadRedeemed(){
+                try{const raw=localStorage.getItem('kreative_redeemed');return raw?JSON.parse(raw):{};}catch(e){return{};}
+            }
+            saveRedeemed(){localStorage.setItem('kreative_redeemed',JSON.stringify(this.redeemed));}
+            loadCertificates(){
+                try{const raw=localStorage.getItem('kreative_certificates');return raw?JSON.parse(raw):[];}catch(e){return[];}
+            }
+            saveCertificates(){localStorage.setItem('kreative_certificates',JSON.stringify(this.certificates));}
+            getBadgeIcon(key){return this.baseUrl+CONFIG.BADGES[key].icon;}
+            getStickerIcon(key){return this.baseUrl+CONFIG.STICKERS[key].icon;}
+            getToday(){return new Date().toISOString().split('T')[0];}
+            addPoints(bookId,title){
+                const today=this.getToday();
+                let points=CONFIG.POINTS.PER_BOOK;
+                let isFirstBookToday=false;
+                const todayReads=this.data.booksRead.filter(b=>b.date===today);
+                if(todayReads.length===0){points+=CONFIG.POINTS.FIRST_BOOK_BONUS;isFirstBookToday=true;}
+                this.updateStreak();
+                if(this.data.streak>=CONFIG.POINTS.STREAK_THRESHOLD)points+=CONFIG.POINTS.STREAK_BONUS;
+                this.data.totalPoints+=points;
+                this.data.booksRead.push({bookId,title,date:today,points,isFirstBook:isFirstBookToday});
+                this.saveData();
+                this.checkBadges(bookId,title);
+                this.checkStickers();
+                this.checkCertificates();
+                this.updateUI();
+                return points;
+            }
+            updateStreak(){
+                const today=this.getToday();
+                const lastDate=this.data.lastReadDate;
+                if(!lastDate)this.data.streak=1;
+                else if(lastDate===today){}
+                else{
+                    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+                    const yesterdayStr=yesterday.toISOString().split('T')[0];
+                    if(lastDate===yesterdayStr)this.data.streak+=1;
+                    else this.data.streak=1;
+                }
+                this.data.lastReadDate=today;
+            }
+            checkBadges(bookId,title){
+                const totalBooks=this.data.booksRead.length;
+                const streak=this.data.streak;
+                for(const[key,badge]of Object.entries(CONFIG.BADGES)){
+                    if(this.badges[key])continue;
+                    let unlocked=false;
+                    if(badge.type==='streak'){
+                        if(streak>=badge.threshold)unlocked=true;
+                    }else{
+                        if(totalBooks>=badge.threshold)unlocked=true;
+                    }
+                    if(unlocked){
+                        this.badges[key]={unlockedAt:new Date().toISOString(),bookId,title};
+                        this.saveBadges();
+                        const icon=this.getBadgeIcon(key);
+                        showNotification('🏆 New Badge: '+badge.name+'!');
+                        break;
+                    }
+                }
+            }
+            checkStickers(){
+                const totalBooks=this.data.booksRead.length;
+                const stickerMap={
+                    star_sticker:1,rainbow_sticker:5,heart_sticker:10,
+                    rocket_sticker:15,unicorn_sticker:20,dragon_sticker:30,
+                    crown_sticker:40,diamond_sticker:50
+                };
+                for(const[key,threshold]of Object.entries(stickerMap)){
+                    if(this.stickers[key])continue;
+                    if(totalBooks>=threshold){
+                        this.stickers[key]={unlockedAt:new Date().toISOString()};
+                        this.saveStickers();
+                        showNotification('🎨 New Sticker: '+CONFIG.STICKERS[key].name+'!');
+                    }
+                }
+            }
+            checkCertificates(){
+                const totalBooks=this.data.booksRead.length;
+                const milestones=[5,10,20,50,100,150,200,300];
+                for(const m of milestones){
+                    if(totalBooks>=m){
+                        const existing=this.certificates.find(c=>c.milestone===m);
+                        if(!existing){
+                            this.certificates.push({milestone:m,earnedAt:new Date().toISOString(),booksRead:totalBooks});
+                            this.saveCertificates();
+                            showNotification('📜 Certificate: '+m+' Books!');
                         }
                     }
-                } catch (e) {}
-                
-                return {
-                    version: CONFIG.CACHE_VERSION,
-                    history: {},
-                    readBooks: {}
-                };
+                }
             }
-
-            saveData() {
-                try {
-                    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(this.data));
-                } catch (e) {}
+            getTotalPoints(){return this.data.totalPoints;}
+            getStreak(){return this.data.streak;}
+            getBooksRead(){return this.data.booksRead;}
+            getBadges(){return this.badges;}
+            getStickers(){return this.stickers;}
+            getCertificates(){return this.certificates;}
+            getRedeemed(){return this.redeemed;}
+            getTodayCount(){const today=this.getToday();return this.data.booksRead.filter(b=>b.date===today).length;}
+            getExtraBooksToday(){const today=this.getToday();const redeemedToday=this.redeemed[today]||{};return redeemedToday.extra_book||0;}
+            getMaxBooksToday(){return CONFIG.DAILY_LIMIT+this.getExtraBooksToday();}
+            canRedeem(rewardId){
+                const reward=CONFIG.REWARDS[rewardId];
+                if(!reward)return false;
+                if(this.data.totalPoints<reward.cost)return false;
+                const today=this.getToday();
+                if(reward.type==='extra_book'){
+                    const redeemedToday=this.redeemed[today]||{};
+                    if(redeemedToday[rewardId]&&redeemedToday[rewardId]>=1)return false;
+                }
+                return true;
             }
-
-            getTodayCount() {
-                const today = this.getToday();
-                const history = this.data.history[today] || [];
-                return history.length;
-            }
-
-            canRead(bookId) {
-                const today = this.getToday();
-                const todayReads = this.data.history[today] || [];
-                
-                if (todayReads.includes(bookId)) {
-                    return { allowed: true, reason: 'already_read_today' };
-                }
-                if (this.data.readBooks[bookId]) {
-                    return { allowed: true, reason: 'already_read_before' };
-                }
-                if (this.todayCount >= CONFIG.DAILY_LIMIT) {
-                    return { allowed: false, reason: 'daily_limit_reached' };
-                }
-                return { allowed: true, reason: 'new_book' };
-            }
-
-            markAsRead(bookId) {
-                const today = this.getToday();
-                
-                if (!this.data.history[today]) {
-                    this.data.history[today] = [];
-                }
-                if (!this.data.history[today].includes(bookId)) {
-                    this.data.history[today].push(bookId);
-                }
-                
-                this.data.readBooks[bookId] = today;
-                this.todayCount = this.getTodayCount();
-                
+            redeemReward(rewardId){
+                if(!this.canRedeem(rewardId))return false;
+                const reward=CONFIG.REWARDS[rewardId];
+                const today=this.getToday();
+                this.data.totalPoints-=reward.cost;
                 this.saveData();
+                if(!this.redeemed[today])this.redeemed[today]={};
+                if(!this.redeemed[today][rewardId])this.redeemed[today][rewardId]=0;
+                this.redeemed[today][rewardId]+=1;
+                this.saveRedeemed();
+                if(reward.type==='sticker'){
+                    const stickerKey=rewardId;
+                    if(!this.stickers[stickerKey]){
+                        this.stickers[stickerKey]={unlockedAt:new Date().toISOString()};
+                        this.saveStickers();
+                    }
+                    showNotification('🎨 Sticker Unlocked: '+reward.name+'!');
+                }else{
+                    showNotification('🎁 '+reward.name+' redeemed!');
+                }
                 this.updateUI();
                 return true;
             }
-
-            isReadBefore(bookId) {
-                return !!this.data.readBooks[bookId];
-            }
-
-            isReadToday(bookId) {
-                const today = this.getToday();
-                const todayReads = this.data.history[today] || [];
-                return todayReads.includes(bookId);
-            }
-
-            updateUI() {
-                const todayCount = this.getTodayCount();
-                document.getElementById('todayCount').textContent = todayCount;
-                
-                const info = document.getElementById('dailyLimitInfo');
-                const remaining = CONFIG.DAILY_LIMIT - todayCount;
-                if (remaining <= 0) {
-                    info.style.color = '#dc2626';
-                } else if (remaining <= 1) {
-                    info.style.color = '#f59e0b';
-                } else {
-                    info.style.color = '#6c7a8e';
+            getWeeklyData(){
+                const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const result={};
+                const today=new Date();
+                for(let i=6;i>=0;i--){
+                    const date=new Date(today);date.setDate(date.getDate()-i);
+                    const dateStr=date.toISOString().split('T')[0];
+                    const dayName=days[date.getDay()];
+                    const count=this.data.booksRead.filter(b=>b.date===dateStr).length;
+                    result[dayName]=count;
                 }
+                return result;
+            }
+            updateUI(){
+                document.getElementById('pointsDisplay').textContent='⭐ '+this.data.totalPoints+' pts';
+                document.getElementById('streakDisplay').textContent='🔥 '+this.data.streak+' days';
+                document.getElementById('todayCount').textContent=this.getTodayCount();
+                const info=document.querySelector('.daily-limit-info');
+                const remaining=this.getMaxBooksToday()-this.getTodayCount();
+                if(remaining<=0)info.style.color='#dc2626';
+                else if(remaining<=1)info.style.color='#f59e0b';
+                else info.style.color='#6c7a8e';
             }
         }
-
-        // ============================================================
-        // 3. BOOK MANAGER
-        // ============================================================
-        class BookManager {
-            constructor() {
-                this.books = {};
-                this.readingTracker = new ReadingTracker();
-                this.isSyncing = false;
+        class BookManager{
+            constructor(){
+                this.points=new PointsManager();
+                this.books={};
+                this.isSyncing=false;
                 this.init();
             }
-
-            init() {
-                this.books = { ...CONFIG.BUILTIN_BOOKS };
-                
-                const cached = localStorage.getItem('kreative_remote_books');
-                if (cached) {
-                    try {
-                        const data = JSON.parse(cached);
-                        Object.keys(data).forEach(key => {
-                            if (!this.books[key]) {
-                                this.books[key] = data[key];
-                            }
+            init(){
+                this.books={...CONFIG.BUILTIN_BOOKS};
+                const cached=localStorage.getItem('kreative_remote_books');
+                if(cached){
+                    try{
+                        const data=JSON.parse(cached);
+                        Object.keys(data).forEach(key=>{
+                            if(!this.books[key])this.books[key]=data[key];
                         });
-                    } catch (e) {}
+                    }catch(e){}
                 }
-                
                 this.updateUI();
-                this.readingTracker.updateUI();
-                this.updateSyncStatus('success', '✅ Up to date');
+                this.points.updateUI();
+                this.updateSyncStatus('success','✅ Up to date');
             }
-
-            async syncRemoteBooks() {
-                if (this.isSyncing) return;
-                this.isSyncing = true;
-                
-                try {
-                    this.updateSyncStatus('syncing', '🔄 Checking for updates...');
+            async syncRemoteBooks(){
+                if(this.isSyncing)return;
+                this.isSyncing=true;
+                try{
+                    this.updateSyncStatus('syncing','🔄 Checking...');
                     this.setSyncButtonState(true);
-                    
-                    const response = await fetch(CONFIG.REMOTE_BOOKS_URL);
-                    if (!response.ok) throw new Error('Network error');
-                    
-                    const remoteData = await response.json();
-                    let newBooksCount = 0;
-                    
-                    if (remoteData.books && Array.isArray(remoteData.books)) {
-                        for (const book of remoteData.books) {
-                            if (!this.books[book.id]) {
-                                const onlineUrl = `${CONFIG.BASE_URL}books/${book.id}/index.html`;
-                                this.books[book.id] = {
-                                    title: book.title,
-                                    cover: book.cover || 'covers/default.png',
-                                    onlineUrl: onlineUrl,
-                                    isBuiltin: false,
-                                    isRemote: true
+                    const response=await fetch(CONFIG.BASE_URL+'books-list.json');
+                    if(!response.ok)throw new Error('Network error');
+                    const remoteData=await response.json();
+                    let newBooksCount=0;
+                    if(remoteData.books&&Array.isArray(remoteData.books)){
+                        for(const book of remoteData.books){
+                            if(!this.books[book.id]){
+                                const onlineUrl=CONFIG.BASE_URL+'books/'+book.id+'/index.html';
+                                this.books[book.id]={
+                                    title:book.title,
+                                    cover:book.cover||'covers/default.png',
+                                    onlineUrl:onlineUrl,
+                                    isBuiltin:false,
+                                    isRemote:true
                                 };
                                 newBooksCount++;
                             }
                         }
                     }
-                    
-                    const remoteCache = {};
-                    Object.keys(this.books).forEach(key => {
-                        if (!this.books[key].isBuiltin) {
-                            remoteCache[key] = this.books[key];
-                        }
+                    const remoteCache={};
+                    Object.keys(this.books).forEach(key=>{
+                        if(!this.books[key].isBuiltin)remoteCache[key]=this.books[key];
                     });
-                    localStorage.setItem('kreative_remote_books', JSON.stringify(remoteCache));
-                    
+                    localStorage.setItem('kreative_remote_books',JSON.stringify(remoteCache));
                     this.updateUI();
-                    
-                    if (newBooksCount > 0) {
-                        showNotification(`📚 Found ${newBooksCount} new book(s)`);
-                        this.updateSyncStatus('success', `✅ ${newBooksCount} new book(s) added`);
-                    } else {
-                        showNotification('✅ All books are up to date');
-                        this.updateSyncStatus('success', '✅ Up to date');
+                    if(newBooksCount>0){
+                        showNotification('📚 Found '+newBooksCount+' new book(s)');
+                        this.updateSyncStatus('success','✅ '+newBooksCount+' new');
+                    }else{
+                        showNotification('✅ All up to date');
+                        this.updateSyncStatus('success','✅ Up to date');
                     }
-                    
-                } catch (error) {
-                    console.error('Sync failed:', error);
-                    this.updateSyncStatus('error', '⚠️ No internet connection');
+                }catch(error){
+                    this.updateSyncStatus('error','⚠️ Offline');
                     showNotification('⚠️ No internet connection');
-                } finally {
-                    this.isSyncing = false;
+                }finally{
+                    this.isSyncing=false;
                     this.setSyncButtonState(false);
                 }
             }
-
-            getBookUrl(bookId) {
-                const book = this.books[bookId];
-                if (!book) return null;
-                
-                if (book.isBuiltin) {
-                    return book.localPath;
-                }
-                
-                if (book.onlineUrl) {
-                    return book.onlineUrl;
-                }
-                
-                return `${CONFIG.BASE_URL}books/${bookId}/index.html`;
+            getBookUrl(bookId){
+                const book=this.books[bookId];
+                if(!book)return null;
+                if(book.isBuiltin)return book.localPath;
+                if(book.onlineUrl)return book.onlineUrl;
+                return CONFIG.BASE_URL+'books/'+bookId+'/index.html';
             }
-
-            isBookDownloaded(bookId) {
-                const book = this.books[bookId];
-                if (!book) return false;
-                if (book.isBuiltin) return true;
-                return false;
+            isBookReadToday(bookId){
+                const today=this.points.getToday();
+                return this.points.data.booksRead.some(b=>b.bookId===bookId&&b.date===today);
             }
-
-            async openBook(bookId) {
-                const book = this.books[bookId];
-                if (!book) {
-                    showNotification('❌ Book not found');
+            getTodayCount(){return this.points.getTodayCount();}
+            getMaxBooksToday(){return this.points.getMaxBooksToday();}
+            canReadToday(){return this.getTodayCount()<this.getMaxBooksToday();}
+            async openBook(bookId){
+                const book=this.books[bookId];
+                if(!book){showNotification('❌ Book not found');return;}
+                if(this.isBookReadToday(bookId)){
+                    const url=this.getBookUrl(bookId);
+                    if(url){openWebView(url,book.title);return;}
                     return;
                 }
-                
-                const canRead = this.readingTracker.canRead(bookId);
-                if (!canRead.allowed && !this.readingTracker.isReadBefore(bookId)) {
-                    if (canRead.reason === 'daily_limit_reached') {
-                        showNotification('⚠️ You have reached the daily limit of 3 books. Please come back tomorrow.');
-                    } else {
-                        showNotification('🔒 This book is not available to read today');
-                    }
+                if(!this.canReadToday()){
+                    showNotification('⚠️ Daily limit reached ('+this.getMaxBooksToday()+'/'+this.getMaxBooksToday()+'). Use Rewards!');
                     return;
                 }
-                
-                const url = this.getBookUrl(bookId);
-                if (url) {
-                    if (!this.readingTracker.isReadToday(bookId)) {
-                        this.readingTracker.markAsRead(bookId);
-                        this.updateUI();
-                    }
-                    openWebView(url, book.title);
-                } else {
+                const url=this.getBookUrl(bookId);
+                if(url){
+                    const points=this.points.addPoints(bookId,book.title);
+                    this.points.updateUI();
+                    this.updateUI();
+                    showNotification('📖 '+book.title+' • +'+points+' pts ⭐');
+                    openWebView(url,book.title);
+                }else{
                     showNotification('❌ Cannot open book');
                 }
             }
-
-            getBook(bookId) {
-                return this.books[bookId] || null;
-            }
-
-            getAllBooks() {
-                return Object.keys(this.books).map(key => ({
-                    id: key,
-                    ...this.books[key]
+            getBook(bookId){return this.books[bookId]||null;}
+            getAllBooks(){
+                return Object.keys(this.books).map(key=>({
+                    id:key,
+                    ...this.books[key],
+                    readToday:this.isBookReadToday(key),
+                    readBefore:this.points.data.booksRead.some(b=>b.bookId===key)
                 }));
             }
-
-            canReadBook(bookId) {
-                return this.readingTracker.canRead(bookId);
+            getPointsManager(){return this.points;}
+            updateSyncStatus(status,message){
+                const el=document.getElementById('syncStatus');
+                if(!el)return;
+                el.textContent=message;
+                el.className='sync-status';
             }
-
-            markBookAsRead(bookId) {
-                return this.readingTracker.markAsRead(bookId);
+            setSyncButtonState(syncing){
+                const btn=document.getElementById('btnSync');
+                if(!btn)return;
+                if(syncing){btn.classList.add('syncing');btn.textContent='⏳ Syncing...';}
+                else{btn.classList.remove('syncing');btn.textContent='🔄 Sync';}
             }
-
-            isBookReadBefore(bookId) {
-                return this.readingTracker.isReadBefore(bookId);
+            updateUI(){
+                const allBooks=this.getAllBooks();
+                renderBooks(allBooks,this);
+                this.points.updateUI();
             }
-
-            isBookReadToday(bookId) {
-                return this.readingTracker.isReadToday(bookId);
-            }
-
-            updateSyncStatus(status, message) {
-                const el = document.getElementById('syncStatus');
-                if (!el) return;
-                el.textContent = message;
-                el.className = 'sync-status';
-            }
-
-            setSyncButtonState(syncing) {
-                const btn = document.getElementById('btnSync');
-                if (!btn) return;
-                if (syncing) {
-                    btn.classList.add('syncing');
-                    btn.textContent = '⏳ Syncing...';
-                } else {
-                    btn.classList.remove('syncing');
-                    btn.textContent = '🔄 Sync';
-                }
-            }
-
-            updateUI() {
-                const allBooks = this.getAllBooks();
-                renderBooks(allBooks, this);
-                this.readingTracker.updateUI();
-            }
-
-            autoSync() {
-                setTimeout(() => {
-                    this.syncRemoteBooks();
-                }, 3000);
-            }
+            autoSync(){setTimeout(()=>{this.syncRemoteBooks();},3000);}
         }
-
-        // ============================================================
-        // 4. UI RENDERING (WITH ASPECT RATIO SUPPORT)
-        // ============================================================
-        function renderBooks(bookList, manager) {
-            const container = document.getElementById('shelf-rows');
-            const rows = chunkArray(bookList, 4);
-            
-            let html = '';
-            for (const row of rows) {
-                html += `<div class="shelf-row"><div class="book-grid">`;
-                for (const book of row) {
-                    const isBuiltin = book.isBuiltin || false;
-                    const isDownloaded = manager.isBookDownloaded(book.id);
-                    const readBefore = manager.isBookReadBefore(book.id);
-                    const readToday = manager.isBookReadToday(book.id);
-                    const canRead = manager.canReadBook(book.id);
-                    const isLocked = !canRead.allowed && !readBefore && !readToday;
-                    
-                    let statusClass = 'pending';
-                    let statusIcon = '🌐';
-                    
-                    if (isBuiltin) {
-                        statusClass = 'ready';
-                        statusIcon = readToday ? '📖' : (readBefore ? '✅' : '📚');
-                    } else if (isDownloaded) {
-                        statusClass = 'downloaded';
-                        statusIcon = readToday ? '📖' : (readBefore ? '💾' : '💾');
-                    } else if (readToday) {
-                        statusClass = 'read';
-                        statusIcon = '📖';
-                    } else if (readBefore) {
-                        statusClass = 'read';
-                        statusIcon = '✅';
+        function renderBooks(bookList,manager){
+            const container=document.getElementById('shelf-rows');
+            const rows=chunkArray(bookList,4);
+            let html='';
+            for(const row of rows){
+                html+='<div class="shelf-row"><div class="book-grid">';
+                for(const book of row){
+                    const isBuiltin=book.isBuiltin||false;
+                    const readToday=book.readToday||false;
+                    const readBefore=book.readBefore||false;
+                    const canRead=manager.canReadToday();
+                    const isLocked=!canRead&&!readToday;
+                    let statusClass='pending';
+                    let statusIcon='🌐';
+                    if(isBuiltin){statusClass='ready';statusIcon=readToday?'📖':(readBefore?'✅':'📚');}
+                    else if(readToday){statusClass='read';statusIcon='📖';}
+                    else if(readBefore){statusClass='completed';statusIcon='✅';}
+                    if(isLocked&&!readToday&&!readBefore){statusClass='locked';statusIcon='🔒';}
+                    const onlineBadge=!isBuiltin?'<div class="offline-badge">🌐 Online</div>':'';
+                    const badgeIcon=readToday?'📖':(readBefore?'✅':'');
+                    html+='<div class="book-card" data-book="'+book.id+'">';
+                    html+='<div class="cover-wrap" id="cover-'+book.id+'">';
+                    html+='<img src="'+book.cover+'" alt="'+book.title+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+                    html+='<div class="placeholder" style="display:none;">📖</div>';
+                    if(badgeIcon)html+='<div class="badge-icon">'+badgeIcon+'</div>';
+                    html+=onlineBadge;
+                    if(isLocked&&!readToday&&!readBefore){
+                        html+='<div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-text">Daily limit reached</div></div>';
                     }
-                    
-                    if (isLocked) {
-                        statusClass = 'locked';
-                        statusIcon = '🔒';
-                    }
-                    
-                    const onlineBadge = !isBuiltin ? '<div class="offline-badge">🌐 Online</div>' : '';
-                    
-                    html += `
-                        <div class="book-card" data-book="${book.id}">
-                            <div class="cover-wrap" id="cover-${book.id}">
-                                <img src="${book.cover}" alt="${book.title}" 
-                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                                <div class="placeholder" style="display:none;">📖</div>
-                                ${onlineBadge}
-                                ${isLocked ? `
-                                    <div class="lock-overlay">
-                                        <div class="lock-icon">🔒</div>
-                                        <div class="lock-text">Not available today</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div class="book-info">
-                                <span class="book-title">${book.title}</span>
-                                <span class="status-badge ${statusClass}">
-                                    ${statusIcon}
-                                </span>
-                            </div>
-                        </div>
-                    `;
+                    html+='</div>';
+                    html+='<div class="book-info"><span class="book-title">'+book.title+'</span>';
+                    html+='<span class="status-badge '+statusClass+'">'+statusIcon+'</span></div></div>';
                 }
-                html += `</div></div>`;
+                html+='</div></div>';
             }
-            
-            container.innerHTML = html;
-            
-            container.querySelectorAll('.book-card .cover-wrap img').forEach(img => {
-                const coverWrap = img.closest('.cover-wrap');
-                
-                if (img.complete && img.naturalWidth > 0) {
-                    setAspectRatio(coverWrap, img.naturalWidth, img.naturalHeight);
-                } else {
-                    img.addEventListener('load', function() {
-                        setAspectRatio(coverWrap, this.naturalWidth, this.naturalHeight);
-                    });
-                    img.addEventListener('error', function() {
-                        coverWrap.style.aspectRatio = '4 / 3';
-                    });
+            container.innerHTML=html;
+            container.querySelectorAll('.book-card .cover-wrap img').forEach(img=>{
+                const coverWrap=img.closest('.cover-wrap');
+                if(img.complete&&img.naturalWidth>0)setAspectRatio(coverWrap,img.naturalWidth,img.naturalHeight);
+                else{
+                    img.addEventListener('load',function(){setAspectRatio(coverWrap,this.naturalWidth,this.naturalHeight);});
+                    img.addEventListener('error',function(){coverWrap.style.aspectRatio='4 / 3';});
                 }
             });
-            
-            container.querySelectorAll('.book-card').forEach(el => {
-                el.addEventListener('click', function() {
-                    const bookId = this.dataset.book;
-                    manager.openBook(bookId);
-                });
+            container.querySelectorAll('.book-card').forEach(el=>{
+                el.addEventListener('click',function(){const bookId=this.dataset.book;manager.openBook(bookId);});
             });
         }
-
-        function setAspectRatio(coverWrap, width, height) {
-            if (width > 0 && height > 0) {
-                coverWrap.style.aspectRatio = width + ' / ' + height;
-            } else {
-                coverWrap.style.aspectRatio = '4 / 3';
-            }
+        function setAspectRatio(coverWrap,width,height){
+            if(width>0&&height>0)coverWrap.style.aspectRatio=width+' / '+height;
+            else coverWrap.style.aspectRatio='4 / 3';
         }
-
-        function chunkArray(arr, size) {
-            const result = [];
-            for (let i = 0; i < arr.length; i += size) {
-                result.push(arr.slice(i, i + size));
+        function chunkArray(arr,size){const result=[];for(let i=0;i<arr.length;i+=size)result.push(arr.slice(i,i+size));return result;}
+        function openModal(id){document.getElementById(id).classList.add('active');}
+        function closeModal(id){document.getElementById(id).classList.remove('active');}
+        function renderRewards(manager){
+            const points=manager.getPointsManager();
+            const list=document.getElementById('rewards-list');
+            document.getElementById('modalPoints').textContent=points.getTotalPoints();
+            let html='';
+            for(const[id,reward]of Object.entries(CONFIG.REWARDS)){
+                const canAfford=points.canRedeem(id);
+                const isRedeemedToday=points.redeemed[points.getToday()]?.[id]>0;
+                let btnClass='btn-redeem unavailable';
+                let btnText='🔒 Locked';
+                let disabled=true;
+                if(isRedeemedToday){btnClass='btn-redeem redeemed';btnText='✅ Redeemed';disabled=true;}
+                else if(canAfford){btnClass='btn-redeem available';btnText='🎁 Redeem';disabled=false;}
+                html+='<div class="reward-item"><div class="info"><div class="name">'+reward.name+'</div><div class="desc">'+reward.desc+'</div></div>';
+                html+='<div><span class="cost">⭐ '+reward.cost+'</span>';
+                html+='<button class="'+btnClass+'" onclick="'+(disabled?'':"redeemReward('"+id+"')")+'" '+(disabled?'disabled':'')+'>'+btnText+'</button></div></div>';
             }
-            return result;
+            list.innerHTML=html;
         }
-
-        // ============================================================
-        // 5. WEBVIEW & NOTIFICATIONS
-        // ============================================================
-        function openWebView(url, title = '') {
-            const iframe = document.getElementById('book-iframe');
-            const container = document.getElementById('webview-container');
-            
-            if (!url) {
-                showNotification('❌ Book URL not found');
-                return;
-            }
-            
-            try {
-                if (title) showNotification(`⏳ Opening ${title}...`);
-                
-                iframe.src = url;
-                container.style.display = 'block';
-                
-                if (container.requestFullscreen) {
-                    try { container.requestFullscreen(); } catch (e) {}
+        function redeemReward(rewardId){
+            const manager=window.bookManager;
+            if(!manager)return;
+            const success=manager.points.redeemReward(rewardId);
+            if(success){renderRewards(manager);manager.updateUI();showNotification('🎁 Reward redeemed!');}
+            else{showNotification('❌ Cannot redeem');}
+        }
+        function renderLog(manager){
+            const points=manager.getPointsManager();
+            const list=document.getElementById('reading-log-list');
+            const books=points.getBooksRead();
+            if(books.length===0)list.innerHTML='<p style="color:#6c7a8e;text-align:center;padding:20px;">No books read yet. Start reading!</p>';
+            else{
+                let html='';
+                const sorted=[...books].reverse().slice(0,30);
+                for(const entry of sorted){
+                    const date=new Date(entry.date);
+                    const dateStr=date.toLocaleDateString();
+                    html+='<div class="log-entry"><span class="date">'+dateStr+'</span><span class="book">'+entry.title+'</span><span class="points">+'+entry.points+' pts '+(entry.isFirstBook?'⭐':'')+'</span></div>';
                 }
-                
-                if (title) showNotification(`📖 ${title} opened`);
-                
-            } catch (error) {
-                console.error('Error opening book:', error);
-                showNotification('❌ Cannot open book');
+                list.innerHTML=html;
+            }
+            renderChart(points);
+        }
+        function renderChart(points){
+            const container=document.getElementById('chartBars');
+            const data=points.getWeeklyData();
+            const maxVal=Math.max(1,...Object.values(data));
+            let html='';
+            const colors=['#4a6fa5','#6c8fc7','#8b5cf6','#e94560','#f59e0b','#0ea5e9','#10b981'];
+            let i=0;
+            for(const[day,count]of Object.entries(data)){
+                const height=(count/maxVal)*100;
+                html+='<div class="chart-bar-wrap"><div class="chart-bar-value">'+count+'</div><div class="chart-bar" style="height:'+Math.max(4,height)+'%;background:'+colors[i%colors.length]+';"></div><div class="chart-bar-label">'+day+'</div></div>';
+                i++;
+            }
+            container.innerHTML=html;
+        }
+        function renderBadges(manager){
+            const points=manager.getPointsManager();
+            const grid=document.getElementById('badgeGrid');
+            const unlocked=points.getBadges();
+            let html='';
+            for(const[key,badge]of Object.entries(CONFIG.BADGES)){
+                const isUnlocked=!!unlocked[key];
+                const iconPath=points.getBadgeIcon(key);
+                html+='<div class="badge-item '+(isUnlocked?'unlocked':'locked')+'">';
+                html+='<span class="icon">';
+                html+='<img src="'+iconPath+'" alt="'+badge.name+'" class="badge-icon-img" onerror="this.style.display=\'none\';this.parentElement.textContent=\'🏆\'">';
+                html+='</span>';
+                html+='<div class="name">'+badge.name+'</div>';
+                html+='<div class="desc">'+(isUnlocked?'✅ Unlocked':badge.desc)+'</div></div>';
+            }
+            grid.innerHTML=html;
+        }
+        function renderStickers(manager){
+            const points=manager.getPointsManager();
+            const grid=document.getElementById('stickerGrid');
+            const unlocked=points.getStickers();
+            let html='';
+            for(const[key,sticker]of Object.entries(CONFIG.STICKERS)){
+                const isUnlocked=!!unlocked[key];
+                const iconPath=points.getStickerIcon(key);
+                html+='<div class="sticker-item '+(isUnlocked?'unlocked':'locked')+'">';
+                html+='<span class="icon">';
+                html+='<img src="'+iconPath+'" alt="'+sticker.name+'" class="sticker-icon-img" onerror="this.style.display=\'none\';this.parentElement.textContent=\''+sticker.name.split(' ')[0]+'\'">';
+                html+='</span>';
+                html+='<div class="name">'+sticker.name+'</div>';
+                html+='<div class="desc">'+(isUnlocked?'✅ Unlocked':sticker.desc)+'</div></div>';
+            }
+            grid.innerHTML=html;
+        }
+        function renderCertificates(manager){
+            const points=manager.getPointsManager();
+            const container=document.getElementById('certificateContainer');
+            const certs=points.getCertificates();
+            if(certs.length===0)container.innerHTML='<p style="color:#6c7a8e;text-align:center;padding:20px;">Read more books to earn certificates!</p>';
+            else{
+                let html='';
+                for(const cert of certs){
+                    const date=new Date(cert.earnedAt);
+                    const dateStr=date.toLocaleDateString();
+                    html+='<div class="certificate-container" id="certificate-'+cert.milestone+'">';
+                    html+='<div class="border-decoration"></div>';
+                    html+='<div class="title">📜 Certificate of Achievement</div>';
+                    html+='<div class="subtitle">For reading <strong>'+cert.milestone+'</strong> books</div>';
+                    html+='<div class="name">🌟 Bookworm Reader</div>';
+                    html+='<div class="date">Earned on: '+dateStr+'</div>';
+                    html+='<div class="stamp">🏆</div></div>';
+                }
+                container.innerHTML=html;
             }
         }
-
-        function showNotification(msg) {
-            const el = document.getElementById('notification');
-            el.textContent = msg;
+        async function exportCertificate(format){
+            const container=document.getElementById('certificateContainer');
+            const certEl=container.querySelector('.certificate-container');
+            if(!certEl){showNotification('❌ No certificate to export');return;}
+            try{
+                showNotification('⏳ Generating '+format.toUpperCase()+'...');
+                const canvas=await html2canvas(certEl,{scale:2,useCORS:true,backgroundColor:'#fef9e7'});
+                if(format==='png'){
+                    const link=document.createElement('a');
+                    link.download='certificate.png';
+                    link.href=canvas.toDataURL('image/png');
+                    link.click();
+                    showNotification('✅ PNG downloaded!');
+                }else if(format==='pdf'){
+                    const imgData=canvas.toDataURL('image/png');
+                    const {jsPDF}=window.jspdf;
+                    const pdf=new jsPDF('landscape','mm','a4');
+                    const imgWidth=280;
+                    const imgHeight=(canvas.height*imgWidth)/canvas.width;
+                    pdf.addImage(imgData,'PNG',15,15,imgWidth,imgHeight);
+                    pdf.save('certificate.pdf');
+                    showNotification('✅ PDF downloaded!');
+                }
+            }catch(error){
+                console.error('Export failed:',error);
+                showNotification('❌ Export failed. Please try again.');
+            }
+        }
+        function openWebView(url,title=''){
+            const iframe=document.getElementById('book-iframe');
+            const container=document.getElementById('webview-container');
+            if(!url){showNotification('❌ Book URL not found');return;}
+            try{
+                if(title)showNotification('⏳ Opening '+title+'...');
+                iframe.src=url;
+                container.style.display='block';
+                if(container.requestFullscreen){try{container.requestFullscreen();}catch(e){}}
+            }catch(error){console.error('Error opening book:',error);showNotification('❌ Cannot open book');}
+        }
+        function showNotification(msg){
+            const el=document.getElementById('notification');
+            el.textContent=msg;
             el.classList.add('show');
             clearTimeout(el._timer);
-            el._timer = setTimeout(() => el.classList.remove('show'), 4000);
+            el._timer=setTimeout(()=>el.classList.remove('show'),4000);
         }
-
-        // ============================================================
-        // 6. INITIALIZATION
-        // ============================================================
         let bookManager;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            bookManager = new BookManager();
-            
-            document.getElementById('btnSync').addEventListener('click', function() {
-                bookManager.syncRemoteBooks();
+        document.addEventListener('DOMContentLoaded',function(){
+            bookManager=new BookManager();
+            window.bookManager=bookManager;
+            document.getElementById('btnSync').addEventListener('click',function(){bookManager.syncRemoteBooks();});
+            document.getElementById('btnBuyCode').addEventListener('click',function(){openWebView('https://bookcode.kkl.education','Book Code');});
+            document.getElementById('btnRewards').addEventListener('click',function(){renderRewards(bookManager);openModal('rewardsModal');});
+            document.getElementById('btnLog').addEventListener('click',function(){renderLog(bookManager);openModal('logModal');});
+            document.getElementById('btnBadges').addEventListener('click',function(){renderBadges(bookManager);openModal('badgesModal');});
+            document.getElementById('btnStickers').addEventListener('click',function(){renderStickers(bookManager);openModal('stickersModal');});
+            document.getElementById('close-btn').addEventListener('click',function(){
+                const container=document.getElementById('webview-container');
+                const iframe=document.getElementById('book-iframe');
+                if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+                container.style.display='none';
+                iframe.src='';
+                iframe.srcdoc='';
             });
-            
-            document.getElementById('btnBuyCode').addEventListener('click', function() {
-                openWebView('https://bookcode.kkl.education', 'Book Code');
-            });
-            
-            document.getElementById('close-btn').addEventListener('click', function() {
-                const container = document.getElementById('webview-container');
-                const iframe = document.getElementById('book-iframe');
-                
-                if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(() => {});
-                }
-                
-                container.style.display = 'none';
-                iframe.src = '';
-                iframe.srcdoc = '';
-            });
-            
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    document.getElementById('close-btn').click();
-                }
-            });
-            
+            document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('close-btn').click();});
             bookManager.autoSync();
-            
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(() => {});
-            }
+            if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});
+            setTimeout(()=>{
+                const badges=bookManager.getPointsManager().getBadges();
+                const count=Object.keys(badges).length;
+                if(count>0)showNotification('🏆 You have '+count+' badge(s)!');
+            },5000);
         });
-
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && bookManager) {
-                bookManager.syncRemoteBooks();
-            }
-        });
+        document.addEventListener('visibilitychange',function(){if(!document.hidden&&bookManager)bookManager.syncRemoteBooks();});
     </script>
-
 </body>
 </html>

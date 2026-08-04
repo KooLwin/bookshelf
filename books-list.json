@@ -1,16 +1,8 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.0",
   "updated": "2024-01-15",
   "books": [
-    {
-      "id": "book15",
-      "title": "Pre-KG English-15",
-      "cover": "https://koolwin.github.io/bookshelf/covers/book15.png"
-    },
-    {
-      "id": "book16",
-      "title": "Pre-KG English-16",
-      "cover": "https://koolwin.github.io/bookshelf/covers/book16.png"
-    }
+    {"id":"book19","title":"Pre-KG English-19","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book20","title":"Pre-KG English-20","cover":"https://koolwin.github.io/bookshelf/covers/book20.png"}
   ]
 }
