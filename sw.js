@@ -31,7 +31,7 @@ self.addEventListener('fetch', event => {
     caches.match(event.request)
       .then(cached => cached || fetch(event.request))
       .catch(() => {
-        return new Response('အော့ဖ်လိုင်းဖြစ်နေပါသည်', { status: 503 });
+        return new Response('Offline - Please connect to the internet', { status: 503 });
       })
   );
 });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -209,15 +209,11 @@
             transform: scale(0.95) translateY(-2px);
         }
         
-        /* ============================================================
-           FIXED: Cover wrapper - maintains original aspect ratio
-           ============================================================ */
         .book-card .cover-wrap {
             position: relative;
             width: 100%;
             background: #f0f2f5;
             overflow: hidden;
-            /* aspect-ratio will be set by JavaScript based on image */
         }
         .book-card .cover-wrap img {
             display: block;
@@ -477,10 +473,10 @@
         <div class="header">
             <div class="header-left">
                 <h1>📚 <span>Kreative</span>Bookshelf</h1>
-                <span class="daily-limit-info" id="dailyLimitInfo">📖 Today<span class="count" id="todayCount">0</span>/3 Books</span>
+                <span class="daily-limit-info" id="dailyLimitInfo">📖 Today <span class="count" id="todayCount">0</span>/3 books</span>
             </div>
             <div class="header-right">
-                <span class="sync-status" id="syncStatus">✅ Updated</span>
+                <span class="sync-status" id="syncStatus">✅ Up to date</span>
                 <button class="btn-sync" id="btnSync">🔄 Sync</button>
                 <button class="btn-buy-code" id="btnBuyCode">🔑 Buy Code</button>
             </div>
@@ -488,10 +484,10 @@
         <div class="shelf-container" id="shelf-container">
             <div id="shelf-rows"></div>
             <div class="scroll-hint" id="scroll-hint">
-                <span class="arrow">⬇</span> အောက်ကိုဆင်းပြီး ကြည့်ရှုပါ <span class="arrow">⬇</span>
+                <span class="arrow">⬇</span> Scroll down to browse <span class="arrow">⬇</span>
             </div>
         </div>
-        <div class="footer">📡 အင်တာနက်ရှိမှ စာအုပ်ဖွင့်နိုင်မယ်</div>
+        <div class="footer">📡 Internet connection required to open books</div>
     </div>
 
     <div id="notification"></div>
@@ -513,8 +509,8 @@
             BASE_URL: 'https://koolwin.github.io/bookshelf/',
             
             BUILTIN_BOOKS: {
-                book1: { title: 'The Pal Cat(Start to Read-1)', cover: 'covers/book1.png', localPath: 'books/book1/index.html', isBuiltin: true },
-                book2: { title: 'The Pup In the Mud(Start to Read-2)', cover: 'covers/book2.png', localPath: 'books/book2/index.html', isBuiltin: true },
+                book1: { title: 'Pre-KG English-1', cover: 'covers/book1.png', localPath: 'books/book1/index.html', isBuiltin: true },
+                book2: { title: 'Pre-KG English-2', cover: 'covers/book2.png', localPath: 'books/book2/index.html', isBuiltin: true },
                 book3: { title: 'Pre-KG English-3', cover: 'covers/book3.png', localPath: 'books/book3/index.html', isBuiltin: true },
                 book4: { title: 'Pre-KG English-4', cover: 'covers/book4.png', localPath: 'books/book4/index.html', isBuiltin: true },
                 book5: { title: 'Pre-KG English-5', cover: 'covers/book5.png', localPath: 'books/book5/index.html', isBuiltin: true },
@@ -664,7 +660,7 @@
                 
                 this.updateUI();
                 this.readingTracker.updateUI();
-                this.updateSyncStatus('success', '✅ Updated');
+                this.updateSyncStatus('success', '✅ Up to date');
             }
 
             async syncRemoteBooks() {
@@ -672,7 +668,7 @@
                 this.isSyncing = true;
                 
                 try {
-                    this.updateSyncStatus('syncing', '🔄 စစ်ဆေးနေသည်...');
+                    this.updateSyncStatus('syncing', '🔄 Checking for updates...');
                     this.setSyncButtonState(true);
                     
                     const response = await fetch(CONFIG.REMOTE_BOOKS_URL);
@@ -708,17 +704,17 @@
                     this.updateUI();
                     
                     if (newBooksCount > 0) {
-                        showNotification(`📚 စာအုပ်အသစ် ${newBooksCount} အုပ် တွေ့ရှိပြီး`);
-                        this.updateSyncStatus('success', `✅ စာအုပ် ${newBooksCount} အုပ် အသစ်ရပြီ`);
+                        showNotification(`📚 Found ${newBooksCount} new book(s)`);
+                        this.updateSyncStatus('success', `✅ ${newBooksCount} new book(s) added`);
                     } else {
-                        showNotification('✅ စာအုပ်အားလုံး နောက်ဆုံးရထားပါပြီ');
-                        this.updateSyncStatus('success', '✅ နောက်ဆုံးရထားပါပြီ');
+                        showNotification('✅ All books are up to date');
+                        this.updateSyncStatus('success', '✅ Up to date');
                     }
                     
                 } catch (error) {
                     console.error('Sync failed:', error);
-                    this.updateSyncStatus('error', '⚠️ အင်တာနက်မရှိပါ');
-                    showNotification('⚠️ အင်တာနက်မရှိပါ');
+                    this.updateSyncStatus('error', '⚠️ No internet connection');
+                    showNotification('⚠️ No internet connection');
                 } finally {
                     this.isSyncing = false;
                     this.setSyncButtonState(false);
@@ -750,16 +746,16 @@
             async openBook(bookId) {
                 const book = this.books[bookId];
                 if (!book) {
-                    showNotification('❌ စာအုပ်မတွေ့ပါ');
+                    showNotification('❌ Book not found');
                     return;
                 }
                 
                 const canRead = this.readingTracker.canRead(bookId);
                 if (!canRead.allowed && !this.readingTracker.isReadBefore(bookId)) {
                     if (canRead.reason === 'daily_limit_reached') {
-                        showNotification('⚠️ ယနေ့ စာအုပ် ၃ အုပ် ဖတ်ပြီးပါပြီ။ မနက်ဖြန်မှ ပြန်ဖတ်ပါ။');
+                        showNotification('⚠️ You have reached the daily limit of 3 books. Please come back tomorrow.');
                     } else {
-                        showNotification('🔒 ဤစာအုပ်ကို ယနေ့ဖတ်ခွင့်မရသေးပါ');
+                        showNotification('🔒 This book is not available to read today');
                     }
                     return;
                 }
@@ -772,7 +768,7 @@
                     }
                     openWebView(url, book.title);
                 } else {
-                    showNotification('❌ စာအုပ်ဖွင့်မရပါ');
+                    showNotification('❌ Cannot open book');
                 }
             }
 
@@ -887,7 +883,7 @@
                                 ${isLocked ? `
                                     <div class="lock-overlay">
                                         <div class="lock-icon">🔒</div>
-                                        <div class="lock-text">ဒီနေ့ ဖတ်ခွင့်မရသေးပါ</div>
+                                        <div class="lock-text">Not available today</div>
                                     </div>
                                 ` : ''}
                             </div>
@@ -905,29 +901,21 @@
             
             container.innerHTML = html;
             
-            // ============================================================
-            // FIXED: Set aspect ratio after images load
-            // ============================================================
             container.querySelectorAll('.book-card .cover-wrap img').forEach(img => {
                 const coverWrap = img.closest('.cover-wrap');
                 
-                // If image already loaded
                 if (img.complete && img.naturalWidth > 0) {
                     setAspectRatio(coverWrap, img.naturalWidth, img.naturalHeight);
                 } else {
-                    // Wait for image to load
                     img.addEventListener('load', function() {
                         setAspectRatio(coverWrap, this.naturalWidth, this.naturalHeight);
                     });
-                    // Fallback if image fails to load
                     img.addEventListener('error', function() {
-                        // Default to 4:3 ratio
                         coverWrap.style.aspectRatio = '4 / 3';
                     });
                 }
             });
             
-            // Attach click listeners
             container.querySelectorAll('.book-card').forEach(el => {
                 el.addEventListener('click', function() {
                     const bookId = this.dataset.book;
@@ -936,9 +924,6 @@
             });
         }
 
-        // ============================================================
-        // Helper: Set aspect ratio based on image dimensions
-        // ============================================================
         function setAspectRatio(coverWrap, width, height) {
             if (width > 0 && height > 0) {
                 coverWrap.style.aspectRatio = width + ' / ' + height;
@@ -963,12 +948,12 @@
             const container = document.getElementById('webview-container');
             
             if (!url) {
-                showNotification('❌ စာအုပ်လိပ်စာ မတွေ့ပါ');
+                showNotification('❌ Book URL not found');
                 return;
             }
             
             try {
-                if (title) showNotification(`⏳ ${title} ဖွင့်နေပါသည်...`);
+                if (title) showNotification(`⏳ Opening ${title}...`);
                 
                 iframe.src = url;
                 container.style.display = 'block';
@@ -977,11 +962,11 @@
                     try { container.requestFullscreen(); } catch (e) {}
                 }
                 
-                if (title) showNotification(`📖 ${title} ဖွင့်ပြီး`);
+                if (title) showNotification(`📖 ${title} opened`);
                 
             } catch (error) {
-                console.error('ဖွင့်ရာတွင် အမှားရှိသည်:', error);
-                showNotification('❌ ဖွင့်မရပါ');
+                console.error('Error opening book:', error);
+                showNotification('❌ Cannot open book');
             }
         }
 

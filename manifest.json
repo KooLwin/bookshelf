@@ -1,7 +1,7 @@
 {
   "name": "Kreative Bookshelf",
   "short_name": "KBooks",
-  "description": "ကလေးငယ်များအတွက် အင်္ဂလိပ်စာအုပ်စင်",
+  "description": "A digital bookshelf for children's English books",
   "start_url": "/",
   "display": "standalone",
   "orientation": "landscape",
