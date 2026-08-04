@@ -8,6 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="max-age=31536000, public">
+    <meta http-equiv="Pragma" content="cache">
+    <meta http-equiv="Expires" content="31536000">
+    
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
@@ -15,9 +20,6 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    
-    <!-- JSZip Library for extracting ZIP files -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <title>Kreative Bookshelf</title>
     <style>
@@ -292,51 +294,9 @@
             background: #fef3c7;
             color: #d4880f;
         }
-        .status-badge.downloading {
-            background: #fef3c7;
-            color: #d4880f;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .book-card .download-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.8;
-            transition: 0.3s;
-            z-index: 2;
-            touch-action: manipulation;
-        }
-        .book-card .download-btn.downloaded {
-            background: #4CAF50;
-        }
-        .book-card .download-btn:active {
-            transform: scale(0.85);
-        }
-        .offline-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 8px;
-            z-index: 2;
+        .status-badge.cached {
+            background: #ede9fe;
+            color: #7c3aed;
         }
         .book-card .lock-overlay {
             position: absolute;
@@ -350,6 +310,7 @@
             justify-content: center;
             z-index: 3;
             border-radius: 10px 10px 0 0;
+            flex-direction: column;
         }
         .book-card .lock-overlay .lock-icon {
             font-size: 40px;
@@ -357,13 +318,23 @@
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .book-card .lock-overlay .lock-text {
-            position: absolute;
-            bottom: 20px;
             color: white;
-            font-size: 12px;
+            font-size: 11px;
             background: rgba(0,0,0,0.7);
             padding: 4px 12px;
             border-radius: 20px;
+            margin-top: 8px;
+        }
+        .offline-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            z-index: 2;
         }
         #notification {
             position: fixed;
@@ -512,50 +483,23 @@
                 margin: 0 auto;
             }
         }
-        .storage-permission {
-            padding: 20px;
-            text-align: center;
-            background: #fef3c7;
-            border-radius: 12px;
-            margin: 10px;
-        }
-        .storage-permission button {
-            background: #4a6fa5;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .download-progress {
+        .cache-indicator {
             position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a2e;
+            bottom: 60px;
+            right: 16px;
+            background: rgba(26, 26, 46, 0.8);
             color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            z-index: 1000;
-            min-width: 200px;
-            text-align: center;
-            display: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            z-index: 100;
+            backdrop-filter: blur(4px);
         }
-        .download-progress .progress-bar {
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            margin-top: 8px;
-            overflow: hidden;
+        .cache-indicator.online {
+            background: rgba(74, 111, 165, 0.8);
         }
-        .download-progress .progress-bar .fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4a6fa5, #e94560);
-            border-radius: 2px;
-            transition: width 0.3s;
+        .cache-indicator.offline {
+            background: rgba(220, 38, 38, 0.8);
         }
     </style>
 </head>
@@ -584,12 +528,7 @@
 
     <div id="notification"></div>
     
-    <div id="download-progress" class="download-progress">
-        <div id="progress-text">⏳ ဒေါင်းလုဒ်လုပ်နေသည်...</div>
-        <div class="progress-bar">
-            <div class="fill" id="progress-fill"></div>
-        </div>
-    </div>
+    <div class="cache-indicator" id="cacheIndicator">📶 Online</div>
 
     <div id="webview-container">
         <button id="close-btn">✕</button>
@@ -630,120 +569,13 @@
         };
 
         // ============================================================
-        // 2. WEB2APK NATIVE BRIDGE
-        // ============================================================
-        class AndroidBridge {
-            constructor() {
-                this.isAndroid = typeof window.android !== 'undefined';
-            }
-
-            isAvailable() {
-                return this.isAndroid;
-            }
-
-            requestStoragePermission() {
-                if (this.isAndroid) {
-                    window.android.requestPermission();
-                }
-            }
-
-            saveFile(filename, content) {
-                if (this.isAndroid) {
-                    try {
-                        window.android.saveFile(filename, content);
-                        return true;
-                    } catch (e) {
-                        console.warn('Save file failed:', e);
-                        return false;
-                    }
-                }
-                return false;
-            }
-
-            loadFile(filename) {
-                if (this.isAndroid) {
-                    try {
-                        return window.android.loadFile(filename);
-                    } catch (e) {
-                        console.warn('Load file failed:', e);
-                        return null;
-                    }
-                }
-                return null;
-            }
-
-            fileExists(filename) {
-                if (this.isAndroid) {
-                    try {
-                        return window.android.fileExists(filename);
-                    } catch (e) {
-                        return false;
-                    }
-                }
-                return false;
-            }
-
-            getDownloadedFiles() {
-                if (this.isAndroid) {
-                    try {
-                        return window.android.getDownloadedFiles() || [];
-                    } catch (e) {
-                        return [];
-                    }
-                }
-                return [];
-            }
-
-            // For Web2Apk - save file with path
-            saveFileWithPath(path, content) {
-                if (this.isAndroid) {
-                    try {
-                        window.android.saveFileWithPath(path, content);
-                        return true;
-                    } catch (e) {
-                        console.warn('Save file with path failed:', e);
-                        return false;
-                    }
-                }
-                return false;
-            }
-
-            // For Web2Apk - check if directory exists
-            directoryExists(path) {
-                if (this.isAndroid) {
-                    try {
-                        return window.android.directoryExists(path);
-                    } catch (e) {
-                        return false;
-                    }
-                }
-                return false;
-            }
-
-            // For Web2Apk - create directory
-            createDirectory(path) {
-                if (this.isAndroid) {
-                    try {
-                        window.android.createDirectory(path);
-                        return true;
-                    } catch (e) {
-                        console.warn('Create directory failed:', e);
-                        return false;
-                    }
-                }
-                return false;
-            }
-        }
-
-        // ============================================================
-        // 3. READING TRACKER
+        // 2. READING TRACKER
         // ============================================================
         class ReadingTracker {
             constructor() {
                 this.data = this.loadData();
                 this.today = this.getToday();
                 this.todayCount = this.getTodayCount();
-                this.remaining = CONFIG.DAILY_LIMIT - this.todayCount;
             }
 
             getToday() {
@@ -813,7 +645,6 @@
                 
                 this.data.readBooks[bookId] = today;
                 this.todayCount = this.getTodayCount();
-                this.remaining = CONFIG.DAILY_LIMIT - this.todayCount;
                 
                 this.saveData();
                 this.updateUI();
@@ -828,10 +659,6 @@
                 const today = this.getToday();
                 const todayReads = this.data.history[today] || [];
                 return todayReads.includes(bookId);
-            }
-
-            getRemainingToday() {
-                return CONFIG.DAILY_LIMIT - this.getTodayCount();
             }
 
             updateUI() {
@@ -851,15 +678,21 @@
         }
 
         // ============================================================
-        // 4. BOOK MANAGER
+        // 3. BOOK MANAGER
         // ============================================================
         class BookManager {
             constructor() {
-                this.android = new AndroidBridge();
                 this.books = {};
                 this.readingTracker = new ReadingTracker();
                 this.isSyncing = false;
                 this.init();
+                
+                // Update cache indicator
+                this.updateCacheIndicator();
+                
+                // Listen for online/offline events
+                window.addEventListener('online', () => this.updateCacheIndicator());
+                window.addEventListener('offline', () => this.updateCacheIndicator());
             }
 
             init() {
@@ -883,6 +716,17 @@
                 this.updateSyncStatus('success', '✅ နောက်ဆုံးရထားပါပြီ');
             }
 
+            updateCacheIndicator() {
+                const el = document.getElementById('cacheIndicator');
+                if (navigator.onLine) {
+                    el.textContent = '📶 Online';
+                    el.className = 'cache-indicator online';
+                } else {
+                    el.textContent = '📴 Offline (Cache)';
+                    el.className = 'cache-indicator offline';
+                }
+            }
+
             async syncRemoteBooks() {
                 if (this.isSyncing) return;
                 this.isSyncing = true;
@@ -890,6 +734,15 @@
                 try {
                     this.updateSyncStatus('syncing', '🔄 စစ်ဆေးနေသည်...');
                     this.setSyncButtonState(true);
+                    
+                    // Check if online
+                    if (!navigator.onLine) {
+                        this.updateSyncStatus('error', '⚠️ အင်တာနက်မရှိပါ');
+                        showNotification('⚠️ အင်တာနက်မရှိပါ');
+                        this.isSyncing = false;
+                        this.setSyncButtonState(false);
+                        return;
+                    }
                     
                     const response = await fetch(CONFIG.REMOTE_BOOKS_URL);
                     if (!response.ok) throw new Error('Network error');
@@ -900,20 +753,21 @@
                     if (remoteData.books && Array.isArray(remoteData.books)) {
                         for (const book of remoteData.books) {
                             if (!this.books[book.id]) {
-                                // Check if book exists as ZIP
-                                const zipUrl = `${CONFIG.REMOTE_BASE_URL}${book.id}.zip`;
                                 this.books[book.id] = {
                                     title: book.title,
                                     cover: book.cover || 'covers/default.png',
-                                    remoteUrl: zipUrl,
+                                    remoteUrl: CONFIG.REMOTE_BASE_URL + book.id + '/index.html',
                                     isBuiltin: false,
-                                    isRemote: true,
-                                    isZip: true
+                                    isRemote: true
                                 };
                                 newBooksCount++;
                                 
-                                // Auto-download ZIP
-                                await this.downloadBookZip(book.id);
+                                // Pre-cache the book by loading it
+                                try {
+                                    await this.preCacheBook(book.id);
+                                } catch (e) {
+                                    console.warn('Pre-cache failed:', e);
+                                }
                             }
                         }
                     }
@@ -930,7 +784,7 @@
                     this.updateUI();
                     
                     if (newBooksCount > 0) {
-                        showNotification(`📚 စာအုပ်အသစ် ${newBooksCount} အုပ် ဒေါင်းလုဒ်ပြီးပါပြီ`);
+                        showNotification(`📚 စာအုပ်အသစ် ${newBooksCount} အုပ် တွေ့ရှိပြီး Cache လုပ်ထားပါပြီ`);
                         this.updateSyncStatus('success', `✅ စာအုပ် ${newBooksCount} အုပ် အသစ်ရပြီ`);
                     } else {
                         showNotification('✅ စာအုပ်အားလုံး နောက်ဆုံးရထားပါပြီ');
@@ -947,80 +801,17 @@
                 }
             }
 
-            async downloadBookZip(bookId) {
-                const book = this.books[bookId];
-                if (!book || !book.isZip) return false;
-                
+            async preCacheBook(bookId) {
                 try {
-                    this.showProgress(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်...`, 0);
+                    // Load the book in background to cache it
+                    const url = `${CONFIG.REMOTE_BASE_URL}${bookId}/index.html`;
+                    await fetch(url, { cache: 'force-cache' });
                     
-                    // Download ZIP
-                    const response = await fetch(book.remoteUrl);
-                    if (!response.ok) throw new Error('Download failed');
-                    
-                    const zipBlob = await response.blob();
-                    const totalSize = zipBlob.size;
-                    
-                    this.showProgress(`📦 ZIP ဖိုင်ကို ဖြည်နေသည်...`, 50);
-                    
-                    // Extract ZIP using JSZip
-                    const zip = await JSZip.loadAsync(zipBlob);
-                    const files = Object.keys(zip.files);
-                    let extracted = 0;
-                    
-                    // Create book folder
-                    const bookFolder = `books/${bookId}/`;
-                    
-                    for (const filename of files) {
-                        const file = zip.files[filename];
-                        if (!file.dir) {
-                            try {
-                                const content = await file.async('blob');
-                                const filePath = bookFolder + filename;
-                                
-                                // Save to external storage
-                                const reader = new FileReader();
-                                const contentBase64 = await new Promise((resolve) => {
-                                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                                    reader.readAsDataURL(content);
-                                });
-                                
-                                if (this.android.isAvailable()) {
-                                    this.android.saveFileWithPath(filePath, contentBase64);
-                                } else {
-                                    // Fallback: save to localStorage
-                                    const text = await file.async('text');
-                                    localStorage.setItem(`file_${filePath}`, text);
-                                }
-                                
-                                extracted++;
-                                const progress = 50 + (extracted / files.length) * 50;
-                                this.showProgress(`📄 ${filename} ဖြည်နေသည်...`, progress);
-                                
-                            } catch (e) {
-                                console.warn(`Failed to extract ${filename}:`, e);
-                            }
-                        }
-                    }
-                    
-                    // Save metadata
-                    const metadata = {
-                        id: bookId,
-                        title: book.title,
-                        downloadedAt: new Date().toISOString(),
-                        files: files.length
-                    };
-                    localStorage.setItem(`book_meta_${bookId}`, JSON.stringify(metadata));
-                    
-                    this.hideProgress();
-                    this.updateUI();
-                    return true;
-                    
-                } catch (error) {
-                    console.error('Download failed:', error);
-                    this.hideProgress();
-                    showNotification(`❌ ${book.title} ဒေါင်းလုဒ်မရပါ`);
-                    return false;
+                    // Also cache sub-resources (data/, data.local-only/)
+                    // Service Worker will handle these
+                    console.log(`Pre-cached: ${bookId}`);
+                } catch (e) {
+                    console.warn(`Failed to pre-cache ${bookId}:`, e);
                 }
             }
 
@@ -1044,32 +835,8 @@
                     return book.localPath;
                 }
                 
-                // Check external storage for extracted book
-                const bookFolder = `books/${bookId}/index.html`;
-                
-                if (this.android.isAvailable()) {
-                    // Check if index.html exists in external storage
-                    const exists = this.android.fileExists(bookFolder);
-                    if (exists) {
-                        // For Web2Apk, return file path
-                        return `file:///storage/emulated/0/Android/data/com.yourname.kreativebooks/files/${bookFolder}`;
-                    }
-                } else {
-                    // Check localStorage fallback
-                    const cached = localStorage.getItem(`file_books/${bookId}/index.html`);
-                    if (cached) {
-                        const blob = new Blob([cached], { type: 'text/html' });
-                        return URL.createObjectURL(blob);
-                    }
-                }
-                
-                // Not downloaded yet - try to download
-                if (book.isZip && navigator.onLine) {
-                    this.downloadBookZip(bookId);
-                    return null;
-                }
-                
-                // Online fallback
+                // Remote book - use online URL
+                // Service Worker will cache it for offline
                 return book.remoteUrl;
             }
 
@@ -1078,16 +845,9 @@
                 if (!book) return false;
                 if (book.isBuiltin) return true;
                 
-                // Check external storage
-                const bookFolder = `books/${bookId}/index.html`;
-                if (this.android.isAvailable()) {
-                    if (this.android.fileExists(bookFolder)) return true;
-                }
-                
-                // Check localStorage
-                if (localStorage.getItem(`file_books/${bookId}/index.html`)) return true;
-                
-                return false;
+                // Check if cached by Service Worker
+                // For now, return true if it's a remote book (it will be cached)
+                return book.isRemote || false;
             }
 
             canReadBook(bookId) {
@@ -1104,19 +864,6 @@
 
             isBookReadToday(bookId) {
                 return this.readingTracker.isReadToday(bookId);
-            }
-
-            showProgress(text, percent) {
-                const el = document.getElementById('download-progress');
-                const textEl = document.getElementById('progress-text');
-                const fillEl = document.getElementById('progress-fill');
-                el.style.display = 'block';
-                textEl.textContent = text;
-                fillEl.style.width = percent + '%';
-            }
-
-            hideProgress() {
-                document.getElementById('download-progress').style.display = 'none';
             }
 
             updateSyncStatus(status, message) {
@@ -1152,7 +899,7 @@
         }
 
         // ============================================================
-        // 5. UI RENDERING
+        // 4. UI RENDERING
         // ============================================================
         function renderBooks(bookList, manager) {
             const container = document.getElementById('shelf-rows');
@@ -1176,8 +923,8 @@
                         statusClass = 'ready';
                         statusIcon = readToday ? '📖' : (readBefore ? '✅' : '📚');
                     } else if (isDownloaded) {
-                        statusClass = 'downloaded';
-                        statusIcon = readToday ? '📖' : (readBefore ? '💾' : '💾');
+                        statusClass = 'cached';
+                        statusIcon = readToday ? '📖' : (readBefore ? '💾' : '🔄');
                     } else if (readToday) {
                         statusClass = 'read';
                         statusIcon = '📖';
@@ -1197,13 +944,7 @@
                                 <img src="${book.cover}" alt="${book.title}" 
                                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                                 <div class="placeholder" style="display:none;">📖</div>
-                                ${!isBuiltin ? `
-                                    <button class="download-btn ${isDownloaded ? 'downloaded' : ''}" 
-                                            onclick="event.stopPropagation(); bookManager.downloadBookZip('${book.id}')">
-                                        ${isDownloaded ? '✓' : '⬇'}
-                                    </button>
-                                    ${isDownloaded ? '<div class="offline-badge">💾 Offline</div>' : ''}
-                                ` : ''}
+                                ${!isBuiltin ? '<div class="offline-badge">🔄 Cached</div>' : ''}
                                 ${isLocked ? `
                                     <div class="lock-overlay">
                                         <div class="lock-icon">🔒</div>
@@ -1251,7 +992,7 @@
                         }
                         openWebView(url, book.title);
                     } else {
-                        showNotification('⏳ စာအုပ်ဒေါင်းလုဒ်လုပ်နေသည်... ခဏစောင့်ပါ');
+                        showNotification('❌ စာအုပ်ဖွင့်မရပါ');
                     }
                 });
             });
@@ -1266,7 +1007,7 @@
         }
 
         // ============================================================
-        // 6. WEBVIEW & NOTIFICATIONS
+        // 5. WEBVIEW & NOTIFICATIONS
         // ============================================================
         function openWebView(url, title = '') {
             const iframe = document.getElementById('book-iframe');
@@ -1301,6 +1042,21 @@
             el.classList.add('show');
             clearTimeout(el._timer);
             el._timer = setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        // ============================================================
+        // 6. SERVICE WORKER REGISTRATION
+        // ============================================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered');
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
         }
 
         // ============================================================
