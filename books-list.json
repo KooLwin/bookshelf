@@ -1,0 +1,20 @@
+{
+  "version": "1.0.1",
+  "updated": "2024-01-15",
+  "books": [
+    {
+      "id": "book15",
+      "title": "Pre-KG English-15",
+      "cover": "https://yourusername.github.io/kreative-bookshelf/covers/book15.png",
+      "file": "book15.html",
+      "description": "စာအုပ်အသစ်"
+    },
+    {
+      "id": "book16",
+      "title": "Pre-KG English-16",
+      "cover": "https://yourusername.github.io/kreative-bookshelf/covers/book16.png",
+      "file": "book16.html",
+      "description": "နောက်ထပ်စာအုပ်အသစ်"
+    }
+  ]
+}
