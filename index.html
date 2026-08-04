@@ -609,20 +609,63 @@
         };
 
         // ============================================================
-        // 2. STORAGE HELPER (PC + Mobile)
+        // 2. STORAGE HELPER (FIXED - Uses localStorage for PC)
         // ============================================================
         class StorageHelper {
             constructor() {
                 this.isAndroid = typeof window.android !== 'undefined';
                 this.isPC = !this.isAndroid;
                 this.PC_PREFIX = 'pc_file_';
-                this.bookCache = {}; // Cache for book content
+                this.DOWNLOADED_KEY = 'kreative_downloaded_books';
+                this.bookCache = {};
+                
+                // Load downloaded books list
+                this.downloadedBooks = this.loadDownloadedList();
                 
                 console.log('Platform:', this.isAndroid ? 'Android (Web2Apk)' : 'PC Browser');
+                console.log('Downloaded books:', this.downloadedBooks);
             }
 
-            isAvailable() {
-                return true;
+            loadDownloadedList() {
+                try {
+                    const data = localStorage.getItem(this.DOWNLOADED_KEY);
+                    return data ? JSON.parse(data) : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            saveDownloadedList() {
+                try {
+                    localStorage.setItem(this.DOWNLOADED_KEY, JSON.stringify(this.downloadedBooks));
+                } catch (e) {
+                    console.warn('Save downloaded list failed:', e);
+                }
+            }
+
+            markBookAsDownloaded(bookId) {
+                this.downloadedBooks[bookId] = {
+                    downloadedAt: new Date().toISOString(),
+                    bookId: bookId
+                };
+                this.saveDownloadedList();
+            }
+
+            isBookDownloaded(bookId) {
+                // Check in downloaded list first
+                if (this.downloadedBooks[bookId]) {
+                    return true;
+                }
+                
+                // Double check with file existence
+                const path = `books/${bookId}/index.html`;
+                if (this.fileExists(path)) {
+                    // If file exists but not in list, add it
+                    this.markBookAsDownloaded(bookId);
+                    return true;
+                }
+                
+                return false;
             }
 
             saveFileWithPath(path, content) {
@@ -638,7 +681,6 @@
                     try {
                         const key = this.PC_PREFIX + path.replace(/\//g, '_');
                         localStorage.setItem(key, content);
-                        // Cache the content
                         this.bookCache[path] = content;
                         return true;
                     } catch (e) {
@@ -688,35 +730,22 @@
 
             getFileUrl(path) {
                 if (this.isAndroid) {
-                    // Android: return file path for WebView
                     return '/storage/emulated/0/Android/data/com.koolwin.kreativebooks/files/' + path;
                 } else {
-                    // PC: Get content and create blob URL
                     let content = this.getFileContent(path);
-                    if (!content) {
-                        // Try cache
-                        content = this.bookCache[path] || null;
-                    }
-                    
                     if (content) {
                         try {
-                            // Try to decode base64 if it's base64 encoded
                             let decoded = content;
                             try {
-                                // Check if it looks like base64
                                 if (content.length > 0 && !content.includes('<') && !content.includes('{')) {
                                     decoded = atob(content);
                                 }
                             } catch (e) {
-                                // Not base64, use as is
                                 decoded = content;
                             }
                             
-                            // Create blob URL
                             const blob = new Blob([decoded], { type: 'text/html; charset=utf-8' });
                             const url = URL.createObjectURL(blob);
-                            
-                            // Store URL for later use
                             this.bookCache['url_' + path] = url;
                             return url;
                         } catch (e) {
@@ -741,27 +770,6 @@
                 }
             }
 
-            getDownloadedFiles() {
-                if (this.isAndroid) {
-                    try {
-                        return window.android.getDownloadedFiles() || [];
-                    } catch (e) {
-                        return [];
-                    }
-                } else {
-                    const files = [];
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key && key.startsWith(this.PC_PREFIX)) {
-                            const path = key.replace(this.PC_PREFIX, '').replace(/_/g, '/');
-                            files.push(path);
-                        }
-                    }
-                    return files;
-                }
-            }
-
-            // Clean up blob URLs (for PC)
             cleanupBlobUrls() {
                 if (this.isPC) {
                     for (const key in this.bookCache) {
@@ -880,7 +888,7 @@
         }
 
         // ============================================================
-        // 4. BOOK MANAGER (FIXED - Opens book immediately after extract)
+        // 4. BOOK MANAGER (FIXED - No re-download)
         // ============================================================
         class BookManager {
             constructor() {
@@ -889,7 +897,6 @@
                 this.readingTracker = new ReadingTracker();
                 this.isSyncing = false;
                 this.downloadingBooks = {};
-                this.pendingOpenBook = null; // Book to open after download
                 this.init();
             }
 
@@ -976,11 +983,11 @@
             }
 
             // ============================================================
-            // FIXED: Download + Extract + Auto Open
+            // FIXED: Download + Extract + Auto Open (No re-download)
             // ============================================================
             async downloadBookZip(bookId, autoOpen = false) {
+                // Check if already downloading
                 if (this.downloadingBooks[bookId]) {
-                    // If already downloading, wait and then open
                     return new Promise((resolve) => {
                         const checkInterval = setInterval(() => {
                             if (!this.downloadingBooks[bookId]) {
@@ -994,24 +1001,23 @@
                     });
                 }
                 
-                this.downloadingBooks[bookId] = true;
-                
                 const book = this.books[bookId];
                 if (!book || !book.isZip) {
-                    delete this.downloadingBooks[bookId];
                     return false;
                 }
                 
-                // Check if already exists
-                const bookFolder = `books/${bookId}/`;
-                const indexPath = bookFolder + 'index.html';
-                if (this.storage.fileExists(indexPath)) {
-                    delete this.downloadingBooks[bookId];
+                // ============================================================
+                // FIXED: Check if already downloaded using storage helper
+                // ============================================================
+                if (this.storage.isBookDownloaded(bookId)) {
+                    console.log(`✅ ${bookId} already downloaded, skipping...`);
                     if (autoOpen) {
-                        this.openBook(bookId);
+                        setTimeout(() => this.openBook(bookId), 200);
                     }
                     return true;
                 }
+                
+                this.downloadingBooks[bookId] = true;
                 
                 try {
                     this.showProgress(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်...`, 0);
@@ -1026,6 +1032,7 @@
                     const files = Object.keys(zip.files);
                     let extracted = 0;
                     
+                    const bookFolder = `books/${bookId}/`;
                     this.storage.createDirectory(bookFolder);
                     
                     for (const filename of files) {
@@ -1053,6 +1060,11 @@
                         }
                     }
                     
+                    // ============================================================
+                    // FIXED: Mark as downloaded in storage helper
+                    // ============================================================
+                    this.storage.markBookAsDownloaded(bookId);
+                    
                     const metadata = {
                         id: bookId,
                         title: book.title,
@@ -1068,10 +1080,9 @@
                     delete this.downloadingBooks[bookId];
                     
                     // ============================================================
-                    // AUTO OPEN: Open book immediately after download
+                    // FIXED: Auto open after download
                     // ============================================================
                     if (autoOpen) {
-                        // Small delay to ensure UI updates
                         setTimeout(() => {
                             this.openBook(bookId);
                         }, 300);
@@ -1089,29 +1100,23 @@
             }
 
             // ============================================================
-            // FIXED: getBookUrl - PC + Mobile
+            // FIXED: getBookUrl - uses storage helper
             // ============================================================
             getBookUrl(bookId) {
                 const book = this.books[bookId];
                 if (!book) return null;
                 
-                // Built-in book
                 if (book.isBuiltin) {
                     return book.localPath;
                 }
                 
-                // Check if extracted book exists
-                const bookFolder = `books/${bookId}/`;
-                const indexPath = bookFolder + 'index.html';
-                
-                if (this.storage.fileExists(indexPath)) {
-                    const url = this.storage.getFileUrl(indexPath);
-                    if (url) {
-                        return url;
-                    }
+                // Check if downloaded using storage helper
+                if (this.storage.isBookDownloaded(bookId)) {
+                    const bookFolder = `books/${bookId}/`;
+                    const indexPath = bookFolder + 'index.html';
+                    return this.storage.getFileUrl(indexPath);
                 }
                 
-                // Not downloaded
                 return null;
             }
 
@@ -1119,15 +1124,11 @@
                 const book = this.books[bookId];
                 if (!book) return false;
                 if (book.isBuiltin) return true;
-                
-                const bookFolder = `books/${bookId}/`;
-                const indexPath = bookFolder + 'index.html';
-                
-                return this.storage.fileExists(indexPath);
+                return this.storage.isBookDownloaded(bookId);
             }
 
             // ============================================================
-            // FIXED: Open book - Downloads if needed, then opens
+            // FIXED: Open book - Checks download status properly
             // ============================================================
             async openBook(bookId) {
                 const book = this.books[bookId];
@@ -1147,16 +1148,16 @@
                     return;
                 }
                 
-                // Check if downloaded
+                // ============================================================
+                // FIXED: Check download status properly
+                // ============================================================
                 if (!this.isBookDownloaded(bookId)) {
                     if (navigator.onLine) {
-                        // Download and then auto-open
                         showNotification(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်... ခဏစောင့်ပါ`);
-                        const success = await this.downloadBookZip(bookId, true); // autoOpen = true
+                        const success = await this.downloadBookZip(bookId, true);
                         if (!success) {
                             showNotification(`❌ ${book.title} ဒေါင်းလုဒ်မရပါ`);
                         }
-                        // downloadBookZip will call openBook again when done
                         return;
                     } else {
                         showNotification('⚠️ အင်တာနက်မရှိပါ၊ စာအုပ်ဖွင့်မရပါ');
@@ -1167,7 +1168,6 @@
                 // Get URL and open
                 const url = this.getBookUrl(bookId);
                 if (url) {
-                    // Mark as read
                     if (!this.readingTracker.isReadToday(bookId)) {
                         this.readingTracker.markAsRead(bookId);
                         this.updateUI();
@@ -1355,8 +1355,6 @@
             try {
                 if (title) showNotification(`⏳ ${title} ဖွင့်နေပါသည်...`);
                 
-                // For PC: if it's a blob URL, it should work directly
-                // For Android: file path
                 iframe.src = url;
                 container.style.display = 'block';
                 
@@ -1406,7 +1404,6 @@
                 
                 container.style.display = 'none';
                 
-                // Clean up blob URLs (PC)
                 if (bookManager && bookManager.storage) {
                     bookManager.storage.cleanupBlobUrls();
                 }
