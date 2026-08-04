@@ -6,15 +6,13 @@
       "id": "book15",
       "title": "Pre-KG English-15",
       "cover": "https://koolwin.github.io/bookshelf/covers/book15.png",
-      "file": "book15/index.html",
-      "description": "စာအုပ်အသစ်"
+      "file": "book15.zip"
     },
     {
       "id": "book16",
       "title": "Pre-KG English-16",
-      "cover": "https://yourusername.github.io/kreative-bookshelf/covers/book16.png",
-      "file": "book16.html",
-      "description": "နောက်ထပ်စာအုပ်အသစ်"
+      "cover": "https://koolwin.github.io/bookshelf/covers/book16.png",
+      "file": "book16.zip"
     }
   ]
 }

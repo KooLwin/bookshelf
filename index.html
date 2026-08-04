@@ -16,6 +16,9 @@
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     
+    <!-- JSZip Library for extracting ZIP files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
     <title>Kreative Bookshelf</title>
     <style>
         * {
@@ -74,6 +77,18 @@
             align-items: center;
             gap: 6px;
             flex-wrap: wrap;
+        }
+        .daily-limit-info {
+            font-size: clamp(9px, 1.1vh, 12px);
+            color: #6c7a8e;
+            padding: 4px 12px;
+            background: #eef1f5;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+        .daily-limit-info .count {
+            font-weight: 700;
+            color: #1a1a2e;
         }
         .sync-status {
             display: flex;
@@ -277,6 +292,15 @@
             background: #fef3c7;
             color: #d4880f;
         }
+        .status-badge.downloading {
+            background: #fef3c7;
+            color: #d4880f;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         .book-card .download-btn {
             position: absolute;
             top: 8px;
@@ -331,6 +355,15 @@
             font-size: 40px;
             color: white;
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .book-card .lock-overlay .lock-text {
+            position: absolute;
+            bottom: 20px;
+            color: white;
+            font-size: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 12px;
+            border-radius: 20px;
         }
         #notification {
             position: fixed;
@@ -399,18 +432,6 @@
         }
         #close-btn:active {
             transform: scale(0.88);
-        }
-        .daily-limit-info {
-            font-size: clamp(9px, 1.1vh, 12px);
-            color: #6c7a8e;
-            padding: 4px 12px;
-            background: #eef1f5;
-            border-radius: 12px;
-            white-space: nowrap;
-        }
-        .daily-limit-info .count {
-            font-weight: 700;
-            color: #1a1a2e;
         }
         .footer {
             text-align: center;
@@ -508,6 +529,34 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        .download-progress {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 1000;
+            min-width: 200px;
+            text-align: center;
+            display: none;
+        }
+        .download-progress .progress-bar {
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .download-progress .progress-bar .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4a6fa5, #e94560);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -534,6 +583,14 @@
     </div>
 
     <div id="notification"></div>
+    
+    <div id="download-progress" class="download-progress">
+        <div id="progress-text">⏳ ဒေါင်းလုဒ်လုပ်နေသည်...</div>
+        <div class="progress-bar">
+            <div class="fill" id="progress-fill"></div>
+        </div>
+    </div>
+
     <div id="webview-container">
         <button id="close-btn">✕</button>
         <iframe id="book-iframe" allowfullscreen></iframe>
@@ -548,21 +605,24 @@
             STORAGE_KEY: 'kreative_books_data',
             CACHE_VERSION: '1.0.0',
             
+            // GitHub Pages URL
+            BASE_URL: 'https://koolwin.github.io/bookshelf/',
+            
             BUILTIN_BOOKS: {
-                book1: { title: 'The Pal Cat (start to read-1)', cover: 'covers/book1.png', localPath: 'books/book1/index.html', isBuiltin: true },
-                book2: { title: 'Pre-KG English-2', cover: 'covers/book2.png', localPath: 'books/book2.html', isBuiltin: true },
-                book3: { title: 'Pre-KG English-3', cover: 'covers/book3.png', localPath: 'books/book3.html', isBuiltin: true },
-                book4: { title: 'Pre-KG English-4', cover: 'covers/book4.png', localPath: 'books/book4.html', isBuiltin: true },
-                book5: { title: 'Pre-KG English-5', cover: 'covers/book5.png', localPath: 'books/book5.html', isBuiltin: true },
-                book6: { title: 'Pre-KG English-6', cover: 'covers/book6.png', localPath: 'books/book6.html', isBuiltin: true },
-                book7: { title: 'Pre-KG English-7', cover: 'covers/book7.png', localPath: 'books/book7.html', isBuiltin: true },
-                book8: { title: 'Pre-KG English-8', cover: 'covers/book8.png', localPath: 'books/book8.html', isBuiltin: true },
-                book9: { title: 'Pre-KG English-9', cover: 'covers/book9.png', localPath: 'books/book9.html', isBuiltin: true },
-                book10: { title: 'Pre-KG English-10', cover: 'covers/book10.png', localPath: 'books/book10.html', isBuiltin: true },
-                book11: { title: 'Pre-KG English-11', cover: 'covers/book11.png', localPath: 'books/book11.html', isBuiltin: true },
-                book12: { title: 'Pre-KG English-12', cover: 'covers/book12.png', localPath: 'books/book12.html', isBuiltin: true },
-                book13: { title: 'Pre-KG English-13', cover: 'covers/book13.png', localPath: 'books/book13.html', isBuiltin: true },
-                book14: { title: 'Pre-KG English-14', cover: 'covers/book14.png', localPath: 'books/book14.html', isBuiltin: true }
+                book1: { title: 'Pre-KG English-1', cover: 'covers/book1.png', localPath: 'books/book1/index.html', isBuiltin: true },
+                book2: { title: 'Pre-KG English-2', cover: 'covers/book2.png', localPath: 'books/book2/index.html', isBuiltin: true },
+                book3: { title: 'Pre-KG English-3', cover: 'covers/book3.png', localPath: 'books/book3/index.html', isBuiltin: true },
+                book4: { title: 'Pre-KG English-4', cover: 'covers/book4.png', localPath: 'books/book4/index.html', isBuiltin: true },
+                book5: { title: 'Pre-KG English-5', cover: 'covers/book5.png', localPath: 'books/book5/index.html', isBuiltin: true },
+                book6: { title: 'Pre-KG English-6', cover: 'covers/book6.png', localPath: 'books/book6/index.html', isBuiltin: true },
+                book7: { title: 'Pre-KG English-7', cover: 'covers/book7.png', localPath: 'books/book7/index.html', isBuiltin: true },
+                book8: { title: 'Pre-KG English-8', cover: 'covers/book8.png', localPath: 'books/book8/index.html', isBuiltin: true },
+                book9: { title: 'Pre-KG English-9', cover: 'covers/book9.png', localPath: 'books/book9/index.html', isBuiltin: true },
+                book10: { title: 'Pre-KG English-10', cover: 'covers/book10.png', localPath: 'books/book10/index.html', isBuiltin: true },
+                book11: { title: 'Pre-KG English-11', cover: 'covers/book11.png', localPath: 'books/book11/index.html', isBuiltin: true },
+                book12: { title: 'Pre-KG English-12', cover: 'covers/book12.png', localPath: 'books/book12/index.html', isBuiltin: true },
+                book13: { title: 'Pre-KG English-13', cover: 'covers/book13.png', localPath: 'books/book13/index.html', isBuiltin: true },
+                book14: { title: 'Pre-KG English-14', cover: 'covers/book14.png', localPath: 'books/book14/index.html', isBuiltin: true }
             },
             
             REMOTE_BOOKS_URL: 'https://koolwin.github.io/bookshelf/books-list.json',
@@ -570,7 +630,113 @@
         };
 
         // ============================================================
-        // 2. READING TRACKER
+        // 2. WEB2APK NATIVE BRIDGE
+        // ============================================================
+        class AndroidBridge {
+            constructor() {
+                this.isAndroid = typeof window.android !== 'undefined';
+            }
+
+            isAvailable() {
+                return this.isAndroid;
+            }
+
+            requestStoragePermission() {
+                if (this.isAndroid) {
+                    window.android.requestPermission();
+                }
+            }
+
+            saveFile(filename, content) {
+                if (this.isAndroid) {
+                    try {
+                        window.android.saveFile(filename, content);
+                        return true;
+                    } catch (e) {
+                        console.warn('Save file failed:', e);
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            loadFile(filename) {
+                if (this.isAndroid) {
+                    try {
+                        return window.android.loadFile(filename);
+                    } catch (e) {
+                        console.warn('Load file failed:', e);
+                        return null;
+                    }
+                }
+                return null;
+            }
+
+            fileExists(filename) {
+                if (this.isAndroid) {
+                    try {
+                        return window.android.fileExists(filename);
+                    } catch (e) {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            getDownloadedFiles() {
+                if (this.isAndroid) {
+                    try {
+                        return window.android.getDownloadedFiles() || [];
+                    } catch (e) {
+                        return [];
+                    }
+                }
+                return [];
+            }
+
+            // For Web2Apk - save file with path
+            saveFileWithPath(path, content) {
+                if (this.isAndroid) {
+                    try {
+                        window.android.saveFileWithPath(path, content);
+                        return true;
+                    } catch (e) {
+                        console.warn('Save file with path failed:', e);
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            // For Web2Apk - check if directory exists
+            directoryExists(path) {
+                if (this.isAndroid) {
+                    try {
+                        return window.android.directoryExists(path);
+                    } catch (e) {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            // For Web2Apk - create directory
+            createDirectory(path) {
+                if (this.isAndroid) {
+                    try {
+                        window.android.createDirectory(path);
+                        return true;
+                    } catch (e) {
+                        console.warn('Create directory failed:', e);
+                        return false;
+                    }
+                }
+                return false;
+            }
+        }
+
+        // ============================================================
+        // 3. READING TRACKER
         // ============================================================
         class ReadingTracker {
             constructor() {
@@ -595,11 +761,10 @@
                     }
                 } catch (e) {}
                 
-                // Default data
                 return {
                     version: CONFIG.CACHE_VERSION,
-                    history: {}, // { date: [bookIds] }
-                    readBooks: {} // { bookId: lastReadDate }
+                    history: {},
+                    readBooks: {}
                 };
             }
 
@@ -618,19 +783,17 @@
             }
 
             canRead(bookId) {
-                // Already read today? Check if already read this book today
                 const today = this.getToday();
                 const todayReads = this.data.history[today] || [];
+                
                 if (todayReads.includes(bookId)) {
                     return { allowed: true, reason: 'already_read_today' };
                 }
                 
-                // Already read before (any day)
                 if (this.data.readBooks[bookId]) {
                     return { allowed: true, reason: 'already_read_before' };
                 }
                 
-                // Check daily limit
                 if (this.todayCount >= CONFIG.DAILY_LIMIT) {
                     return { allowed: false, reason: 'daily_limit_reached' };
                 }
@@ -641,7 +804,6 @@
             markAsRead(bookId) {
                 const today = this.getToday();
                 
-                // Add to today's history
                 if (!this.data.history[today]) {
                     this.data.history[today] = [];
                 }
@@ -649,15 +811,12 @@
                     this.data.history[today].push(bookId);
                 }
                 
-                // Mark as read
                 this.data.readBooks[bookId] = today;
-                
                 this.todayCount = this.getTodayCount();
                 this.remaining = CONFIG.DAILY_LIMIT - this.todayCount;
                 
                 this.saveData();
                 this.updateUI();
-                
                 return true;
             }
 
@@ -677,11 +836,10 @@
 
             updateUI() {
                 const todayCount = this.getTodayCount();
-                const remaining = CONFIG.DAILY_LIMIT - todayCount;
                 document.getElementById('todayCount').textContent = todayCount;
                 
-                // Update daily limit info color
                 const info = document.getElementById('dailyLimitInfo');
+                const remaining = CONFIG.DAILY_LIMIT - todayCount;
                 if (remaining <= 0) {
                     info.style.color = '#dc2626';
                 } else if (remaining <= 1) {
@@ -693,10 +851,11 @@
         }
 
         // ============================================================
-        // 3. BOOK MANAGER
+        // 4. BOOK MANAGER
         // ============================================================
         class BookManager {
             constructor() {
+                this.android = new AndroidBridge();
                 this.books = {};
                 this.readingTracker = new ReadingTracker();
                 this.isSyncing = false;
@@ -741,17 +900,20 @@
                     if (remoteData.books && Array.isArray(remoteData.books)) {
                         for (const book of remoteData.books) {
                             if (!this.books[book.id]) {
+                                // Check if book exists as ZIP
+                                const zipUrl = `${CONFIG.REMOTE_BASE_URL}${book.id}.zip`;
                                 this.books[book.id] = {
                                     title: book.title,
                                     cover: book.cover || 'covers/default.png',
-                                    remoteUrl: CONFIG.REMOTE_BASE_URL + book.file,
+                                    remoteUrl: zipUrl,
                                     isBuiltin: false,
-                                    isRemote: true
+                                    isRemote: true,
+                                    isZip: true
                                 };
                                 newBooksCount++;
                                 
-                                // Auto-download new book
-                                await this.downloadBook(book.id, false);
+                                // Auto-download ZIP
+                                await this.downloadBookZip(book.id);
                             }
                         }
                     }
@@ -785,43 +947,79 @@
                 }
             }
 
-            async downloadBook(bookId, showNotification = true) {
+            async downloadBookZip(bookId) {
                 const book = this.books[bookId];
-                if (!book) return false;
-                
-                if (book.isBuiltin) {
-                    if (showNotification) showNotification('📖 ဒီစာအုပ်က စက်ထဲမှာရှိပြီးသားပါ');
-                    return true;
-                }
-                
-                // Check if already downloaded
-                if (localStorage.getItem('book_' + bookId)) {
-                    return true;
-                }
+                if (!book || !book.isZip) return false;
                 
                 try {
-                    if (showNotification) {
-                        showNotification(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်...`);
-                    }
+                    this.showProgress(`⏳ ${book.title} ဒေါင်းလုဒ်လုပ်နေသည်...`, 0);
                     
+                    // Download ZIP
                     const response = await fetch(book.remoteUrl);
                     if (!response.ok) throw new Error('Download failed');
                     
-                    const content = await response.text();
-                    localStorage.setItem('book_' + bookId, content);
+                    const zipBlob = await response.blob();
+                    const totalSize = zipBlob.size;
                     
-                    if (showNotification) {
-                        showNotification(`✅ ${book.title} ဒေါင်းလုဒ်ပြီးပါပြီ`);
+                    this.showProgress(`📦 ZIP ဖိုင်ကို ဖြည်နေသည်...`, 50);
+                    
+                    // Extract ZIP using JSZip
+                    const zip = await JSZip.loadAsync(zipBlob);
+                    const files = Object.keys(zip.files);
+                    let extracted = 0;
+                    
+                    // Create book folder
+                    const bookFolder = `books/${bookId}/`;
+                    
+                    for (const filename of files) {
+                        const file = zip.files[filename];
+                        if (!file.dir) {
+                            try {
+                                const content = await file.async('blob');
+                                const filePath = bookFolder + filename;
+                                
+                                // Save to external storage
+                                const reader = new FileReader();
+                                const contentBase64 = await new Promise((resolve) => {
+                                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                                    reader.readAsDataURL(content);
+                                });
+                                
+                                if (this.android.isAvailable()) {
+                                    this.android.saveFileWithPath(filePath, contentBase64);
+                                } else {
+                                    // Fallback: save to localStorage
+                                    const text = await file.async('text');
+                                    localStorage.setItem(`file_${filePath}`, text);
+                                }
+                                
+                                extracted++;
+                                const progress = 50 + (extracted / files.length) * 50;
+                                this.showProgress(`📄 ${filename} ဖြည်နေသည်...`, progress);
+                                
+                            } catch (e) {
+                                console.warn(`Failed to extract ${filename}:`, e);
+                            }
+                        }
                     }
                     
+                    // Save metadata
+                    const metadata = {
+                        id: bookId,
+                        title: book.title,
+                        downloadedAt: new Date().toISOString(),
+                        files: files.length
+                    };
+                    localStorage.setItem(`book_meta_${bookId}`, JSON.stringify(metadata));
+                    
+                    this.hideProgress();
                     this.updateUI();
                     return true;
                     
                 } catch (error) {
                     console.error('Download failed:', error);
-                    if (showNotification) {
-                        showNotification(`❌ ${book.title} ဒေါင်းလုဒ်မရပါ`);
-                    }
+                    this.hideProgress();
+                    showNotification(`❌ ${book.title} ဒေါင်းလုဒ်မရပါ`);
                     return false;
                 }
             }
@@ -841,23 +1039,37 @@
                 const book = this.books[bookId];
                 if (!book) return null;
                 
-                // Built-in
+                // Built-in book
                 if (book.isBuiltin) {
                     return book.localPath;
                 }
                 
-                // Downloaded
-                const cached = localStorage.getItem('book_' + bookId);
-                if (cached) {
-                    try {
+                // Check external storage for extracted book
+                const bookFolder = `books/${bookId}/index.html`;
+                
+                if (this.android.isAvailable()) {
+                    // Check if index.html exists in external storage
+                    const exists = this.android.fileExists(bookFolder);
+                    if (exists) {
+                        // For Web2Apk, return file path
+                        return `file:///storage/emulated/0/Android/data/com.yourname.kreativebooks/files/${bookFolder}`;
+                    }
+                } else {
+                    // Check localStorage fallback
+                    const cached = localStorage.getItem(`file_books/${bookId}/index.html`);
+                    if (cached) {
                         const blob = new Blob([cached], { type: 'text/html' });
                         return URL.createObjectURL(blob);
-                    } catch (e) {
-                        return 'data:text/html;charset=utf-8,' + encodeURIComponent(cached);
                     }
                 }
                 
-                // Online
+                // Not downloaded yet - try to download
+                if (book.isZip && navigator.onLine) {
+                    this.downloadBookZip(bookId);
+                    return null;
+                }
+                
+                // Online fallback
                 return book.remoteUrl;
             }
 
@@ -865,7 +1077,17 @@
                 const book = this.books[bookId];
                 if (!book) return false;
                 if (book.isBuiltin) return true;
-                return localStorage.getItem('book_' + bookId) !== null;
+                
+                // Check external storage
+                const bookFolder = `books/${bookId}/index.html`;
+                if (this.android.isAvailable()) {
+                    if (this.android.fileExists(bookFolder)) return true;
+                }
+                
+                // Check localStorage
+                if (localStorage.getItem(`file_books/${bookId}/index.html`)) return true;
+                
+                return false;
             }
 
             canReadBook(bookId) {
@@ -882,6 +1104,19 @@
 
             isBookReadToday(bookId) {
                 return this.readingTracker.isReadToday(bookId);
+            }
+
+            showProgress(text, percent) {
+                const el = document.getElementById('download-progress');
+                const textEl = document.getElementById('progress-text');
+                const fillEl = document.getElementById('progress-fill');
+                el.style.display = 'block';
+                textEl.textContent = text;
+                fillEl.style.width = percent + '%';
+            }
+
+            hideProgress() {
+                document.getElementById('download-progress').style.display = 'none';
             }
 
             updateSyncStatus(status, message) {
@@ -917,7 +1152,7 @@
         }
 
         // ============================================================
-        // 4. UI RENDERING
+        // 5. UI RENDERING
         // ============================================================
         function renderBooks(bookList, manager) {
             const container = document.getElementById('shelf-rows');
@@ -964,7 +1199,7 @@
                                 <div class="placeholder" style="display:none;">📖</div>
                                 ${!isBuiltin ? `
                                     <button class="download-btn ${isDownloaded ? 'downloaded' : ''}" 
-                                            onclick="event.stopPropagation(); bookManager.downloadBook('${book.id}')">
+                                            onclick="event.stopPropagation(); bookManager.downloadBookZip('${book.id}')">
                                         ${isDownloaded ? '✓' : '⬇'}
                                     </button>
                                     ${isDownloaded ? '<div class="offline-badge">💾 Offline</div>' : ''}
@@ -972,6 +1207,7 @@
                                 ${isLocked ? `
                                     <div class="lock-overlay">
                                         <div class="lock-icon">🔒</div>
+                                        <div class="lock-text">ဒီနေ့ ဖတ်ခွင့်မရသေးပါ</div>
                                     </div>
                                 ` : ''}
                             </div>
@@ -989,7 +1225,6 @@
             
             container.innerHTML = html;
             
-            // Attach click listeners
             container.querySelectorAll('.book-card').forEach(el => {
                 el.addEventListener('click', function() {
                     const bookId = this.dataset.book;
@@ -1011,13 +1246,12 @@
                     // Get URL and open
                     const url = manager.getBookUrl(bookId);
                     if (url) {
-                        // Mark as read (only if not read today)
                         if (!manager.isBookReadToday(bookId)) {
                             manager.markBookAsRead(bookId);
                         }
                         openWebView(url, book.title);
                     } else {
-                        showNotification('❌ စာအုပ်ဖွင့်မရပါ');
+                        showNotification('⏳ စာအုပ်ဒေါင်းလုဒ်လုပ်နေသည်... ခဏစောင့်ပါ');
                     }
                 });
             });
@@ -1032,7 +1266,7 @@
         }
 
         // ============================================================
-        // 5. WEBVIEW & NOTIFICATIONS
+        // 6. WEBVIEW & NOTIFICATIONS
         // ============================================================
         function openWebView(url, title = '') {
             const iframe = document.getElementById('book-iframe');
@@ -1070,14 +1304,13 @@
         }
 
         // ============================================================
-        // 6. INITIALIZATION
+        // 7. INITIALIZATION
         // ============================================================
         let bookManager;
 
         document.addEventListener('DOMContentLoaded', function() {
             bookManager = new BookManager();
             
-            // Event listeners
             document.getElementById('btnSync').addEventListener('click', function() {
                 bookManager.syncRemoteBooks();
             });
@@ -1105,16 +1338,13 @@
                 }
             });
             
-            // Auto sync
             bookManager.autoSync();
             
-            // Orientation lock
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => {});
             }
         });
 
-        // Visibility change - check for updates
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden && bookManager) {
                 bookManager.syncRemoteBooks();
