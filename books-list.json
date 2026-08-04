@@ -5,14 +5,12 @@
     {
       "id": "book15",
       "title": "Pre-KG English-15",
-      "cover": "https://koolwin.github.io/bookshelf/covers/book15.png",
-      "file": "book15.zip"
+      "cover": "https://koolwin.github.io/bookshelf/covers/book15.png"
     },
     {
       "id": "book16",
       "title": "Pre-KG English-16",
-      "cover": "https://koolwin.github.io/bookshelf/covers/book16.png",
-      "file": "book16.zip"
+      "cover": "https://koolwin.github.io/bookshelf/covers/book16.png"
     }
   ]
 }
