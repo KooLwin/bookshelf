@@ -252,18 +252,18 @@
                 ultimate_legend:{name:'Ultimate Legend',desc:'Read 300 books',threshold:300,icon:'badges/ultimate_legend.png'}
             },
             STICKERS:{
-                star_sticker:{name:'⭐ Star Sticker',desc:'First book reward',cost:0,type:'auto',icon:'stickers/star_sticker.png'},
-                rainbow_sticker:{name:'🌈 Rainbow Sticker',desc:'Read 5 books',cost:0,type:'auto',icon:'stickers/rainbow_sticker.png'},
-                heart_sticker:{name:'❤️ Heart Sticker',desc:'Read 10 books',cost:0,type:'auto',icon:'stickers/heart_sticker.png'},
-                rocket_sticker:{name:'🚀 Rocket Sticker',desc:'Read 15 books',cost:0,type:'auto',icon:'stickers/rocket_sticker.png'},
-                unicorn_sticker:{name:'🦄 Unicorn Sticker',desc:'Read 20 books',cost:0,type:'auto',icon:'stickers/unicorn_sticker.png'},
-                dragon_sticker:{name:'🐉 Dragon Sticker',desc:'Read 30 books',cost:0,type:'auto',icon:'stickers/dragon_sticker.png'},
-                crown_sticker:{name:'👑 Crown Sticker',desc:'Read 40 books',cost:0,type:'auto',icon:'stickers/crown_sticker.png'},
-                diamond_sticker:{name:'💎 Diamond Sticker',desc:'Read 50 books',cost:0,type:'auto',icon:'stickers/diamond_sticker.png'},
-                glow_sticker:{name:'✨ Glow Sticker',desc:'Redeem 20 points',cost:20,type:'redeem',icon:'stickers/glow_sticker.png'},
-                sparkle_sticker:{name:'🌟 Sparkle Sticker',desc:'Redeem 30 points',cost:30,type:'redeem',icon:'stickers/sparkle_sticker.png'},
-                gold_sticker:{name:'🏅 Gold Sticker',desc:'Redeem 40 points',cost:40,type:'redeem',icon:'stickers/gold_sticker.png'},
-                legend_sticker:{name:'👑 Legend Sticker',desc:'Redeem 50 points',cost:50,type:'redeem',icon:'stickers/legend_sticker.png'}
+                star_sticker:{name:'Star Sticker',desc:'First book reward',cost:0,type:'auto',icon:'stickers/star_sticker.png'},
+                rainbow_sticker:{name:'Rainbow Sticker',desc:'Read 5 books',cost:0,type:'auto',icon:'stickers/rainbow_sticker.png'},
+                heart_sticker:{name:'Heart Sticker',desc:'Read 10 books',cost:0,type:'auto',icon:'stickers/heart_sticker.png'},
+                rocket_sticker:{name:'Rocket Sticker',desc:'Read 15 books',cost:0,type:'auto',icon:'stickers/rocket_sticker.png'},
+                unicorn_sticker:{name:'Unicorn Sticker',desc:'Read 20 books',cost:0,type:'auto',icon:'stickers/unicorn_sticker.png'},
+                dragon_sticker:{name:'Dragon Sticker',desc:'Read 30 books',cost:0,type:'auto',icon:'stickers/dragon_sticker.png'},
+                crown_sticker:{name:'Crown Sticker',desc:'Read 40 books',cost:0,type:'auto',icon:'stickers/crown_sticker.png'},
+                diamond_sticker:{name:'Diamond Sticker',desc:'Read 50 books',cost:0,type:'auto',icon:'stickers/diamond_sticker.png'},
+                glow_sticker:{name:' Glow Sticker',desc:'Redeem 20 points',cost:20,type:'redeem',icon:'stickers/glow_sticker.png'},
+                sparkle_sticker:{name:'Sparkle Sticker',desc:'Redeem 30 points',cost:30,type:'redeem',icon:'stickers/sparkle_sticker.png'},
+                gold_sticker:{name:'Gold Sticker',desc:'Redeem 40 points',cost:40,type:'redeem',icon:'stickers/gold_sticker.png'},
+                legend_sticker:{name:'Legend Sticker',desc:'Redeem 50 points',cost:50,type:'redeem',icon:'stickers/legend_sticker.png'}
             },
             REWARDS:{
                 extra_book:{name:'📚 Extra Book',desc:'Read 1 extra book today',cost:20,type:'extra_book'},
@@ -274,15 +274,26 @@
             }
         };
         const BUILTIN_COUNT=18;
-        CONFIG.BUILTIN_BOOKS={};
-        for(let i=1;i<=BUILTIN_COUNT;i++){
-            CONFIG.BUILTIN_BOOKS['book'+i]={
-                title:'Pre-KG English-'+i,
-                cover:'covers/book'+i+'.png',
-                localPath:'books/book'+i+'/index.html',
-                isBuiltin:true
-            };
-        }
+	CONFIG.BUILTIN_BOOKS = {
+    book1: { title: 'Mud', cover: 'covers/book1.png', localPath: 'books/book1/index.html', isBuiltin: true },
+    book2: { title: 'Inky', cover: 'covers/book2.png', localPath: 'books/book2/index.html', isBuiltin: true },
+    book3: { title: 'Zack', cover: 'covers/book3.png', localPath: 'books/book3/index.html', isBuiltin: true },
+    book4: { title: 'Snake', cover: 'covers/book4.png', localPath: 'books/book4/index.html', isBuiltin: true },
+    book5: { title: 'Monster Footsteps', cover: 'covers/book5.png', localPath: 'books/book5/index.html', isBuiltin: true },
+    book6: { title: 'Moat Farm', cover: 'covers/book6.png', localPath: 'books/book6/index.html', isBuiltin: true },
+    book7: { title: 'The Rocket', cover: 'covers/book7.png', localPath: 'books/book7/index.html', isBuiltin: true },
+    book8: { title: 'Monsters', cover: 'covers/book8.png', localPath: 'books/book8/index.html', isBuiltin: true },
+    book9: { title: 'The Pond', cover: 'covers/book9.png', localPath: 'books/book9/index.html', isBuiltin: true },
+    book10: { title: 'Helping', cover: 'covers/book10.png', localPath: 'books/book10/index.html', isBuiltin: true },
+    book11: { title: 'The Wind and the Sun', cover: 'covers/book11.png', localPath: 'books/book11/index.html', isBuiltin: true },
+    book12: { title: 'Book Week', cover: 'covers/book12.png', localPath: 'books/book12/index.html', isBuiltin: true },
+    book13: { title: 'Star and Fish', cover: 'covers/book13.png', localPath: 'books/book13/index.html', isBuiltin: true },
+    book14: { title: 'A Dog Has Pups', cover: 'covers/book14.png', localPath: 'books/book14/index.html', isBuiltin: true },
+    book15: { title: 'A Shoal of Fish', cover: 'covers/book15.png', localPath: 'books/book15/index.html', isBuiltin: true },
+    book16: { title: 'Slugs and Snails', cover: 'covers/book16.png', localPath: 'books/book16/index.html', isBuiltin: true },
+    book17: { title: 'Foxes', cover: 'covers/book17.png', localPath: 'books/book17/index.html', isBuiltin: true },
+    book18: { title: 'Insects', cover: 'covers/book18.png', localPath: 'books/book18/index.html', isBuiltin: true }
+};
         class PointsManager{
             constructor(){
                 this.data=this.loadData();
