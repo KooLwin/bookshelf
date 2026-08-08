@@ -2,7 +2,12 @@
   "version": "1.0.0",
   "updated": "2024-01-15",
   "books": [
-    {"id":"book19","title":"Pre-KG English-19","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
-    {"id":"book20","title":"Pre-KG English-20","cover":"https://koolwin.github.io/bookshelf/covers/book20.png"}
+    {"id":"book19","title":"The Pal Cat","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book20","title":"The Pup in The Mud","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book21","title":"The Big Box","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book22","title":"The Wet Pet","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book23","title":"The Fun Trip","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book24","title":"The Big Light","cover":"https://koolwin.github.io/bookshelf/covers/book19.png"},
+    {"id":"book25","title":"Phonics","cover":"https://koolwin.github.io/bookshelf/covers/book20.png"}
   ]
 }

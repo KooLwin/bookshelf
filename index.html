@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="screen-orientation" content="landscape">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,178 +14,301 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Kreative Bookshelf</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1a1a2e;position:fixed;top:0;left:0}
-        #app{width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#f8f9fc;overflow:hidden;padding:10px 16px 6px 16px}
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html,body{width:100%;height:100%;overflow:hidden;background:#f8f9fc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1a1a2e;position:relative}
+        #app{width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#f8f9fc;overflow:hidden;padding:8px 12px 4px 12px;position:relative;z-index:1}
         
-        .header{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 10px 4px;flex-shrink:0;border-bottom:2px solid #e8ecf1;flex-wrap:wrap;gap:6px 10px;position:relative;z-index:10}
-        .header-left{display:flex;align-items:center;gap:8px}
-        .hamburger-btn{display:none;background:none;border:none;font-size:28px;cursor:pointer;padding:4px 6px;color:#1a1a2e;touch-action:manipulation;line-height:1}
+        .header{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 8px 2px;flex-shrink:0;border-bottom:2px solid #e8ecf1;flex-wrap:nowrap;gap:4px 6px;position:relative;z-index:10;min-height:40px;background:#f8f9fc}
+        .header-left{display:flex;align-items:center;gap:4px;flex-shrink:0}
+        .hamburger-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:2px 4px;color:#1a1a2e;touch-action:manipulation;line-height:1}
         .hamburger-btn:active{transform:scale(.9)}
-        .header h1{font-size:clamp(18px,2.8vh,32px);font-weight:800;color:#1a1a2e;letter-spacing:.5px;white-space:nowrap}
+        .header h1{font-size:clamp(14px,2.5vw,22px);font-weight:800;color:#1a1a2e;letter-spacing:.3px;white-space:nowrap}
         .header h1 span{color:#e94560}
         
-        .header-center{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-        .header-center .points-display{font-size:clamp(9px,1.1vh,13px);padding:4px 12px;background:#fef3c7;border-radius:20px;color:#d4880f;font-weight:700;white-space:nowrap}
-        .header-center .streak-display{font-size:clamp(9px,1.1vh,13px);padding:4px 12px;background:#dbeafe;border-radius:20px;color:#1a56db;font-weight:700;white-space:nowrap}
-        .header-center .daily-limit-info{font-size:clamp(9px,1.1vh,12px);color:#6c7a8e;padding:4px 12px;background:#eef1f5;border-radius:12px;white-space:nowrap}
+        .header-center{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;flex:1;justify-content:center;min-width:0;overflow:hidden}
+        .header-center .points-display{font-size:clamp(8px,1.2vw,12px);padding:2px 8px;background:#fef3c7;border-radius:14px;color:#d4880f;font-weight:700;white-space:nowrap;flex-shrink:0}
+        .header-center .streak-display{font-size:clamp(8px,1.2vw,12px);padding:2px 8px;background:#dbeafe;border-radius:14px;color:#1a56db;font-weight:700;white-space:nowrap;flex-shrink:0}
+        .header-center .daily-limit-info{font-size:clamp(7px,1vw,11px);color:#6c7a8e;padding:2px 8px;background:#eef1f5;border-radius:10px;white-space:nowrap;flex-shrink:0}
         .header-center .daily-limit-info .count{font-weight:700;color:#1a1a2e}
-        .header-center .daily-limit-info .new-badge{font-size:8px;color:#e94560;margin-left:4px}
+        .header-center .daily-limit-info .new-badge{font-size:7px;color:#e94560;margin-left:2px}
         
-        .header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-        .btn-header{padding:6px 14px;border:none;border-radius:20px;font-size:clamp(10px,1.2vh,13px);font-weight:600;cursor:pointer;touch-action:manipulation;white-space:nowrap;transition:.2s}
-        .btn-header:active{transform:scale(.95)}
+        .header-right{display:flex;align-items:center;gap:3px;flex-shrink:0;flex-wrap:nowrap}
+        .btn-header{padding:4px 10px;border:none;border-radius:14px;font-size:clamp(8px,1.1vw,12px);font-weight:600;cursor:pointer;touch-action:manipulation;white-space:nowrap;transition:.2s;flex-shrink:0}
+        .btn-header:active{transform:scale(.92)}
         .btn-header.sync{background:#4a6fa5;color:#fff}
         .btn-header.sync.syncing{background:#f59e0b;pointer-events:none}
-        .btn-header.buy{background:#e94560;color:#fff;box-shadow:0 4px 12px rgba(233,69,96,.25)}
+        .btn-header.buy{background:#e94560;color:#fff;box-shadow:0 2px 8px rgba(233,69,96,.25)}
         .btn-header.rewards{background:#8b5cf6;color:#fff}
         .btn-header.log{background:#0ea5e9;color:#fff}
         .btn-header.badges{background:#f59e0b;color:#fff}
         .btn-header.stickers{background:#ec4899;color:#fff}
+        .btn-header.cert{background:#8b5cf6;color:#fff}
         
-        .mobile-menu-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .3s ease}
-        .mobile-menu-overlay.active{display:block;opacity:1}
-        .mobile-menu-slide{position:fixed;top:0;left:-320px;width:300px;max-width:85%;height:100%;background:#ffffff;z-index:101;box-shadow:4px 0 30px rgba(0,0,0,.15);transition:left .35s cubic-bezier(.4,0,.2,1);padding:20px 16px;overflow-y:auto;display:flex;flex-direction:column}
+        .mobile-menu-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .3s ease;pointer-events:none}
+        .mobile-menu-overlay.active{display:block;opacity:1;pointer-events:auto}
+        .mobile-menu-slide{position:fixed;top:0;left:-280px;width:270px;max-width:80%;height:100%;background:#ffffff;z-index:101;box-shadow:4px 0 30px rgba(0,0,0,.15);transition:left .35s cubic-bezier(.4,0,.2,1);padding:16px 14px;overflow-y:auto;display:flex;flex-direction:column}
         .mobile-menu-slide.open{left:0}
-        .mobile-menu-slide .menu-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:2px solid #e8ecf1;margin-bottom:16px}
-        .mobile-menu-slide .menu-header h2{font-size:18px;font-weight:700;color:#1a1a2e}
-        .mobile-menu-slide .menu-close{background:none;border:none;font-size:28px;cursor:pointer;color:#6c7a8e;padding:0 4px}
-        .mobile-menu-slide .menu-close:active{transform:scale(.9)}
-        .mobile-menu-slide .menu-item{display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;cursor:pointer;transition:.2s;font-size:15px;font-weight:600;color:#1a1a2e;border:none;background:none;width:100%;text-align:left}
+        .mobile-menu-slide .menu-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:2px solid #e8ecf1;margin-bottom:12px}
+        .mobile-menu-slide .menu-header h2{font-size:17px;font-weight:700;color:#1a1a2e}
+        .mobile-menu-slide .menu-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6c7a8e;padding:0 4px}
+        .mobile-menu-slide .menu-item{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;cursor:pointer;transition:.2s;font-size:14px;font-weight:600;color:#1a1a2e;border:none;background:none;width:100%;text-align:left}
         .mobile-menu-slide .menu-item:active{transform:scale(.97);background:#f0f2f5}
-        .mobile-menu-slide .menu-item .icon{font-size:20px;width:32px;text-align:center}
-        .mobile-menu-slide .menu-divider{height:1px;background:#e8ecf1;margin:8px 0}
-        .mobile-menu-slide .menu-points{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fef3c7;border-radius:12px;margin-bottom:8px;font-size:13px;font-weight:600;color:#d4880f}
-        .mobile-menu-slide .menu-streak{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#dbeafe;border-radius:12px;margin-bottom:16px;font-size:13px;font-weight:600;color:#1a56db}
+        .mobile-menu-slide .menu-item .icon{font-size:18px;width:28px;text-align:center}
+        .mobile-menu-slide .menu-divider{height:1px;background:#e8ecf1;margin:6px 0}
+        .mobile-menu-slide .menu-points{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fef3c7;border-radius:10px;margin-bottom:6px;font-size:12px;font-weight:600;color:#d4880f}
+        .mobile-menu-slide .menu-streak{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#dbeafe;border-radius:10px;margin-bottom:12px;font-size:12px;font-weight:600;color:#1a56db}
         
-        .shelf-container{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 0 8px 0;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#d0d5dd #f0f2f5;-webkit-overflow-scrolling:touch}
-        .shelf-container::-webkit-scrollbar{width:6px}
+        .shelf-container{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0 4px 0;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+        .shelf-container::-webkit-scrollbar{width:4px}
         .shelf-container::-webkit-scrollbar-track{background:#f0f2f5;border-radius:4px}
         .shelf-container::-webkit-scrollbar-thumb{background:#d0d5dd;border-radius:4px}
-        .shelf-row{margin-bottom:28px;position:relative}
-        .shelf-row::after{content:'';position:absolute;bottom:-6px;left:2%;width:96%;height:10px;background:linear-gradient(180deg,#d4a373,#b8895c);border-radius:0 0 6px 6px;box-shadow:0 4px 12px rgba(0,0,0,.08);z-index:0}
-        .shelf-row::before{content:'';position:absolute;bottom:-10px;left:4%;width:92%;height:14px;background:radial-gradient(ellipse at 50% 0%,rgba(0,0,0,.06) 0%,transparent 70%);z-index:0;filter:blur(4px)}
-        .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 14px;padding:0 6px 4px 6px;position:relative;z-index:1}
-        .book-card{background:#fff;border-radius:10px 10px 6px 6px;overflow:hidden;cursor:pointer;transition:.25s ease;box-shadow:0 2px 8px rgba(0,0,0,.06),0 4px 20px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);display:flex;flex-direction:column;position:relative;touch-action:manipulation}
-        .book-card:active{transform:scale(.95) translateY(-2px)}
+        
+        .shelf-row{margin-bottom:16px;position:relative}
+        .shelf-row::after{content:'';position:absolute;bottom:-4px;left:2%;width:96%;height:8px;background:linear-gradient(180deg,#d4a373,#b8895c);border-radius:0 0 4px 4px;box-shadow:0 2px 8px rgba(0,0,0,.06);z-index:0}
+        .shelf-row::before{content:'';position:absolute;bottom:-6px;left:4%;width:92%;height:10px;background:radial-gradient(ellipse at 50% 0%,rgba(0,0,0,.05) 0%,transparent 70%);z-index:0;filter:blur(3px)}
+        .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px;padding:0 4px 2px 4px;position:relative;z-index:1}
+        
+        .book-card{background:#fff;border-radius:8px 8px 4px 4px;overflow:hidden;cursor:pointer;transition:.2s ease;box-shadow:0 1px 4px rgba(0,0,0,.06),0 1px 8px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);display:flex;flex-direction:column;position:relative;touch-action:manipulation;-webkit-touch-callout:none}
+        .book-card:active{transform:scale(.96) translateY(-1px)}
         .book-card .cover-wrap{position:relative;width:100%;background:#f0f2f5;overflow:hidden}
         .book-card .cover-wrap img{display:block;width:100%;height:auto;background:#f0f2f5;transition:.3s;object-fit:contain}
-        .book-card .cover-wrap img:hover{transform:scale(1.02)}
-        .book-card .cover-wrap .placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8ecf1,#d5dbe4);font-size:clamp(28px,5vh,50px);color:rgba(0,0,0,.1)}
-        .book-card .book-info{padding:6px 8px 8px 8px;display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;flex-shrink:0}
-        .book-card .book-title{font-size:clamp(10px,1.3vh,14px);font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-        .status-badge{font-size:clamp(8px,1vh,11px);padding:1px 8px;border-radius:12px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:.3s}
+        .book-card .cover-wrap .placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8ecf1,#d5dbe4);font-size:clamp(24px,4vw,40px);color:rgba(0,0,0,.1)}
+        .book-card .book-info{padding:3px 5px 5px 5px;display:flex;justify-content:space-between;align-items:center;gap:3px;background:#fff;flex-shrink:0}
+        .book-card .book-title{font-size:clamp(8px,1.2vw,12px);font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+        .status-badge{font-size:clamp(6px,0.9vw,10px);padding:1px 5px;border-radius:8px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:.3s}
         .status-badge.ready{background:#e6f7ed;color:#1a9c5e}
         .status-badge.pending{background:#f0f2f5;color:#8a9aa8}
-        .status-badge.locked{background:#fee2e2;color:#dc2626}
         .status-badge.read{background:#fef3c7;color:#d4880f}
         .status-badge.completed{background:#dbeafe;color:#1a56db}
         .status-badge.repeat{background:#e0e7ff;color:#4f46e5}
         .status-badge.today-new{background:#fce7f3;color:#db2777}
-        .book-card .offline-badge{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:8px;padding:2px 6px;border-radius:8px;z-index:2}
-        .book-card .lock-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:3;border-radius:10px 10px 0 0}
-        .book-card .lock-overlay .lock-icon{font-size:40px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
-        .book-card .lock-overlay .lock-text{position:absolute;bottom:20px;color:#fff;font-size:12px;background:rgba(0,0,0,.7);padding:4px 12px;border-radius:20px}
-        .book-card .badge-icon{position:absolute;top:8px;left:8px;font-size:18px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
-        .today-label{font-size:8px;color:#e94560;background:#fce7f3;padding:1px 6px;border-radius:8px;margin-left:4px}
+        .book-card .offline-badge{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;font-size:6px;padding:1px 4px;border-radius:4px;z-index:2}
+        .book-card .badge-icon{position:absolute;top:3px;left:3px;font-size:14px;z-index:2;filter:drop-shadow(0 1px 4px rgba(0,0,0,.3))}
+        .today-label{font-size:6px;color:#e94560;background:#fce7f3;padding:1px 4px;border-radius:4px;margin-left:2px}
         
-        #notification{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a2e;color:#fff;padding:10px 28px;border-radius:30px;font-size:clamp(12px,1.4vh,15px);opacity:0;transition:.5s cubic-bezier(.16,1,.3,1);pointer-events:none;max-width:92%;text-align:center;z-index:999;box-shadow:0 8px 40px rgba(0,0,0,.2);font-weight:500}
+        #notification{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:#1a1a2e;color:#fff;padding:8px 20px;border-radius:24px;font-size:clamp(11px,1.3vw,14px);opacity:0;transition:.4s cubic-bezier(.16,1,.3,1);pointer-events:none;max-width:90%;text-align:center;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.2);font-weight:500}
         #notification.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        
         #webview-container{display:none;width:100vw;height:100vh;height:100dvh;position:fixed;top:0;left:0;z-index:1000;background:#fff;overflow:hidden}
         #webview-container iframe{width:100%;height:100%;border:none;display:block;background:#fff}
-        #close-btn{position:absolute;top:14px;right:18px;font-size:clamp(22px,3.5vh,32px);color:#1a1a2e;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.08);border-radius:50%;width:clamp(38px,5.5vh,48px);height:clamp(38px,5.5vh,48px);cursor:pointer;z-index:1001;transition:.2s;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 4px 20px rgba(0,0,0,.1);font-weight:700;touch-action:manipulation}
+        #close-btn{position:absolute;top:10px;right:14px;font-size:clamp(20px,3vw,28px);color:#1a1a2e;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.08);border-radius:50%;width:clamp(34px,5vw,42px);height:clamp(34px,5vw,42px);cursor:pointer;z-index:1001;transition:.2s;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 4px 16px rgba(0,0,0,.1);font-weight:700;touch-action:manipulation}
         #close-btn:active{transform:scale(.88)}
-        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;justify-content:center;align-items:center}
+        
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;justify-content:center;align-items:center;padding:16px}
         .modal-overlay.active{display:flex}
-        .modal-content{background:#fff;border-radius:20px;padding:24px;max-width:600px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative}
-        .modal-content h2{font-size:clamp(20px,2.5vh,28px);margin-bottom:16px;color:#1a1a2e}
-        .modal-close{position:absolute;top:12px;right:16px;font-size:24px;cursor:pointer;color:#999;background:none;border:none}
+        .modal-content{background:#fff;border-radius:16px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;-webkit-overflow-scrolling:touch}
+        .modal-content h2{font-size:clamp(18px,2.2vw,24px);margin-bottom:12px;color:#1a1a2e}
+        .modal-close{position:absolute;top:10px;right:14px;font-size:22px;cursor:pointer;color:#999;background:none;border:none}
         .modal-close:hover{color:#333}
-        .reward-item{background:#f8f9fc;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e8ecf1}
+        
+        .reward-item{background:#f8f9fc;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e8ecf1}
         .reward-item .info{flex:1}
-        .reward-item .name{font-weight:600;font-size:14px}
-        .reward-item .desc{font-size:12px;color:#6c7a8e}
-        .reward-item .cost{font-weight:700;color:#d4880f;margin:0 8px}
-        .reward-item .btn-redeem{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:12px;cursor:pointer;transition:.2s}
+        .reward-item .name{font-weight:600;font-size:13px}
+        .reward-item .desc{font-size:11px;color:#6c7a8e}
+        .reward-item .cost{font-weight:700;color:#d4880f;margin:0 6px}
+        .reward-item .btn-redeem{padding:4px 14px;border:none;border-radius:14px;font-weight:600;font-size:11px;cursor:pointer;transition:.2s}
         .reward-item .btn-redeem:active{transform:scale(.95)}
         .reward-item .btn-redeem.available{background:#4a6fa5;color:#fff}
         .reward-item .btn-redeem.unavailable{background:#e8ecf1;color:#999;cursor:not-allowed}
         .reward-item .btn-redeem.redeemed{background:#e6f7ed;color:#1a9c5e}
-        .log-entry{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8ecf1;font-size:14px}
+        
+        .log-entry{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e8ecf1;font-size:13px}
         .log-entry .date{color:#6c7a8e}
         .log-entry .book{font-weight:500}
         .log-entry .points{color:#d4880f;font-weight:600}
-        .log-entry .badge{font-size:12px;color:#6c7a8e}
-        .badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
-        .badge-item{text-align:center;padding:12px 8px;background:#f8f9fc;border-radius:12px;border:2px solid #e8ecf1;transition:.3s}
+        .log-entry .badge{font-size:11px;color:#6c7a8e}
+        
+        .badge-grid,.sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+        .badge-item,.sticker-item{text-align:center;padding:10px 6px;background:#f8f9fc;border-radius:10px;border:2px solid #e8ecf1;transition:.3s}
         .badge-item.unlocked{border-color:#f59e0b;background:#fef3c7}
         .badge-item.locked{opacity:.5;filter:grayscale(1)}
-        .badge-item .icon{font-size:42px;display:block;margin-bottom:4px}
-        .badge-item .icon img{width:52px;height:52px;object-fit:contain;border-radius:50%}
-        .badge-item .name{font-size:10px;font-weight:600;margin-top:4px}
-        .badge-item .desc{font-size:9px;color:#6c7a8e}
-        .sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
-        .sticker-item{text-align:center;padding:12px 8px;background:#f8f9fc;border-radius:12px;border:2px solid #e8ecf1;transition:.3s}
+        .badge-item .icon{font-size:36px;display:block;margin-bottom:2px}
+        .badge-item .icon img{width:44px;height:44px;object-fit:contain;border-radius:50%}
+        .badge-item .name{font-size:9px;font-weight:600;margin-top:2px}
+        .badge-item .desc{font-size:8px;color:#6c7a8e}
+        
         .sticker-item.unlocked{border-color:#ec4899;background:#fdf2f8}
         .sticker-item.locked{opacity:.5;filter:grayscale(1)}
-        .sticker-item .icon{font-size:48px;display:block;margin-bottom:4px}
-        .sticker-item .icon img{width:56px;height:56px;object-fit:contain}
-        .sticker-item .name{font-size:10px;font-weight:600;margin-top:4px}
-        .sticker-item .desc{font-size:9px;color:#6c7a8e}
-        .chart-container{background:#f8f9fc;border-radius:12px;padding:16px;margin:12px 0;overflow-x:auto}
-        .chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding-bottom:20px;position:relative}
+        .sticker-item .icon{font-size:40px;display:block;margin-bottom:2px}
+        .sticker-item .icon img{width:48px;height:48px;object-fit:contain}
+        .sticker-item .name{font-size:9px;font-weight:600;margin-top:2px}
+        .sticker-item .desc{font-size:8px;color:#6c7a8e}
+        
+        .chart-container{background:#f8f9fc;border-radius:10px;padding:12px;margin:10px 0;overflow-x:auto}
+        .chart-bars{display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:16px;position:relative}
         .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
-        .chart-bar{width:100%;max-width:30px;background:linear-gradient(180deg,#4a6fa5,#6c8fc7);border-radius:4px 4px 0 0;transition:height .5s ease;min-height:4px}
-        .chart-bar-label{font-size:9px;color:#6c7a8e;margin-top:4px;text-align:center}
-        .chart-bar-value{font-size:8px;font-weight:600;color:#1a1a2e;margin-bottom:2px}
-        .certificate-container{background:linear-gradient(135deg,#fef9e7,#fdebd0);border:4px solid #d4a373;border-radius:16px;padding:30px;text-align:center;margin:12px 0;box-shadow:0 4px 20px rgba(0,0,0,.08);position:relative}
-        .certificate-container .title{font-size:28px;font-weight:800;color:#b8895c;margin-bottom:4px;letter-spacing:2px}
-        .certificate-container .subtitle{font-size:16px;color:#6c7a8e;margin-bottom:8px}
-        .certificate-container .name{font-size:24px;font-weight:700;color:#1a1a2e;margin:8px 0}
-        .certificate-container .date{font-size:14px;color:#6c7a8e}
-        .certificate-container .stamp{font-size:64px;margin-top:12px}
-        .certificate-container .border-decoration{position:absolute;top:8px;left:8px;right:8px;bottom:8px;border:2px dashed #d4a373;border-radius:12px;pointer-events:none}
-        .btn-export{padding:8px 20px;border:none;border-radius:20px;font-weight:600;font-size:14px;cursor:pointer;transition:.2s;margin:4px}
+        .chart-bar{width:100%;max-width:24px;background:linear-gradient(180deg,#4a6fa5,#6c8fc7);border-radius:3px 3px 0 0;transition:height .5s ease;min-height:3px}
+        .chart-bar-label{font-size:8px;color:#6c7a8e;margin-top:3px;text-align:center}
+        .chart-bar-value{font-size:7px;font-weight:600;color:#1a1a2e;margin-bottom:2px}
+        
+        /* ===== CERTIFICATE - A4 FULL PAGE ===== */
+        .certificate-a4 {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #fef9e7, #fdebd0);
+            border: 8px solid #d4a373;
+            border-radius: 8px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.12);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .certificate-a4 .border-deco {
+            position: absolute;
+            top: 12mm;
+            left: 10mm;
+            right: 10mm;
+            bottom: 12mm;
+            border: 3px double #d4a373;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .certificate-a4 .cert-icon {
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+        .certificate-a4 .cert-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #b8895c;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+            font-family: 'Georgia', serif;
+        }
+        .certificate-a4 .cert-subtitle {
+            font-size: 20px;
+            color: #6c7a8e;
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+        .certificate-a4 .cert-subtitle strong {
+            color: #b8895c;
+            font-weight: 700;
+        }
+        .certificate-a4 .cert-name {
+            font-size: 42px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 12px 0 8px 0;
+            padding: 4px 30px;
+            border-bottom: 3px solid #d4a373;
+            display: inline-block;
+            font-family: 'Georgia', serif;
+            letter-spacing: 2px;
+        }
+        .certificate-a4 .cert-name-input {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a2e;
+            border: none;
+            border-bottom: 3px dashed #d4a373;
+            background: transparent;
+            text-align: center;
+            padding: 4px 20px;
+            margin: 12px 0 8px 0;
+            min-width: 200px;
+            max-width: 80%;
+            font-family: 'Georgia', serif;
+            letter-spacing: 2px;
+            outline: none;
+        }
+        .certificate-a4 .cert-name-input:focus {
+            border-bottom-color: #e94560;
+        }
+        .certificate-a4 .cert-name-input::placeholder {
+            color: #ccc;
+            font-size: 20px;
+            font-weight: 400;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .certificate-a4 .cert-date {
+            font-size: 16px;
+            color: #6c7a8e;
+            margin-top: 8px;
+        }
+        .certificate-a4 .cert-stamp {
+            font-size: 72px;
+            margin-top: 12px;
+        }
+        .certificate-a4 .cert-footer {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #b0b8c4;
+        }
+        .certificate-a4 .cert-footer span {
+            color: #d4a373;
+            font-weight: 700;
+        }
+        
+        .cert-name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 8px 0;
+        }
+        .cert-name-wrapper .edit-hint {
+            font-size: 14px;
+            color: #6c7a8e;
+            cursor: pointer;
+            padding: 4px 12px;
+            background: #e8ecf1;
+            border-radius: 20px;
+            transition: .2s;
+        }
+        .cert-name-wrapper .edit-hint:active {
+            transform: scale(.95);
+        }
+        
+        .btn-export{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;margin:4px}
         .btn-export:active{transform:scale(.95)}
         .btn-export.pdf{background:#dc2626;color:#fff}
         .btn-export.png{background:#4a6fa5;color:#fff}
         .btn-export:hover{opacity:.85}
-        .footer{text-align:center;font-size:clamp(8px,1vh,11px);color:#b0b8c4;padding:6px 0 2px 0;flex-shrink:0;border-top:1px solid #e8ecf1;letter-spacing:.3px;background:#f8f9fc}
-        .scroll-hint{text-align:center;font-size:clamp(10px,1.2vh,13px);color:#b0b8c4;padding:4px 0 2px 0;opacity:.6;flex-shrink:0}
+        
+        .cert-empty{color:#6c7a8e;text-align:center;padding:30px 10px;font-size:14px}
+        
+        .footer{text-align:center;font-size:clamp(7px,0.9vw,10px);color:#b0b8c4;padding:4px 0 2px 0;flex-shrink:0;border-top:1px solid #e8ecf1;letter-spacing:.3px;background:#f8f9fc}
+        .scroll-hint{text-align:center;font-size:clamp(9px,1vw,11px);color:#b0b8c4;padding:2px 0 2px 0;opacity:.6;flex-shrink:0}
         .scroll-hint .arrow{display:inline-block;animation:bounce 1.8s infinite}
-        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
         
-        @media(orientation:landscape){.book-grid{grid-template-columns:repeat(4,1fr);gap:16px 12px}}
-        @media(orientation:portrait){.book-grid{grid-template-columns:repeat(2,1fr);gap:14px 10px}}
+        @media(orientation:landscape){.book-grid{grid-template-columns:repeat(4,1fr);gap:14px 12px}.header{padding:6px 4px 10px 4px}.btn-header{padding:6px 14px;font-size:clamp(10px,1.2vw,13px)}}
         
-        @media(max-width:820px){
-            .hamburger-btn{display:block}
-            .mobile-menu-overlay{display:block}
-            .header-right .btn-header{display:none}
-            .header-center .daily-limit-info{display:none}
-            .header-center{gap:4px}
-            .header-center .points-display{font-size:11px;padding:3px 10px}
-            .header-center .streak-display{font-size:11px;padding:3px 10px}
-            .header-right{gap:4px}
+        @media(orientation:portrait){#app{padding:4px 8px 2px 8px}.book-grid{grid-template-columns:repeat(2,1fr);gap:8px 6px}.header{min-height:34px;padding:3px 2px 5px 2px;gap:3px}.header h1{font-size:clamp(12px,2vw,16px)}.header-center .points-display{font-size:clamp(7px,1vw,9px);padding:1px 5px}.header-center .streak-display{font-size:clamp(7px,1vw,9px);padding:1px 5px}.header-center .daily-limit-info{font-size:clamp(6px,0.9vw,9px);padding:1px 5px}.btn-header{padding:2px 6px;font-size:clamp(7px,0.9vw,9px);border-radius:10px}.hamburger-btn{font-size:18px;padding:1px 3px}.book-card .book-title{font-size:clamp(7px,1vw,10px)}.book-card .book-info{padding:2px 4px 4px 4px}.status-badge{font-size:clamp(6px,0.8vw,8px);padding:1px 4px}.shelf-row{margin-bottom:12px}.shelf-row::after{height:6px;bottom:-4px}.shelf-row::before{height:8px;bottom:-6px}.badge-grid,.sticker-grid{grid-template-columns:repeat(2,1fr)}.mobile-menu-slide{width:240px;left:-240px}.modal-content{padding:14px;max-width:100%;margin:0 4px}#notification{font-size:clamp(10px,1vw,12px);padding:6px 14px;bottom:12px}.footer{font-size:clamp(6px,0.8vw,8px);padding:2px 0 2px 0}.scroll-hint{font-size:clamp(8px,0.9vw,10px);padding:2px 0}}
+        
+        @media(max-width:400px)and(orientation:portrait){.book-grid{grid-template-columns:repeat(2,1fr);gap:6px 4px}.header h1{font-size:11px}.header-center .points-display{font-size:6px;padding:1px 4px}.header-center .streak-display{font-size:6px;padding:1px 4px}.header-center .daily-limit-info{font-size:6px;padding:1px 4px}.btn-header{padding:2px 5px;font-size:6px}.hamburger-btn{font-size:16px}.book-card .book-title{font-size:6px}.mobile-menu-slide{width:200px;left:-200px}}
+        
+        @media(min-width:821px){.hamburger-btn{display:none}.mobile-menu-overlay{display:none!important}.mobile-menu-slide{display:none!important}}
+        @media(max-width:820px){.hamburger-btn{display:block}.mobile-menu-overlay{display:block}.header-right .btn-header{display:none}.header-center .daily-limit-info{display:none}}
+        
+        @media print {
+            .certificate-a4 {
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+                padding: 20mm 15mm;
+                width: 100%;
+                min-height: 100vh;
+            }
+            .certificate-a4 .border-deco {
+                top: 15mm;
+                left: 12mm;
+                right: 12mm;
+                bottom: 15mm;
+            }
+            .no-print { display: none !important; }
         }
-        @media(max-width:480px){
-            .header h1{font-size:16px}
-            .header-center .points-display{font-size:9px;padding:2px 8px}
-            .header-center .streak-display{font-size:9px;padding:2px 8px}
-            .hamburger-btn{font-size:22px;padding:2px 4px}
-            .book-grid{grid-template-columns:repeat(2,1fr);gap:10px 8px}
-            .badge-grid,.sticker-grid{grid-template-columns:repeat(2,1fr)}
-            .mobile-menu-slide{width:280px}
-        }
-        @media(min-width:821px){
-            .hamburger-btn{display:none}
-            .mobile-menu-overlay{display:none!important}
-            .mobile-menu-slide{display:none!important}
-        }
-        @media(min-width:1024px){.book-grid{gap:24px 20px;padding:0 12px 4px 12px}}
-        @media(min-width:1440px){.book-grid{grid-template-columns:repeat(4,1fr);max-width:1200px;margin:0 auto}}
-        .badge-icon-img{width:48px;height:48px;object-fit:contain;border-radius:50%;display:block;margin:0 auto}
-        .sticker-icon-img{width:56px;height:56px;object-fit:contain;display:block;margin:0 auto}
+        
+        .badge-icon-img{width:44px;height:44px;object-fit:contain;border-radius:50%;display:block;margin:0 auto}
+        .sticker-icon-img{width:48px;height:48px;object-fit:contain;display:block;margin:0 auto}
     </style>
 </head>
 <body>
@@ -203,6 +325,7 @@
             </div>
             <div class="header-right">
                 <button class="btn-header badges" id="btnBadges">🏆 Badges</button>
+                <button class="btn-header cert" id="btnCert">📜 Cert</button>
                 <button class="btn-header stickers" id="btnStickers">🎨 Stickers</button>
                 <button class="btn-header rewards" id="btnRewards">🎁 Rewards</button>
                 <button class="btn-header log" id="btnLog">📖 Log</button>
@@ -220,6 +343,7 @@
             <div class="menu-points" id="menuPoints">⭐ 0 pts</div>
             <div class="menu-streak" id="menuStreak">🔥 0 days</div>
             <button class="menu-item" data-action="badges"><span class="icon">🏆</span> Badges</button>
+            <button class="menu-item" data-action="cert"><span class="icon">📜</span> Certificates</button>
             <button class="menu-item" data-action="stickers"><span class="icon">🎨</span> Stickers</button>
             <button class="menu-item" data-action="rewards"><span class="icon">🎁</span> Rewards</button>
             <button class="menu-item" data-action="log"><span class="icon">📖</span> Reading Log</button>
@@ -234,7 +358,9 @@
         </div>
         <div class="footer">📡 Read NEW books (3/day) for points • Re-read anytime for free!</div>
     </div>
+    
     <div id="notification"></div>
+    
     <div id="webview-container">
         <button id="close-btn">✕</button>
         <iframe id="book-iframe" allowfullscreen></iframe>
@@ -244,19 +370,19 @@
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('rewardsModal')">✕</button>
             <h2>🎁 Rewards Shop</h2>
-            <p style="margin-bottom:12px;">Your Points: <strong id="modalPoints">0</strong></p>
+            <p style="margin-bottom:10px;">Your Points: <strong id="modalPoints">0</strong></p>
             <div id="rewards-list"></div>
-            <p style="font-size:12px;color:#6c7a8e;margin-top:12px;">💡 Read NEW books to earn points. Re-read anytime for free!</p>
+            <p style="font-size:11px;color:#6c7a8e;margin-top:10px;">💡 Read NEW books to earn points. Re-read anytime for free!</p>
         </div>
     </div>
     <div class="modal-overlay" id="logModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('logModal')">✕</button>
             <h2>📖 Reading Log</h2>
-            <p style="font-size:12px;color:#6c7a8e;margin-bottom:8px;">All books you've read (including re-reads)</p>
+            <p style="font-size:11px;color:#6c7a8e;margin-bottom:6px;">All books you've read (including re-reads)</p>
             <div id="reading-log-list"></div>
-            <div style="margin-top:16px;">
-                <p style="font-weight:600;">📊 Weekly Progress</p>
+            <div style="margin-top:12px;">
+                <p style="font-weight:600;font-size:13px;">📊 Weekly Progress</p>
                 <div class="chart-container"><div class="chart-bars" id="chartBars"></div></div>
             </div>
         </div>
@@ -265,7 +391,7 @@
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('badgesModal')">✕</button>
             <h2>🏆 Your Badges</h2>
-            <p style="font-size:12px;color:#6c7a8e;margin-bottom:12px;">Collect all 25 badges by reading NEW books!</p>
+            <p style="font-size:11px;color:#6c7a8e;margin-bottom:10px;">Collect all 25 badges by reading NEW books!</p>
             <div id="badgeGrid"></div>
         </div>
     </div>
@@ -273,29 +399,37 @@
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('stickersModal')">✕</button>
             <h2>🎨 Your Stickers</h2>
-            <p style="font-size:12px;color:#6c7a8e;margin-bottom:12px;">Collect stickers by reading books!</p>
+            <p style="font-size:11px;color:#6c7a8e;margin-bottom:10px;">Collect stickers by reading books!</p>
             <div id="stickerGrid"></div>
         </div>
     </div>
+    
+    <!-- ===== CERTIFICATE MODAL ===== -->
     <div class="modal-overlay" id="certificateModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:700px;padding:16px;">
             <button class="modal-close" onclick="closeModal('certificateModal')">✕</button>
-            <h2>📜 Certificate</h2>
-            <div id="certificateContainer"></div>
-            <div style="text-align:center;margin-top:12px;">
+            <h2>📜 Certificates</h2>
+            <p style="font-size:12px;color:#6c7a8e;margin-bottom:10px;">🎉 Earn certificates by reading NEW books! Click the name to edit.</p>
+            <div id="certificateContainer" style="overflow-x:auto;padding:8px 0;"></div>
+            <div style="text-align:center;margin-top:10px;" class="no-print">
                 <button class="btn-export pdf" onclick="exportCertificate('pdf')">📄 Download PDF</button>
                 <button class="btn-export png" onclick="exportCertificate('png')">🖼️ Download PNG</button>
+                <button class="btn-export" style="background:#6c7a8e;color:#fff;" onclick="window.print()">🖨️ Print</button>
             </div>
         </div>
     </div>
     
     <script>
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
         const CONFIG={
             DAILY_LIMIT:3,
             STORAGE_KEY:'kreative_books_data',
             POINTS_KEY:'kreative_points_data',
             BADGE_ICONS_KEY:'kreative_badge_icons',
             STICKER_ICONS_KEY:'kreative_sticker_icons',
+            USER_NAME_KEY:'kreative_user_name',
             CACHE_VERSION:'1.0.0',
             BASE_URL:window.location.href.includes('github.io')?'https://koolwin.github.io/bookshelf/':'./',
             POINTS:{PER_BOOK:10,FIRST_BOOK_BONUS:5,STREAK_BONUS:2,STREAK_THRESHOLD:3},
@@ -365,6 +499,30 @@
             };
         }
         
+        // ============================================================
+        // USER NAME MANAGER
+        // ============================================================
+        class UserManager {
+            constructor() {
+                this.userName = this.loadUserName();
+            }
+            loadUserName() {
+                try {
+                    return localStorage.getItem(CONFIG.USER_NAME_KEY) || '';
+                } catch(e) { return ''; }
+            }
+            saveUserName(name) {
+                try {
+                    localStorage.setItem(CONFIG.USER_NAME_KEY, name);
+                    this.userName = name;
+                } catch(e) {}
+            }
+            getUserName() { return this.userName || 'Reader'; }
+        }
+        
+        // ============================================================
+        // POINTS MANAGER
+        // ============================================================
         class PointsManager{
             constructor(){
                 this.data=this.loadData();
@@ -375,6 +533,7 @@
                 this.baseUrl=CONFIG.BASE_URL;
                 this.newBookReads=this.loadNewBookReads();
                 this.dailyNewReads=this.loadDailyNewReads();
+                this.userManager = new UserManager();
             }
             loadData(){
                 try{
@@ -414,6 +573,8 @@
             getBadgeIcon(key){return this.baseUrl+CONFIG.BADGES[key].icon;}
             getStickerIcon(key){return this.baseUrl+CONFIG.STICKERS[key].icon;}
             getToday(){return new Date().toISOString().split('T')[0];}
+            getUserName(){return this.userManager.getUserName();}
+            setUserName(name){this.userManager.saveUserName(name);}
             isNewBook(bookId){return !this.newBookReads[bookId];}
             isReadToday(bookId){
                 const today=this.getToday();
@@ -601,6 +762,9 @@
             }
         }
         
+        // ============================================================
+        // BOOK MANAGER
+        // ============================================================
         class BookManager{
             constructor(){
                 this.points=new PointsManager();
@@ -677,57 +841,36 @@
             getTodayNewCount(){return this.points.getTodayNewCount();}
             getMaxNewBooksToday(){return this.points.getMaxNewBooksToday();}
             canReadNewToday(){return this.points.canReadNewToday();}
+            
             async openBook(bookId){
                 const book=this.books[bookId];
                 if(!book){showNotification('❌ Book not found');return;}
+                const url=this.getBookUrl(bookId);
+                if(!url){showNotification('❌ Cannot open book');return;}
+                
                 const isNew=this.isNewBook(bookId);
                 const isReadToday=this.isBookReadToday(bookId);
-                if(!isNew && isReadToday){
-                    const url=this.getBookUrl(bookId);
-                    if(url){
-                        showNotification('📖 '+book.title+' (Re-read today)');
-                        openWebView(url,book.title);
-                    }
-                    return;
-                }
-                if(!isNew){
-                    const url=this.getBookUrl(bookId);
-                    if(url){
-                        this.points.addPoints(bookId,book.title);
+                
+                openWebView(url, book.title);
+                
+                if(isNew && !isReadToday){
+                    if(this.canReadNewToday()){
+                        const result=this.points.addPoints(bookId,book.title);
                         this.points.updateUI();
                         this.updateUI();
-                        showNotification('📖 '+book.title+' (Re-read)');
-                        openWebView(url,book.title);
+                        if(result.points>0){
+                            showNotification('📖 '+book.title+' • +'+result.points+' pts ⭐ (New!)');
+                        }
+                    } else {
+                        showNotification('📖 '+book.title+' (Opened - Daily new book limit reached)');
                     }
-                    return;
-                }
-                if(isNew && isReadToday){
-                    const url=this.getBookUrl(bookId);
-                    if(url){
-                        showNotification('📖 '+book.title+' (Already read today)');
-                        openWebView(url,book.title);
-                    }
-                    return;
-                }
-                if(!this.canReadNewToday()){
-                    showNotification('⚠️ Daily limit for NEW books reached ('+this.getMaxNewBooksToday()+'/'+this.getMaxNewBooksToday()+'). Re-read any book anytime!');
-                    return;
-                }
-                const url=this.getBookUrl(bookId);
-                if(url){
-                    const result=this.points.addPoints(bookId,book.title);
-                    this.points.updateUI();
-                    this.updateUI();
-                    if(result.limitReached){
-                        showNotification('⚠️ Daily limit reached!');
-                        return;
-                    }
-                    showNotification('📖 '+book.title+' • +'+result.points+' pts ⭐ (New!)');
-                    openWebView(url,book.title);
-                }else{
-                    showNotification('❌ Cannot open book');
+                } else if(isReadToday && isNew){
+                    showNotification('📖 '+book.title+' (Already read today)');
+                } else {
+                    showNotification('📖 '+book.title+' (Re-read)');
                 }
             }
+            
             getBook(bookId){return this.books[bookId]||null;}
             getAllBooks(){
                 return Object.keys(this.books).map(key=>({
@@ -754,6 +897,9 @@
             autoSync(){setTimeout(()=>{this.syncRemoteBooks();},3000);}
         }
         
+        // ============================================================
+        // RENDER BOOKS
+        // ============================================================
         function renderBooks(bookList,manager){
             const container=document.getElementById('shelf-rows');
             const rows=chunkArray(bookList,4);
@@ -766,35 +912,45 @@
                     const readBefore=book.readBefore||false;
                     const isNew=book.isNew!==undefined?book.isNew:true;
                     const isNewToday=book.isNewToday||false;
-                    const canReadNew=manager.canReadNewToday();
-                    const isLocked=!canReadNew&&isNew&&!readToday;
+                    
                     let statusClass='pending';
                     let statusIcon='🌐';
                     let label='';
-                    if(isBuiltin){statusClass='ready';statusIcon=readToday?'📖':(readBefore?'🔄':'📚');}
-                    else if(isNewToday){statusClass='today-new';statusIcon='⭐';label='NEW';}
-                    else if(readToday){statusClass='read';statusIcon='📖';}
-                    else if(readBefore){statusClass='repeat';statusIcon='🔄';}
-                    if(isLocked&&isNew&&!readToday){statusClass='locked';statusIcon='🔒';}
+                    
+                    if(isBuiltin){
+                        statusClass='ready';
+                        statusIcon=readToday?'📖':(readBefore?'🔄':'📚');
+                    } else if(isNewToday){
+                        statusClass='today-new';
+                        statusIcon='⭐';
+                        label='NEW';
+                    } else if(readToday){
+                        statusClass='read';
+                        statusIcon='📖';
+                    } else if(readBefore){
+                        statusClass='repeat';
+                        statusIcon='🔄';
+                    } else if(isNew){
+                        statusClass='pending';
+                        statusIcon='📚';
+                    }
+                    
                     const onlineBadge=!isBuiltin?'<div class="offline-badge">🌐 Online</div>':'';
                     let badgeIcon='';
                     if(isNewToday)badgeIcon='⭐';
                     else if(readToday)badgeIcon='📖';
                     else if(readBefore&&!readToday)badgeIcon='🔄';
                     else if(isNew)badgeIcon='📚';
+                    
                     html+='<div class="book-card" data-book="'+book.id+'">';
                     html+='<div class="cover-wrap" id="cover-'+book.id+'">';
                     html+='<img src="'+book.cover+'" alt="'+book.title+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
                     html+='<div class="placeholder" style="display:none;">📖</div>';
                     if(badgeIcon)html+='<div class="badge-icon">'+badgeIcon+'</div>';
                     html+=onlineBadge;
-                    if(isLocked&&isNew&&!readToday){
-                        html+='<div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-text">New book limit reached</div></div>';
-                    }
                     html+='</div>';
                     html+='<div class="book-info"><span class="book-title">'+book.title+'</span>';
                     if(label)html+='<span class="today-label">'+label+'</span>';
-                    if(!isNew&&!readToday)html+='<span style="font-size:8px;color:#6c7a8e;margin-right:4px;">🔄</span>';
                     html+='<span class="status-badge '+statusClass+'">'+statusIcon+'</span></div></div>';
                 }
                 html+='</div></div>';
@@ -809,7 +965,11 @@
                 }
             });
             container.querySelectorAll('.book-card').forEach(el=>{
-                el.addEventListener('click',function(){const bookId=this.dataset.book;manager.openBook(bookId);});
+                el.addEventListener('click',function(e){
+                    e.stopPropagation();
+                    const bookId=this.dataset.book;
+                    manager.openBook(bookId);
+                });
             });
         }
         function setAspectRatio(coverWrap,width,height){
@@ -818,6 +978,9 @@
         }
         function chunkArray(arr,size){const result=[];for(let i=0;i<arr.length;i+=size)result.push(arr.slice(i,i+size));return result;}
         
+        // ============================================================
+        // MODALS
+        // ============================================================
         function openModal(id){document.getElementById(id).classList.add('active');}
         function closeModal(id){document.getElementById(id).classList.remove('active');}
         
@@ -851,7 +1014,7 @@
             const points=manager.getPointsManager();
             const list=document.getElementById('reading-log-list');
             const books=points.getBooksRead();
-            if(books.length===0)list.innerHTML='<p style="color:#6c7a8e;text-align:center;padding:20px;">No books read yet. Start reading!</p>';
+            if(books.length===0)list.innerHTML='<p style="color:#6c7a8e;text-align:center;padding:16px;">No books read yet. Start reading!</p>';
             else{
                 let html='';
                 const sorted=[...books].reverse().slice(0,50);
@@ -917,34 +1080,129 @@
             }
             grid.innerHTML=html;
         }
+        
+        // ============================================================
+        // CERTIFICATE FUNCTIONS - A4 FULL PAGE
+        // ============================================================
         function renderCertificates(manager){
             const points=manager.getPointsManager();
             const container=document.getElementById('certificateContainer');
             const certs=points.getCertificates();
-            if(certs.length===0)container.innerHTML='<p style="color:#6c7a8e;text-align:center;padding:20px;">Read more new books to earn certificates!</p>';
-            else{
-                let html='';
-                for(const cert of certs){
-                    const date=new Date(cert.earnedAt);
-                    const dateStr=date.toLocaleDateString();
-                    html+='<div class="certificate-container" id="certificate-'+cert.milestone+'">';
-                    html+='<div class="border-decoration"></div>';
-                    html+='<div class="title">📜 Certificate of Achievement</div>';
-                    html+='<div class="subtitle">For reading <strong>'+cert.milestone+'</strong> new books</div>';
-                    html+='<div class="name">🌟 Bookworm Reader</div>';
-                    html+='<div class="date">Earned on: '+dateStr+'</div>';
-                    html+='<div class="stamp">🏆</div></div>';
-                }
-                container.innerHTML=html;
+            const userName = points.getUserName() || 'Reader';
+            
+            if(certs.length===0){
+                container.innerHTML='<div class="cert-empty">📚 Read <strong>5 NEW books</strong> to earn your first certificate!<br><span style="font-size:12px;color:#b0b8c4;">(Re-read books do not count)</span></div>';
+                return;
+            }
+            
+            let html='';
+            for(const cert of certs){
+                const date=new Date(cert.earnedAt);
+                const dateStr=date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+                html+=`
+                    <div class="certificate-a4" id="certificate-${cert.milestone}" style="width:100%;min-height:auto;padding:30px 20px;">
+                        <div class="border-deco"></div>
+                        <div class="cert-icon">📖</div>
+			<div class="cert-subtitle">🅺🆁🅴🅰🆃🅸🆅🅴 🅱🅾🅾🅺🆂🅷🅴🅻🅵</div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+                        <div class="cert-title">CERTIFICATE OF ACHIEVEMENT</div>
+                        <div class="cert-subtitle">This certificate is proudly presented to</div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+                        <div class="cert-name-wrapper">
+                            <span class="cert-name" id="certNameDisplay-${cert.milestone}" onclick="editCertName('${cert.milestone}')">${userName}</span>
+                        </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+                        <div class="cert-subtitle" style="font-size:18px;margin-top:4px;">
+                            For reading completely <strong>${cert.milestone}</strong> NEW books from Kreative Book Shelf.
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+                        </div>
+                        <div class="cert-date">Earned on: ${dateStr}</div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+			<div class="cert-subtitle"> </div>
+                        <div class="cert-stamp">🏆</div>
+                        <div class="cert-footer">✦ <span>𝔎𝔯𝔢𝔞𝔱𝔦𝔳𝔢  𝔎𝔦𝔡'𝔰 𝔏𝔞𝔟</span> ✦</div>
+			<div class="cert-date">𝐰𝐰𝐰.𝐤𝐤𝐥.𝐞𝐝𝐮𝐜𝐚𝐭𝐢𝐨𝐧</div>
+                    </div>
+                `;
+            }
+            container.innerHTML=html;
+        }
+        
+        // Edit certificate name
+        function editCertName(milestone){
+            const points = window.bookManager.getPointsManager();
+            const currentName = points.getUserName() || 'Reader';
+            const newName = prompt('Enter your name for the certificate:', currentName);
+            if(newName !== null && newName.trim() !== ''){
+                points.setUserName(newName.trim());
+                renderCertificates(window.bookManager);
+                showNotification('✅ Name updated!');
             }
         }
+        
+        // Export Certificate as PDF or PNG
         async function exportCertificate(format){
             const container=document.getElementById('certificateContainer');
-            const certEl=container.querySelector('.certificate-container');
-            if(!certEl){showNotification('❌ No certificate to export');return;}
+            const certEl=container.querySelector('.certificate-a4');
+            
+            if(!certEl){
+                showNotification('❌ No certificate to export. Read 5 NEW books first!');
+                return;
+            }
+            
             try{
                 showNotification('⏳ Generating '+format.toUpperCase()+'...');
-                const canvas=await html2canvas(certEl,{scale:2,useCORS:true,backgroundColor:'#fef9e7'});
+                
+                // Create a wrapper for proper A4 sizing
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'width:210mm;min-height:297mm;padding:0;margin:0;background:white;display:flex;align-items:center;justify-content:center;';
+                const clone = certEl.cloneNode(true);
+                clone.style.width = '100%';
+                clone.style.minHeight = '297mm';
+                clone.style.padding = '20mm 15mm';
+                clone.style.margin = '0';
+                clone.style.borderRadius = '0';
+                clone.style.boxShadow = 'none';
+                wrapper.appendChild(clone);
+                document.body.appendChild(wrapper);
+                
+                const canvas = await html2canvas(wrapper, {
+                    scale: 3,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: 210 * 3.78, // mm to px approx
+                    height: 297 * 3.78,
+                    onclone: function(doc) {
+                        // Ensure all styles are applied
+                    }
+                });
+                
+                document.body.removeChild(wrapper);
+                
                 if(format==='png'){
                     const link=document.createElement('a');
                     link.download='certificate.png';
@@ -954,10 +1212,8 @@
                 }else if(format==='pdf'){
                     const imgData=canvas.toDataURL('image/png');
                     const {jsPDF}=window.jspdf;
-                    const pdf=new jsPDF('landscape','mm','a4');
-                    const imgWidth=280;
-                    const imgHeight=(canvas.height*imgWidth)/canvas.width;
-                    pdf.addImage(imgData,'PNG',15,15,imgWidth,imgHeight);
+                    const pdf=new jsPDF('p','mm','a4');
+                    pdf.addImage(imgData,'PNG',0,0,210,297);
                     pdf.save('certificate.pdf');
                     showNotification('✅ PDF downloaded!');
                 }
@@ -967,6 +1223,9 @@
             }
         }
         
+        // ============================================================
+        // WEBVIEW & NOTIFICATIONS
+        // ============================================================
         function openWebView(url,title=''){
             const iframe=document.getElementById('book-iframe');
             const container=document.getElementById('webview-container');
@@ -986,6 +1245,9 @@
             el._timer=setTimeout(()=>el.classList.remove('show'),4000);
         }
         
+        // ============================================================
+        // MOBILE MENU
+        // ============================================================
         function toggleMobileMenu(open){
             const overlay=document.getElementById('mobileOverlay');
             const menu=document.getElementById('mobileMenu');
@@ -998,6 +1260,9 @@
             }
         }
         
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
         let bookManager;
         document.addEventListener('DOMContentLoaded',function(){
             bookManager=new BookManager();
@@ -1009,6 +1274,11 @@
             document.getElementById('btnLog').addEventListener('click',function(){renderLog(bookManager);openModal('logModal');});
             document.getElementById('btnBadges').addEventListener('click',function(){renderBadges(bookManager);openModal('badgesModal');});
             document.getElementById('btnStickers').addEventListener('click',function(){renderStickers(bookManager);openModal('stickersModal');});
+            
+            document.getElementById('btnCert').addEventListener('click',function(){
+                renderCertificates(bookManager);
+                openModal('certificateModal');
+            });
             
             document.getElementById('hamburgerBtn').addEventListener('click',function(e){
                 e.stopPropagation();
@@ -1024,6 +1294,7 @@
                     setTimeout(()=>{
                         switch(action){
                             case 'badges': renderBadges(bookManager); openModal('badgesModal'); break;
+                            case 'cert': renderCertificates(bookManager); openModal('certificateModal'); break;
                             case 'stickers': renderStickers(bookManager); openModal('stickersModal'); break;
                             case 'rewards': renderRewards(bookManager); openModal('rewardsModal'); break;
                             case 'log': renderLog(bookManager); openModal('logModal'); break;
@@ -1045,15 +1316,21 @@
             
             document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('close-btn').click();});
             bookManager.autoSync();
-            if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});
+            
+            if(window.innerWidth > 820 && screen.orientation && screen.orientation.lock){
+                screen.orientation.lock('landscape').catch(()=>{});
+            }
             
             setTimeout(()=>{
-                const badges=bookManager.getPointsManager().getBadges();
-                const count=Object.keys(badges).length;
-                if(count>0)showNotification('🏆 You have '+count+' badge(s)!');
+                const certs=bookManager.getPointsManager().getCertificates();
+                if(certs.length>0){
+                    showNotification('📜 You have '+certs.length+' certificate(s)!');
+                }
             },5000);
         });
         document.addEventListener('visibilitychange',function(){if(!document.hidden&&bookManager)bookManager.syncRemoteBooks();});
+        window.addEventListener('resize',function(){if(bookManager)bookManager.updateUI();});
+        window.addEventListener('orientationchange',function(){setTimeout(()=>{if(bookManager)bookManager.updateUI();},300);});
     </script>
 </body>
 </html>
