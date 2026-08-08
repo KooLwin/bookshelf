@@ -13,6 +13,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Kreative Bookshelf</title>
+    <!-- Google Analytics 4 (ခင်ဗျား Measurement ID ကို ဒီနေရာမှာ ထည့်ပါ) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+    </script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
         html,body{width:100%;height:100%;overflow:hidden;background:#f8f9fc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1a1a2e;position:relative}
@@ -43,6 +51,7 @@
         .btn-header.badges{background:#f59e0b;color:#fff}
         .btn-header.stickers{background:#ec4899;color:#fff}
         .btn-header.cert{background:#8b5cf6;color:#fff}
+        .btn-header.redeem{background:#10b981;color:#fff;font-weight:700;}
         
         .mobile-menu-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .3s ease;pointer-events:none}
         .mobile-menu-overlay.active{display:block;opacity:1;pointer-events:auto}
@@ -144,7 +153,6 @@
         .chart-bar-label{font-size:8px;color:#6c7a8e;margin-top:3px;text-align:center}
         .chart-bar-value{font-size:7px;font-weight:600;color:#1a1a2e;margin-bottom:2px}
         
-        /* ===== CERTIFICATE - Responsive A4 / Phone Screen ===== */
         .certificate-a4 {
             width: 100%;
             max-width: 210mm;
@@ -160,7 +168,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 20px 15px; /* Default for Phone */
+            padding: 20px 15px;
             min-height: auto;
         }
         .certificate-a4 .border-deco {
@@ -186,7 +194,6 @@
         .certificate-a4 .cert-footer { margin-top: 10px; font-size: 12px; color: #b0b8c4; }
         .certificate-a4 .cert-footer span { color: #d4a373; font-weight: 700; }
         
-        /* PC & Tablet (A4 Size) */
         @media (min-width: 821px) {
             .certificate-a4 {
                 width: 210mm;
@@ -241,6 +248,34 @@
         
         .badge-icon-img{width:44px;height:44px;object-fit:contain;border-radius:50%;display:block;margin:0 auto}
         .sticker-icon-img{width:48px;height:48px;object-fit:contain;display:block;margin:0 auto}
+        
+        #splash-ad-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #splash-ad-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #splash-ad-overlay img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
@@ -256,6 +291,7 @@
                 <span class="daily-limit-info">📖 Today <span class="count" id="todayCount">0</span>/3 <span class="new-badge">NEW</span></span>
             </div>
             <div class="header-right">
+                <button class="btn-header redeem" id="btnRedeemCode">🔑 Redeem Code</button>
                 <button class="btn-header badges" id="btnBadges">🏆 Badges</button>
                 <button class="btn-header cert" id="btnCert">📜 Cert</button>
                 <button class="btn-header stickers" id="btnStickers">🎨 Stickers</button>
@@ -274,6 +310,7 @@
             </div>
             <div class="menu-points" id="menuPoints">⭐ 0 pts</div>
             <div class="menu-streak" id="menuStreak">🔥 0 days</div>
+            <button class="menu-item" data-action="redeem"><span class="icon">🔑</span> Redeem Code</button>
             <button class="menu-item" data-action="badges"><span class="icon">🏆</span> Badges</button>
             <button class="menu-item" data-action="cert"><span class="icon">📜</span> Certificates</button>
             <button class="menu-item" data-action="stickers"><span class="icon">🎨</span> Stickers</button>
@@ -305,6 +342,9 @@
             <p style="margin-bottom:10px;">Your Points: <strong id="modalPoints">0</strong></p>
             <div id="rewards-list"></div>
             <p style="font-size:11px;color:#6c7a8e;margin-top:10px;">💡 Read NEW books to earn points. Re-read anytime for free!</p>
+            <div style="margin-top:15px; border-top:2px solid #e8ecf1; padding-top:12px; text-align:center;">
+                <button class="btn-header buy" onclick="openBuyPoints()" style="background:#f59e0b;color:#fff;font-size:14px;padding:6px 20px;">💰 Buy Points</button>
+            </div>
         </div>
     </div>
     <div class="modal-overlay" id="logModal">
@@ -336,7 +376,6 @@
         </div>
     </div>
     
-    <!-- ===== CERTIFICATE MODAL ===== -->
     <div class="modal-overlay" id="certificateModal">
         <div class="modal-content" style="max-width:700px;padding:16px;">
             <button class="modal-close" onclick="closeModal('certificateModal')">✕</button>
@@ -351,11 +390,24 @@
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="redeemCodeModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('redeemCodeModal')">✕</button>
+            <h2>🔑 Redeem Points Code</h2>
+            <p style="margin-bottom:10px;">Enter your 5-character code below to claim bonus points!</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" id="codeInput" placeholder="e.g. ABCDE" style="flex:1;min-width:150px;padding:10px;border:1px solid #e8ecf1;border-radius:10px;font-size:14px;outline:none;background:#f8f9fc;text-transform:uppercase;">
+                <button class="btn-header redeem" id="btnSubmitCode" style="background:#10b981;color:#fff;border:none;border-radius:10px;font-weight:700;">Redeem</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="splash-ad-overlay">
+        <img id="splash-ad-img" src="" alt="Advertisement">
+    </div>
     
     <script>
-        // ============================================================
-        // CONFIGURATION
-        // ============================================================
         const CONFIG={
             DAILY_LIMIT:3,
             STORAGE_KEY:'kreative_books_data',
@@ -366,6 +418,7 @@
             CACHE_VERSION:'1.0.0',
             BASE_URL:window.location.href.includes('github.io')?'https://koolwin.github.io/bookshelf/':'./',
             POINTS:{PER_BOOK:10,FIRST_BOOK_BONUS:5,STREAK_BONUS:2,STREAK_THRESHOLD:3},
+            API_URL:'https://script.google.com/macros/s/AKfycbwytFQwFPoKArgUn2PmK07matEZPs26mVxG6gbSKBExMGUTc0uQkVL2T7ou5t9nLLaelg/exec',
             BADGES:{
                 page_hopper:{name:'Page Hopper',desc:'Read 5 new books',threshold:5,icon:'badges/page_hopper.png'},
                 bookworm:{name:'Bookworm',desc:'Read 10 new books',threshold:10,icon:'badges/bookworm.png'},
@@ -432,9 +485,6 @@
             };
         }
         
-        // ============================================================
-        // USER NAME MANAGER
-        // ============================================================
         class UserManager {
             constructor() {
                 this.userName = this.loadUserName();
@@ -453,9 +503,6 @@
             getUserName() { return this.userName || 'Reader'; }
         }
         
-        // ============================================================
-        // POINTS MANAGER
-        // ============================================================
         class PointsManager{
             constructor(){
                 this.data=this.loadData();
@@ -520,6 +567,37 @@
             }
             getMaxNewBooksToday(){return CONFIG.DAILY_LIMIT+this.getExtraBooksToday();}
             canReadNewToday(){return this.getTodayNewCount()<this.getMaxNewBooksToday();}
+            redeemCode(code){
+                const upperCode = code.toUpperCase().trim();
+                if(upperCode.length !== 5){
+                    return {success: false, message: 'Code must be exactly 5 characters.'};
+                }
+                if(!/^[A-Z0-9]{5}$/.test(upperCode)){
+                    return {success: false, message: 'Code must contain only letters and numbers.'};
+                }
+                const usedCodes = JSON.parse(localStorage.getItem('kreative_used_codes') || '[]');
+                if(usedCodes.includes(upperCode)){
+                    return {success: false, message: 'This code has already been redeemed!'};
+                }
+                const url = CONFIG.API_URL + '?code=' + encodeURIComponent(upperCode) + '&userId=' + encodeURIComponent(this.getUserName());
+                return fetch(url)
+                .then(response => response.json())
+                .then(result => {
+                    if(result.success){
+                        this.data.totalPoints += result.points;
+                        this.saveData();
+                        usedCodes.push(upperCode);
+                        localStorage.setItem('kreative_used_codes', JSON.stringify(usedCodes));
+                        this.updateUI();
+                        return {success: true, message: result.message, points: result.points};
+                    } else {
+                        return {success: false, message: result.message};
+                    }
+                })
+                .catch(error => {
+                    return {success: false, message: 'Connection error. Check your internet.'};
+                });
+            }
             addPoints(bookId,title){
                 const today=this.getToday();
                 const isNew=this.isNewBook(bookId);
@@ -631,13 +709,17 @@
             getStickers(){return this.stickers;}
             getCertificates(){return this.certificates;}
             getRedeemed(){return this.redeemed;}
-            getExtraBooksToday(){const today=this.getToday();const redeemedToday=this.redeemed[today]||{};return redeemedToday.extra_book||0;}
+            getExtraBooksToday(){
+                const today=this.getToday();
+                const redeemedToday=this.redeemed[today]||{};
+                return redeemedToday.extra_book || 0;
+            }
             canRedeem(rewardId){
                 const reward=CONFIG.REWARDS[rewardId];
                 if(!reward)return false;
                 if(this.data.totalPoints<reward.cost)return false;
-                const today=this.getToday();
-                if(reward.type==='extra_book'){
+                if(reward.type==='sticker'){
+                    const today=this.getToday();
                     const redeemedToday=this.redeemed[today]||{};
                     if(redeemedToday[rewardId]&&redeemedToday[rewardId]>=1)return false;
                 }
@@ -695,9 +777,6 @@
             }
         }
         
-        // ============================================================
-        // BOOK MANAGER
-        // ============================================================
         class BookManager{
             constructor(){
                 this.points=new PointsManager();
@@ -774,24 +853,18 @@
             getTodayNewCount(){return this.points.getTodayNewCount();}
             getMaxNewBooksToday(){return this.points.getMaxNewBooksToday();}
             canReadNewToday(){return this.points.canReadNewToday();}
-            
             async openBook(bookId){
                 const book=this.books[bookId];
                 if(!book){showNotification('❌ Book not found');return;}
                 const url=this.getBookUrl(bookId);
                 if(!url){showNotification('❌ Cannot open book');return;}
-                
                 const isNew=this.isNewBook(bookId);
                 const isReadToday=this.isBookReadToday(bookId);
-                
-                // Limit ပြည့်နေပြီး၊ New Book ဖြစ်ပြီး၊ ဒီနေ့မဖတ်ရသေးရင် ပိတ်ပင်ပါ
                 if(isNew && !isReadToday && !this.canReadNewToday()){
                     showNotification('🔒 Daily limit reached. Read existing books or wait until tomorrow!');
                     return;
                 }
-
                 openWebView(url, book.title);
-                
                 if(isNew && !isReadToday){
                     if(this.canReadNewToday()){
                         const result=this.points.addPoints(bookId,book.title);
@@ -807,10 +880,8 @@
                     showNotification('📖 '+book.title+' (Re-read)');
                 }
             }
-            
             getBook(bookId){return this.books[bookId]||null;}
             getAllBooks(){
-                // 1. Built-in စာအုပ်တွေကို ရှေ့ဆုံးမှာထားပါ
                 const builtInKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin === true);
                 const builtInBooks = builtInKeys.map(key => ({
                     id: key,
@@ -820,15 +891,12 @@
                     isNew: this.isNewBook(key),
                     isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
                 }));
-
-                // 2. Online (Remote) စာအုပ်တွေကို နံပါတ်အစဉ်အလိုက် စီပြီး နောက်ကနေထည့်ပါ
                 const remoteKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin !== true);
                 const sortedRemoteKeys = remoteKeys.sort((a, b) => {
                     const numA = parseInt(a.replace('book', ''), 10);
                     const numB = parseInt(b.replace('book', ''), 10);
                     return numA - numB;
                 });
-
                 const remoteBooks = sortedRemoteKeys.map(key => ({
                     id: key,
                     ...this.books[key],
@@ -837,8 +905,6 @@
                     isNew: this.isNewBook(key),
                     isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
                 }));
-
-                // 3. ပေါင်းပါ
                 return [...builtInBooks, ...remoteBooks];
             }
             getPointsManager(){return this.points;}
@@ -856,15 +922,11 @@
             autoSync(){setTimeout(()=>{this.syncRemoteBooks();},3000);}
         }
         
-        // ============================================================
-        // RENDER BOOKS (သော့ခတ်ခြင်းအပိုင်းထည့်ထားပါတယ်)
-        // ============================================================
         function renderBooks(bookList,manager){
             const container=document.getElementById('shelf-rows');
             const rows=chunkArray(bookList,4);
             let html='';
-            const canReadNew = manager.canReadNewToday(); // ဒီနေ့ Limit ပြည့်ပြီလား စစ်ပါ
-
+            const canReadNew = manager.canReadNewToday();
             for(const row of rows){
                 html+='<div class="shelf-row"><div class="book-grid">';
                 for(const book of row){
@@ -873,18 +935,10 @@
                     const readBefore=book.readBefore||false;
                     const isNew=book.isNew!==undefined?book.isNew:true;
                     const isNewToday=book.isNewToday||false;
-                    
-                    // *** သော့ခတ်ခြင်း Logic ***
-                    // Limit ပြည့်နေပြီး (canReadNew == false) 
-                    // စာအုပ်က New ဖြစ်ပြီး (isNew == true)
-                    // ဒီနေ့ မဖတ်ရသေးဘူးဆိုရင် (readToday == false) သော့ခတ်ပါ။
-                    // built-in (မူရင်း ၁၈ အုပ်) ကိုတော့ ဘယ်တော့မှ မခတ်ပါဘူး။
                     const shouldLock = !isBuiltin && !canReadNew && isNew && !readToday && !isNewToday;
-
                     let statusClass='pending';
                     let statusIcon='🌐';
                     let label='';
-                    
                     if(shouldLock){
                         statusClass = 'locked-status';
                         statusIcon = '🔒';
@@ -905,7 +959,6 @@
                         statusClass='pending';
                         statusIcon='📚';
                     }
-                    
                     const onlineBadge=!isBuiltin?'<div class="offline-badge">🌐 Online</div>':'';
                     let badgeIcon='';
                     if(shouldLock) badgeIcon = '🔒';
@@ -913,7 +966,6 @@
                     else if(readToday)badgeIcon='📖';
                     else if(readBefore&&!readToday)badgeIcon='🔄';
                     else if(isNew)badgeIcon='📚';
-                    
                     html+='<div class="book-card '+(shouldLock ? 'locked' : '')+'" data-book="'+book.id+'">';
                     html+='<div class="cover-wrap" id="cover-'+book.id+'">';
                     if(shouldLock) html+='<div class="lock-icon">🔒</div>';
@@ -951,11 +1003,12 @@
         }
         function chunkArray(arr,size){const result=[];for(let i=0;i<arr.length;i+=size)result.push(arr.slice(i,i+size));return result;}
         
-        // ============================================================
-        // MODALS
-        // ============================================================
         function openModal(id){document.getElementById(id).classList.add('active');}
         function closeModal(id){document.getElementById(id).classList.remove('active');}
+        
+        function openBuyPoints(){
+            openWebView('http://buypoint.kkl.education/', 'Buy Points');
+        }
         
         function renderRewards(manager){
             const points=manager.getPointsManager();
@@ -968,8 +1021,16 @@
                 let btnClass='btn-redeem unavailable';
                 let btnText='🔒 Locked';
                 let disabled=true;
-                if(isRedeemedToday){btnClass='btn-redeem redeemed';btnText='✅ Redeemed';disabled=true;}
-                else if(canAfford){btnClass='btn-redeem available';btnText='🎁 Redeem';disabled=false;}
+                if(reward.type === 'sticker' && isRedeemedToday){
+                    btnClass='btn-redeem redeemed';
+                    btnText='✅ Redeemed';
+                    disabled=true;
+                } 
+                else if(canAfford){
+                    btnClass='btn-redeem available';
+                    btnText='🎁 Redeem';
+                    disabled=false;
+                }
                 html+='<div class="reward-item"><div class="info"><div class="name">'+reward.name+'</div><div class="desc">'+reward.desc+'</div></div>';
                 html+='<div><span class="cost">⭐ '+reward.cost+'</span>';
                 html+='<button class="'+btnClass+'" onclick="'+(disabled?'':"redeemReward('"+id+"')")+'" '+(disabled?'disabled':'')+'>'+btnText+'</button></div></div>';
@@ -980,7 +1041,16 @@
             const manager=window.bookManager;
             if(!manager)return;
             const success=manager.points.redeemReward(rewardId);
-            if(success){renderRewards(manager);manager.updateUI();showNotification('🎁 Reward redeemed!');}
+            if(success){
+                renderRewards(manager);
+                manager.updateUI();
+                const reward=CONFIG.REWARDS[rewardId];
+                if(reward.type === 'extra_book'){
+                    showNotification('🎁 Extra Book redeemed! (Limit +1)');
+                } else {
+                    showNotification('🎁 Reward redeemed!');
+                }
+            }
             else{showNotification('❌ Cannot redeem');}
         }
         function renderLog(manager){
@@ -1054,20 +1124,15 @@
             grid.innerHTML=html;
         }
         
-        // ============================================================
-        // CERTIFICATE FUNCTIONS - RESPONSIVE (A4 / Mobile)
-        // ============================================================
         function renderCertificates(manager){
             const points=manager.getPointsManager();
             const container=document.getElementById('certificateContainer');
             const certs=points.getCertificates();
             const userName = points.getUserName() || 'Reader';
-            
             if(certs.length===0){
                 container.innerHTML='<div class="cert-empty">📚 Read <strong>5 NEW books</strong> to earn your first certificate!<br><span style="font-size:12px;color:#b0b8c4;">(Re-read books do not count)</span></div>';
                 return;
             }
-            
             let html='';
             for(const cert of certs){
                 const date=new Date(cert.earnedAt);
@@ -1106,43 +1171,27 @@
             }
         }
         
-        // Export function (PDF, PNG, and Gallery for Mobile)
         async function exportCertificate(format){
             const container=document.getElementById('certificateContainer');
             const certEls = container.querySelectorAll('.certificate-a4');
-            
             if(certEls.length === 0){
                 showNotification('❌ No certificate to export. Read 5 NEW books first!');
                 return;
             }
-            
             try{
                 showNotification('⏳ Generating '+format.toUpperCase()+'...');
-                
-                // Get the first certificate (or loop for all, currently exporting first one)
                 const originalCert = certEls[0];
-                
-                // Clone the certificate to avoid messing up the screen display
                 const clone = originalCert.cloneNode(true);
-                
-                // If on mobile & saving to gallery, we render it as a fixed phone ratio (9:16)
-                // If on PC/Tablet, we keep A4
                 const isMobile = window.innerWidth < 821;
-                
-                // Create a temporary wrapper
                 const wrapper = document.createElement('div');
                 wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
                 document.body.appendChild(wrapper);
-                
                 let width, height;
-                
                 if (isMobile && format === 'gallery') {
-                    // Mobile Gallery: standard phone screen ratio (9:16)
                     width = 1080;
                     height = 1920;
                     wrapper.style.width = width + 'px';
                     wrapper.style.height = height + 'px';
-                    
                     clone.style.width = '100%';
                     clone.style.height = '100%';
                     clone.style.maxWidth = '100%';
@@ -1151,15 +1200,13 @@
                     clone.style.margin = '0';
                     clone.style.padding = '40px 30px';
                     clone.style.border = '6px solid #d4a373';
-                    // Scale up fonts for mobile gallery
                     clone.querySelector('.cert-title').style.fontSize = '38px';
                     clone.querySelector('.cert-name').style.fontSize = '44px';
                     clone.querySelector('.cert-subtitle').style.fontSize = '22px';
                     clone.querySelector('.cert-icon').style.fontSize = '80px';
                     clone.querySelector('.cert-stamp').style.fontSize = '100px';
                 } else {
-                    // PC / Tablet (A4)
-                    width = 210 * 3.78; // approx px for A4
+                    width = 210 * 3.78;
                     height = 297 * 3.78;
                     wrapper.style.width = width + 'px';
                     wrapper.style.height = height + 'px';
@@ -1171,9 +1218,7 @@
                     clone.style.borderRadius = '8px';
                     clone.style.margin = '0 auto';
                 }
-                
                 wrapper.appendChild(clone);
-                
                 const canvas = await html2canvas(wrapper, {
                     scale: 3,
                     useCORS: true,
@@ -1181,13 +1226,9 @@
                     logging: false,
                     width: width,
                     height: height,
-                    onclone: function(doc) {
-                        // Ensure all styles are applied
-                    }
+                    onclone: function(doc) {}
                 });
-                
                 document.body.removeChild(wrapper);
-                
                 if(format === 'png'){
                     const link=document.createElement('a');
                     link.download='certificate.png';
@@ -1202,7 +1243,6 @@
                     pdf.save('certificate.pdf');
                     showNotification('✅ PDF downloaded!');
                 } else if(format === 'gallery'){
-                    // Download for Mobile (triggers gallery save on Android/iOS)
                     const link=document.createElement('a');
                     link.download='certificate.png';
                     link.href=canvas.toDataURL('image/png');
@@ -1215,9 +1255,6 @@
             }
         }
         
-        // ============================================================
-        // WEBVIEW & NOTIFICATIONS
-        // ============================================================
         function openWebView(url,title=''){
             const iframe=document.getElementById('book-iframe');
             const container=document.getElementById('webview-container');
@@ -1237,9 +1274,6 @@
             el._timer=setTimeout(()=>el.classList.remove('show'),4000);
         }
         
-        // ============================================================
-        // MOBILE MENU
-        // ============================================================
         function toggleMobileMenu(open){
             const overlay=document.getElementById('mobileOverlay');
             const menu=document.getElementById('mobileMenu');
@@ -1251,40 +1285,98 @@
                 menu.classList.remove('open');
             }
         }
+
+        function openRedeemModal(){
+            document.getElementById('codeInput').value = '';
+            openModal('redeemCodeModal');
+        }
+
+        async function handleRedeemCode(){
+            const input = document.getElementById('codeInput');
+            const code = input.value.trim().toUpperCase();
+            const manager = window.bookManager;
+            if(!manager) return;
+            if(code.length !== 5){
+                showNotification('⚠️ Code must be exactly 5 characters!');
+                input.focus();
+                input.select();
+                return;
+            }
+            if(!/^[A-Z0-9]{5}$/.test(code)){
+                showNotification('⚠️ Code must contain only letters and numbers (5 chars).');
+                input.focus();
+                input.select();
+                return;
+            }
+            const result = await manager.points.redeemCode(code);
+            showNotification(result.message);
+            if(result.success){
+                closeModal('redeemCodeModal');
+                manager.updateUI();
+            } else {
+                input.focus();
+                input.select();
+            }
+        }
         
-        // ============================================================
-        // INITIALIZATION
-        // ============================================================
+        function showSplashAd(){
+            const overlay = document.getElementById('splash-ad-overlay');
+            const img = document.getElementById('splash-ad-img');
+            
+            // 1. GitHub ကနေ ယူဖို့ ကြိုးစားပါ
+            img.src = CONFIG.BASE_URL + 'ads/ad.gif';
+            
+            // 2. GitHub ကနေ မရရင် (Error ဖြစ်ရင်) Local ကနေ ယူပါ
+            img.onerror = function(){
+                img.src = 'ads/ad.gif';
+                img.onerror = null; // ထပ်မံ Error မဖြစ်အောင်
+            };
+
+            // Google Analytics Event ပို့ခြင်း (GA4 အတွက်)
+            if(typeof gtag !== 'undefined'){
+                gtag('event', 'ad_view', {
+                    'event_category': 'Advertisement',
+                    'event_label': 'Splash Screen Ad'
+                });
+            }
+            
+            overlay.classList.add('active');
+            setTimeout(()=>{
+                overlay.classList.remove('active');
+            }, 10000);
+        }
+        
         let bookManager;
         document.addEventListener('DOMContentLoaded',function(){
             bookManager=new BookManager();
             window.bookManager=bookManager;
-            
+            showSplashAd();
             document.getElementById('btnSync').addEventListener('click',function(){bookManager.syncRemoteBooks();});
             document.getElementById('btnBuyCode').addEventListener('click',function(){openWebView('https://bookcode.kkl.education','Book Code');});
+            document.getElementById('btnRedeemCode').addEventListener('click', openRedeemModal);
+            document.getElementById('btnSubmitCode').addEventListener('click', handleRedeemCode);
+            document.getElementById('codeInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') handleRedeemCode(); });
             document.getElementById('btnRewards').addEventListener('click',function(){renderRewards(bookManager);openModal('rewardsModal');});
             document.getElementById('btnLog').addEventListener('click',function(){renderLog(bookManager);openModal('logModal');});
             document.getElementById('btnBadges').addEventListener('click',function(){renderBadges(bookManager);openModal('badgesModal');});
             document.getElementById('btnStickers').addEventListener('click',function(){renderStickers(bookManager);openModal('stickersModal');});
-            
             document.getElementById('btnCert').addEventListener('click',function(){
                 renderCertificates(bookManager);
                 openModal('certificateModal');
             });
-            
             document.getElementById('hamburgerBtn').addEventListener('click',function(e){
                 e.stopPropagation();
                 toggleMobileMenu(true);
             });
             document.getElementById('menuClose').addEventListener('click',function(){toggleMobileMenu(false);});
             document.getElementById('mobileOverlay').addEventListener('click',function(){toggleMobileMenu(false);});
-            
             document.querySelectorAll('.menu-item[data-action]').forEach(item=>{
                 item.addEventListener('click',function(){
                     const action=this.dataset.action;
                     toggleMobileMenu(false);
                     setTimeout(()=>{
                         switch(action){
+                            case 'redeem': openRedeemModal(); break;
                             case 'badges': renderBadges(bookManager); openModal('badgesModal'); break;
                             case 'cert': renderCertificates(bookManager); openModal('certificateModal'); break;
                             case 'stickers': renderStickers(bookManager); openModal('stickersModal'); break;
@@ -1296,7 +1388,6 @@
                     },300);
                 });
             });
-            
             document.getElementById('close-btn').addEventListener('click',function(){
                 const container=document.getElementById('webview-container');
                 const iframe=document.getElementById('book-iframe');
@@ -1305,14 +1396,11 @@
                 iframe.src='';
                 iframe.srcdoc='';
             });
-            
             document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('close-btn').click();});
             bookManager.autoSync();
-            
             if(window.innerWidth > 820 && screen.orientation && screen.orientation.lock){
                 screen.orientation.lock('landscape').catch(()=>{});
             }
-            
             setTimeout(()=>{
                 const certs=bookManager.getPointsManager().getCertificates();
                 if(certs.length>0){
