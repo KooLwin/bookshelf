@@ -141,11 +141,10 @@
         .chart-bar-label{font-size:8px;color:#6c7a8e;margin-top:3px;text-align:center}
         .chart-bar-value{font-size:7px;font-weight:600;color:#1a1a2e;margin-bottom:2px}
         
-        /* ===== CERTIFICATE - A4 FULL PAGE ===== */
+        /* ===== CERTIFICATE - Responsive A4 / Phone Screen ===== */
         .certificate-a4 {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm 15mm;
+            width: 100%;
+            max-width: 210mm;
             margin: 0 auto;
             background: linear-gradient(135deg, #fef9e7, #fdebd0);
             border: 8px solid #d4a373;
@@ -158,119 +157,61 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            padding: 20px 15px; /* Default for Phone */
+            min-height: auto;
         }
         .certificate-a4 .border-deco {
             position: absolute;
-            top: 12mm;
-            left: 10mm;
-            right: 10mm;
-            bottom: 12mm;
+            top: 12px;
+            left: 10px;
+            right: 10px;
+            bottom: 12px;
             border: 3px double #d4a373;
             border-radius: 4px;
             pointer-events: none;
         }
-        .certificate-a4 .cert-icon {
-            font-size: 56px;
-            margin-bottom: 8px;
-        }
-        .certificate-a4 .cert-title {
-            font-size: 36px;
-            font-weight: 800;
-            color: #b8895c;
-            letter-spacing: 4px;
-            margin-bottom: 4px;
-            font-family: 'Georgia', serif;
-        }
-        .certificate-a4 .cert-subtitle {
-            font-size: 20px;
-            color: #6c7a8e;
-            margin-bottom: 12px;
-            font-weight: 400;
-        }
-        .certificate-a4 .cert-subtitle strong {
-            color: #b8895c;
-            font-weight: 700;
-        }
-        .certificate-a4 .cert-name {
-            font-size: 42px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin: 12px 0 8px 0;
-            padding: 4px 30px;
-            border-bottom: 3px solid #d4a373;
-            display: inline-block;
-            font-family: 'Georgia', serif;
-            letter-spacing: 2px;
-        }
-        .certificate-a4 .cert-name-input {
-            font-size: 36px;
-            font-weight: 700;
-            color: #1a1a2e;
-            border: none;
-            border-bottom: 3px dashed #d4a373;
-            background: transparent;
-            text-align: center;
-            padding: 4px 20px;
-            margin: 12px 0 8px 0;
-            min-width: 200px;
-            max-width: 80%;
-            font-family: 'Georgia', serif;
-            letter-spacing: 2px;
-            outline: none;
-        }
-        .certificate-a4 .cert-name-input:focus {
-            border-bottom-color: #e94560;
-        }
-        .certificate-a4 .cert-name-input::placeholder {
-            color: #ccc;
-            font-size: 20px;
-            font-weight: 400;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .certificate-a4 .cert-date {
-            font-size: 16px;
-            color: #6c7a8e;
-            margin-top: 8px;
-        }
-        .certificate-a4 .cert-stamp {
-            font-size: 72px;
-            margin-top: 12px;
-        }
-        .certificate-a4 .cert-footer {
-            margin-top: 16px;
-            font-size: 14px;
-            color: #b0b8c4;
-        }
-        .certificate-a4 .cert-footer span {
-            color: #d4a373;
-            font-weight: 700;
+        .certificate-a4 .cert-icon { font-size: 40px; margin-bottom: 4px; }
+        .certificate-a4 .cert-title { font-size: 24px; font-weight: 800; color: #b8895c; letter-spacing: 2px; margin-bottom: 2px; font-family: 'Georgia', serif; }
+        .certificate-a4 .cert-subtitle { font-size: 14px; color: #6c7a8e; margin-bottom: 6px; font-weight: 400; }
+        .certificate-a4 .cert-subtitle strong { color: #b8895c; font-weight: 700; }
+        .certificate-a4 .cert-name { font-size: 28px; font-weight: 700; color: #1a1a2e; margin: 6px 0 4px 0; padding: 2px 20px; border-bottom: 3px solid #d4a373; display: inline-block; font-family: 'Georgia', serif; letter-spacing: 2px; }
+        .certificate-a4 .cert-name-input { font-size: 24px; font-weight: 700; color: #1a1a2e; border: none; border-bottom: 3px dashed #d4a373; background: transparent; text-align: center; padding: 2px 10px; margin: 6px 0 4px 0; min-width: 120px; max-width: 80%; font-family: 'Georgia', serif; letter-spacing: 2px; outline: none; }
+        .certificate-a4 .cert-name-input:focus { border-bottom-color: #e94560; }
+        .certificate-a4 .cert-name-input::placeholder { color: #ccc; font-size: 14px; font-weight: 400; font-family: 'Segoe UI', sans-serif; }
+        .certificate-a4 .cert-date { font-size: 12px; color: #6c7a8e; margin-top: 4px; }
+        .certificate-a4 .cert-stamp { font-size: 50px; margin-top: 6px; }
+        .certificate-a4 .cert-footer { margin-top: 10px; font-size: 12px; color: #b0b8c4; }
+        .certificate-a4 .cert-footer span { color: #d4a373; font-weight: 700; }
+        
+        /* PC & Tablet (A4 Size) */
+        @media (min-width: 821px) {
+            .certificate-a4 {
+                width: 210mm;
+                min-height: 297mm;
+                padding: 20mm 15mm;
+                border-radius: 8px;
+            }
+            .certificate-a4 .border-deco { top: 12mm; left: 10mm; right: 10mm; bottom: 12mm; }
+            .certificate-a4 .cert-icon { font-size: 56px; margin-bottom: 8px; }
+            .certificate-a4 .cert-title { font-size: 36px; letter-spacing: 4px; margin-bottom: 4px; }
+            .certificate-a4 .cert-subtitle { font-size: 20px; margin-bottom: 12px; }
+            .certificate-a4 .cert-name { font-size: 42px; margin: 12px 0 8px 0; padding: 4px 30px; }
+            .certificate-a4 .cert-name-input { font-size: 36px; padding: 4px 20px; margin: 12px 0 8px 0; min-width: 200px; }
+            .certificate-a4 .cert-date { font-size: 16px; margin-top: 8px; }
+            .certificate-a4 .cert-stamp { font-size: 72px; margin-top: 12px; }
+            .certificate-a4 .cert-footer { margin-top: 16px; font-size: 14px; }
+            .certificate-a4 .cert-name-input::placeholder { font-size: 20px; }
         }
         
-        .cert-name-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 8px 0;
-        }
-        .cert-name-wrapper .edit-hint {
-            font-size: 14px;
-            color: #6c7a8e;
-            cursor: pointer;
-            padding: 4px 12px;
-            background: #e8ecf1;
-            border-radius: 20px;
-            transition: .2s;
-        }
-        .cert-name-wrapper .edit-hint:active {
-            transform: scale(.95);
-        }
+        .cert-name-wrapper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 4px 0; }
+        .cert-name-wrapper .edit-hint { font-size: 12px; color: #6c7a8e; cursor: pointer; padding: 4px 12px; background: #e8ecf1; border-radius: 20px; transition: .2s; }
+        .cert-name-wrapper .edit-hint:active { transform: scale(.95); }
         
         .btn-export{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;margin:4px}
         .btn-export:active{transform:scale(.95)}
         .btn-export.pdf{background:#dc2626;color:#fff}
         .btn-export.png{background:#4a6fa5;color:#fff}
+        .btn-export.gallery{background:#10b981;color:#fff}
         .btn-export:hover{opacity:.85}
         
         .cert-empty{color:#6c7a8e;text-align:center;padding:30px 10px;font-size:14px}
@@ -290,20 +231,8 @@
         @media(max-width:820px){.hamburger-btn{display:block}.mobile-menu-overlay{display:block}.header-right .btn-header{display:none}.header-center .daily-limit-info{display:none}}
         
         @media print {
-            .certificate-a4 {
-                border: none;
-                box-shadow: none;
-                border-radius: 0;
-                padding: 20mm 15mm;
-                width: 100%;
-                min-height: 100vh;
-            }
-            .certificate-a4 .border-deco {
-                top: 15mm;
-                left: 12mm;
-                right: 12mm;
-                bottom: 15mm;
-            }
+            .certificate-a4 { border: none; box-shadow: none; border-radius: 0; padding: 20mm 15mm; width: 100%; min-height: 100vh; }
+            .certificate-a4 .border-deco { top: 15mm; left: 12mm; right: 12mm; bottom: 15mm; }
             .no-print { display: none !important; }
         }
         
@@ -410,10 +339,11 @@
             <button class="modal-close" onclick="closeModal('certificateModal')">✕</button>
             <h2>📜 Certificates</h2>
             <p style="font-size:12px;color:#6c7a8e;margin-bottom:10px;">🎉 Earn certificates by reading NEW books! Click the name to edit.</p>
-            <div id="certificateContainer" style="overflow-x:auto;padding:8px 0;"></div>
+            <div id="certificateContainer" style="overflow-x:auto;padding:8px 0;display:flex;flex-direction:column;align-items:center;"></div>
             <div style="text-align:center;margin-top:10px;" class="no-print">
                 <button class="btn-export pdf" onclick="exportCertificate('pdf')">📄 Download PDF</button>
                 <button class="btn-export png" onclick="exportCertificate('png')">🖼️ Download PNG</button>
+                <button class="btn-export gallery" onclick="exportCertificate('gallery')">📱 Save to Gallery</button>
                 <button class="btn-export" style="background:#6c7a8e;color:#fff;" onclick="window.print()">🖨️ Print</button>
             </div>
         </div>
@@ -873,14 +803,36 @@
             
             getBook(bookId){return this.books[bookId]||null;}
             getAllBooks(){
-                return Object.keys(this.books).map(key=>({
-                    id:key,
+                // 1. Built-in စာအုပ်တွေကို ရှေ့ဆုံးမှာထားပါ
+                const builtInKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin === true);
+                const builtInBooks = builtInKeys.map(key => ({
+                    id: key,
                     ...this.books[key],
-                    readToday:this.isBookReadToday(key),
-                    readBefore:this.points.data.booksRead.some(b=>b.bookId===key),
-                    isNew:this.isNewBook(key),
-                    isNewToday:this.isNewBook(key)&&this.isBookReadToday(key)
+                    readToday: this.isBookReadToday(key),
+                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
+                    isNew: this.isNewBook(key),
+                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
                 }));
+
+                // 2. Online (Remote) စာအုပ်တွေကို နံပါတ်အစဉ်အလိုက် စီပြီး နောက်ကနေထည့်ပါ
+                const remoteKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin !== true);
+                const sortedRemoteKeys = remoteKeys.sort((a, b) => {
+                    const numA = parseInt(a.replace('book', ''), 10);
+                    const numB = parseInt(b.replace('book', ''), 10);
+                    return numA - numB;
+                });
+
+                const remoteBooks = sortedRemoteKeys.map(key => ({
+                    id: key,
+                    ...this.books[key],
+                    readToday: this.isBookReadToday(key),
+                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
+                    isNew: this.isNewBook(key),
+                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
+                }));
+
+                // 3. ပေါင်းပါ
+                return [...builtInBooks, ...remoteBooks];
             }
             getPointsManager(){return this.points;}
             setSyncButtonState(syncing){
@@ -1082,7 +1034,7 @@
         }
         
         // ============================================================
-        // CERTIFICATE FUNCTIONS - A4 FULL PAGE
+        // CERTIFICATE FUNCTIONS - RESPONSIVE (A4 / Mobile)
         // ============================================================
         function renderCertificates(manager){
             const points=manager.getPointsManager();
@@ -1100,58 +1052,28 @@
                 const date=new Date(cert.earnedAt);
                 const dateStr=date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
                 html+=`
-                    <div class="certificate-a4" id="certificate-${cert.milestone}" style="width:100%;min-height:auto;padding:30px 20px;">
+                    <div class="certificate-a4" id="certificate-${cert.milestone}" style="margin-bottom:24px;">
                         <div class="border-deco"></div>
                         <div class="cert-icon">📖</div>
-			<div class="cert-subtitle">🅺🆁🅴🅰🆃🅸🆅🅴 🅱🅾🅾🅺🆂🅷🅴🅻🅵</div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
+                        <div class="cert-subtitle">🅺🆁🅴🅰🆃🅸🆅🅴 🅱🅾🅾🅺🆂🅷🅴🅻🅵</div>
                         <div class="cert-title">CERTIFICATE OF ACHIEVEMENT</div>
                         <div class="cert-subtitle">This certificate is proudly presented to</div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
                         <div class="cert-name-wrapper">
                             <span class="cert-name" id="certNameDisplay-${cert.milestone}" onclick="editCertName('${cert.milestone}')">${userName}</span>
                         </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
                         <div class="cert-subtitle" style="font-size:18px;margin-top:4px;">
                             For reading completely <strong>${cert.milestone}</strong> NEW books from Kreative Book Shelf.
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
                         </div>
                         <div class="cert-date">Earned on: ${dateStr}</div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
-			<div class="cert-subtitle"> </div>
                         <div class="cert-stamp">🏆</div>
                         <div class="cert-footer">✦ <span>𝔎𝔯𝔢𝔞𝔱𝔦𝔳𝔢  𝔎𝔦𝔡'𝔰 𝔏𝔞𝔟</span> ✦</div>
-			<div class="cert-date">𝐰𝐰𝐰.𝐤𝐤𝐥.𝐞𝐝𝐮𝐜𝐚𝐭𝐢𝐨𝐧</div>
+                        <div class="cert-date">𝐰𝐰𝐰.𝐤𝐤𝐥.𝐞𝐝𝐮𝐜𝐚𝐭𝐢𝐨𝐧</div>
                     </div>
                 `;
             }
             container.innerHTML=html;
         }
         
-        // Edit certificate name
         function editCertName(milestone){
             const points = window.bookManager.getPointsManager();
             const currentName = points.getUserName() || 'Reader';
@@ -1163,12 +1085,12 @@
             }
         }
         
-        // Export Certificate as PDF or PNG
+        // Export function (PDF, PNG, and Gallery for Mobile)
         async function exportCertificate(format){
             const container=document.getElementById('certificateContainer');
-            const certEl=container.querySelector('.certificate-a4');
+            const certEls = container.querySelectorAll('.certificate-a4');
             
-            if(!certEl){
+            if(certEls.length === 0){
                 showNotification('❌ No certificate to export. Read 5 NEW books first!');
                 return;
             }
@@ -1176,26 +1098,68 @@
             try{
                 showNotification('⏳ Generating '+format.toUpperCase()+'...');
                 
-                // Create a wrapper for proper A4 sizing
+                // Get the first certificate (or loop for all, currently exporting first one)
+                const originalCert = certEls[0];
+                
+                // Clone the certificate to avoid messing up the screen display
+                const clone = originalCert.cloneNode(true);
+                
+                // If on mobile & saving to gallery, we render it as a fixed phone ratio (9:16)
+                // If on PC/Tablet, we keep A4
+                const isMobile = window.innerWidth < 821;
+                
+                // Create a temporary wrapper
                 const wrapper = document.createElement('div');
-                wrapper.style.cssText = 'width:210mm;min-height:297mm;padding:0;margin:0;background:white;display:flex;align-items:center;justify-content:center;';
-                const clone = certEl.cloneNode(true);
-                clone.style.width = '100%';
-                clone.style.minHeight = '297mm';
-                clone.style.padding = '20mm 15mm';
-                clone.style.margin = '0';
-                clone.style.borderRadius = '0';
-                clone.style.boxShadow = 'none';
-                wrapper.appendChild(clone);
+                wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
                 document.body.appendChild(wrapper);
+                
+                let width, height;
+                
+                if (isMobile && format === 'gallery') {
+                    // Mobile Gallery: standard phone screen ratio (9:16)
+                    width = 1080;
+                    height = 1920;
+                    wrapper.style.width = width + 'px';
+                    wrapper.style.height = height + 'px';
+                    
+                    clone.style.width = '100%';
+                    clone.style.height = '100%';
+                    clone.style.maxWidth = '100%';
+                    clone.style.minHeight = 'auto';
+                    clone.style.borderRadius = '0';
+                    clone.style.margin = '0';
+                    clone.style.padding = '40px 30px';
+                    clone.style.border = '6px solid #d4a373';
+                    // Scale up fonts for mobile gallery
+                    clone.querySelector('.cert-title').style.fontSize = '38px';
+                    clone.querySelector('.cert-name').style.fontSize = '44px';
+                    clone.querySelector('.cert-subtitle').style.fontSize = '22px';
+                    clone.querySelector('.cert-icon').style.fontSize = '80px';
+                    clone.querySelector('.cert-stamp').style.fontSize = '100px';
+                } else {
+                    // PC / Tablet (A4)
+                    width = 210 * 3.78; // approx px for A4
+                    height = 297 * 3.78;
+                    wrapper.style.width = width + 'px';
+                    wrapper.style.height = height + 'px';
+                    clone.style.width = '100%';
+                    clone.style.height = '100%';
+                    clone.style.maxWidth = '210mm';
+                    clone.style.minHeight = '297mm';
+                    clone.style.padding = '20mm 15mm';
+                    clone.style.borderRadius = '8px';
+                    clone.style.margin = '0 auto';
+                }
+                
+                wrapper.appendChild(clone);
                 
                 const canvas = await html2canvas(wrapper, {
                     scale: 3,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     logging: false,
-                    width: 210 * 3.78, // mm to px approx
-                    height: 297 * 3.78,
+                    width: width,
+                    height: height,
                     onclone: function(doc) {
                         // Ensure all styles are applied
                     }
@@ -1203,21 +1167,28 @@
                 
                 document.body.removeChild(wrapper);
                 
-                if(format==='png'){
+                if(format === 'png'){
                     const link=document.createElement('a');
                     link.download='certificate.png';
                     link.href=canvas.toDataURL('image/png');
                     link.click();
                     showNotification('✅ PNG downloaded!');
-                }else if(format==='pdf'){
+                } else if(format === 'pdf'){
                     const imgData=canvas.toDataURL('image/png');
                     const {jsPDF}=window.jspdf;
                     const pdf=new jsPDF('p','mm','a4');
                     pdf.addImage(imgData,'PNG',0,0,210,297);
                     pdf.save('certificate.pdf');
                     showNotification('✅ PDF downloaded!');
+                } else if(format === 'gallery'){
+                    // Download for Mobile (triggers gallery save on Android/iOS)
+                    const link=document.createElement('a');
+                    link.download='certificate.png';
+                    link.href=canvas.toDataURL('image/png');
+                    link.click();
+                    showNotification('✅ Saved to Gallery!');
                 }
-            }catch(error){
+            } catch(error){
                 console.error('Export failed:',error);
                 showNotification('❌ Export failed. Please try again.');
             }
