@@ -69,6 +69,8 @@
         .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px;padding:0 4px 2px 4px;position:relative;z-index:1}
         
         .book-card{background:#fff;border-radius:8px 8px 4px 4px;overflow:hidden;cursor:pointer;transition:.2s ease;box-shadow:0 1px 4px rgba(0,0,0,.06),0 1px 8px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);display:flex;flex-direction:column;position:relative;touch-action:manipulation;-webkit-touch-callout:none}
+        .book-card.locked{opacity:0.5;pointer-events:none;cursor:not-allowed;filter:grayscale(0.2)}
+        .book-card.locked .lock-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;z-index:5;color:#1a1a2e;text-shadow:0 0 10px rgba(255,255,255,0.8)}
         .book-card:active{transform:scale(.96) translateY(-1px)}
         .book-card .cover-wrap{position:relative;width:100%;background:#f0f2f5;overflow:hidden}
         .book-card .cover-wrap img{display:block;width:100%;height:auto;background:#f0f2f5;transition:.3s;object-fit:contain}
@@ -82,6 +84,7 @@
         .status-badge.completed{background:#dbeafe;color:#1a56db}
         .status-badge.repeat{background:#e0e7ff;color:#4f46e5}
         .status-badge.today-new{background:#fce7f3;color:#db2777}
+        .status-badge.locked-status{background:#e8ecf1;color:#999}
         .book-card .offline-badge{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;font-size:6px;padding:1px 4px;border-radius:4px;z-index:2}
         .book-card .badge-icon{position:absolute;top:3px;left:3px;font-size:14px;z-index:2;filter:drop-shadow(0 1px 4px rgba(0,0,0,.3))}
         .today-label{font-size:6px;color:#e94560;background:#fce7f3;padding:1px 4px;border-radius:4px;margin-left:2px}
@@ -781,6 +784,12 @@
                 const isNew=this.isNewBook(bookId);
                 const isReadToday=this.isBookReadToday(bookId);
                 
+                // Limit ပြည့်နေပြီး၊ New Book ဖြစ်ပြီး၊ ဒီနေ့မဖတ်ရသေးရင် ပိတ်ပင်ပါ
+                if(isNew && !isReadToday && !this.canReadNewToday()){
+                    showNotification('🔒 Daily limit reached. Read existing books or wait until tomorrow!');
+                    return;
+                }
+
                 openWebView(url, book.title);
                 
                 if(isNew && !isReadToday){
@@ -791,8 +800,6 @@
                         if(result.points>0){
                             showNotification('📖 '+book.title+' • +'+result.points+' pts ⭐ (New!)');
                         }
-                    } else {
-                        showNotification('📖 '+book.title+' (Opened - Daily new book limit reached)');
                     }
                 } else if(isReadToday && isNew){
                     showNotification('📖 '+book.title+' (Already read today)');
@@ -850,12 +857,14 @@
         }
         
         // ============================================================
-        // RENDER BOOKS
+        // RENDER BOOKS (သော့ခတ်ခြင်းအပိုင်းထည့်ထားပါတယ်)
         // ============================================================
         function renderBooks(bookList,manager){
             const container=document.getElementById('shelf-rows');
             const rows=chunkArray(bookList,4);
             let html='';
+            const canReadNew = manager.canReadNewToday(); // ဒီနေ့ Limit ပြည့်ပြီလား စစ်ပါ
+
             for(const row of rows){
                 html+='<div class="shelf-row"><div class="book-grid">';
                 for(const book of row){
@@ -865,11 +874,21 @@
                     const isNew=book.isNew!==undefined?book.isNew:true;
                     const isNewToday=book.isNewToday||false;
                     
+                    // *** သော့ခတ်ခြင်း Logic ***
+                    // Limit ပြည့်နေပြီး (canReadNew == false) 
+                    // စာအုပ်က New ဖြစ်ပြီး (isNew == true)
+                    // ဒီနေ့ မဖတ်ရသေးဘူးဆိုရင် (readToday == false) သော့ခတ်ပါ။
+                    // built-in (မူရင်း ၁၈ အုပ်) ကိုတော့ ဘယ်တော့မှ မခတ်ပါဘူး။
+                    const shouldLock = !isBuiltin && !canReadNew && isNew && !readToday && !isNewToday;
+
                     let statusClass='pending';
                     let statusIcon='🌐';
                     let label='';
                     
-                    if(isBuiltin){
+                    if(shouldLock){
+                        statusClass = 'locked-status';
+                        statusIcon = '🔒';
+                    } else if(isBuiltin){
                         statusClass='ready';
                         statusIcon=readToday?'📖':(readBefore?'🔄':'📚');
                     } else if(isNewToday){
@@ -889,16 +908,18 @@
                     
                     const onlineBadge=!isBuiltin?'<div class="offline-badge">🌐 Online</div>':'';
                     let badgeIcon='';
-                    if(isNewToday)badgeIcon='⭐';
+                    if(shouldLock) badgeIcon = '🔒';
+                    else if(isNewToday)badgeIcon='⭐';
                     else if(readToday)badgeIcon='📖';
                     else if(readBefore&&!readToday)badgeIcon='🔄';
                     else if(isNew)badgeIcon='📚';
                     
-                    html+='<div class="book-card" data-book="'+book.id+'">';
+                    html+='<div class="book-card '+(shouldLock ? 'locked' : '')+'" data-book="'+book.id+'">';
                     html+='<div class="cover-wrap" id="cover-'+book.id+'">';
+                    if(shouldLock) html+='<div class="lock-icon">🔒</div>';
                     html+='<img src="'+book.cover+'" alt="'+book.title+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
                     html+='<div class="placeholder" style="display:none;">📖</div>';
-                    if(badgeIcon)html+='<div class="badge-icon">'+badgeIcon+'</div>';
+                    if(badgeIcon && !shouldLock)html+='<div class="badge-icon">'+badgeIcon+'</div>';
                     html+=onlineBadge;
                     html+='</div>';
                     html+='<div class="book-info"><span class="book-title">'+book.title+'</span>';
@@ -916,7 +937,7 @@
                     img.addEventListener('error',function(){coverWrap.style.aspectRatio='4 / 3';});
                 }
             });
-            container.querySelectorAll('.book-card').forEach(el=>{
+            container.querySelectorAll('.book-card:not(.locked)').forEach(el=>{
                 el.addEventListener('click',function(e){
                     e.stopPropagation();
                     const bookId=this.dataset.book;
