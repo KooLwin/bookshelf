@@ -56,7 +56,7 @@ const firebaseConfig = {
 };
 
 // VAPID Key ကို Firebase Console > Project Settings > Cloud Messaging မှာယူပါ
-const VAPID_KEY = 'YOUR_VAPID_KEY_HERE';
+const VAPID_KEY = 'YBASjJdEoZ9nrhkMvAcYM8NtN_Qrj5jlHMacm-pkj7BzcofRnY01jqTdXAeggVKSfj89QP3NpdozLQTQpbjoxcCw';
 
 // Push Subscription ကို သိမ်းဆည်းမယ်
 let pushSubscription = null;
