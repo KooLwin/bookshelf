@@ -13,13 +13,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Kreative Bookshelf</title>
-    <!-- Google Analytics 4 (ခင်ဗျား Measurement ID ကို ဒီနေရာမှာ ထည့်ပါ) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1WDTM3GRWP"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-XXXXXXXXXX');
+        gtag('config', 'G-1WDTM3GRWP');
     </script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -277,15 +277,6 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
     </style>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1WDTM3GRWP"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-1WDTM3GRWP');
-</script>
 </head>
 <body>
     <div id="app">
@@ -807,49 +798,73 @@
                 this.updateUI();
                 this.points.updateUI();
             }
-            async syncRemoteBooks(){
-                if(this.isSyncing)return;
-                this.isSyncing=true;
-                try{
-                    this.setSyncButtonState(true);
-                    const response=await fetch(CONFIG.BASE_URL+'books-list.json');
-                    if(!response.ok)throw new Error('Network error');
-                    const remoteData=await response.json();
-                    let newBooksCount=0;
-                    if(remoteData.books&&Array.isArray(remoteData.books)){
-                        for(const book of remoteData.books){
-                            if(!this.books[book.id]){
-                                const onlineUrl=CONFIG.BASE_URL+'books/'+book.id+'/index.html';
-                                this.books[book.id]={
-                                    title:book.title,
-                                    cover:book.cover||'covers/default.png',
-                                    onlineUrl:onlineUrl,
-                                    isBuiltin:false,
-                                    isRemote:true
-                                };
-                                newBooksCount++;
+            syncRemoteBooks(){
+                const self = this;
+                if(self.isSyncing) return;
+                self.isSyncing = true;
+                self.setSyncButtonState(true);
+                
+                const url = CONFIG.BASE_URL + 'books-list.json';
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", url, true);
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        self.isSyncing = false;
+                        self.setSyncButtonState(false);
+                        if (xhr.status === 200) {
+                            try {
+                                const remoteData = JSON.parse(xhr.responseText);
+                                let newBooksCount = 0;
+                                if(remoteData.books && Array.isArray(remoteData.books)){
+                                    for(const book of remoteData.books){
+                                        if(!self.books[book.id]){
+                                            const onlineUrl = CONFIG.BASE_URL+'books/'+book.id+'/index.html';
+                                            self.books[book.id] = {
+                                                title: book.title,
+                                                cover: book.cover || 'covers/default.png',
+                                                onlineUrl: onlineUrl,
+                                                isBuiltin: false,
+                                                isRemote: true
+                                            };
+                                            newBooksCount++;
+                                        }
+                                    }
+                                }
+                                const remoteCache = {};
+                                Object.keys(self.books).forEach(key => {
+                                    if(!self.books[key].isBuiltin) remoteCache[key] = self.books[key];
+                                });
+                                localStorage.setItem('kreative_remote_books', JSON.stringify(remoteCache));
+                                self.updateUI();
+                                if(newBooksCount > 0){
+                                    showNotification('📚 Found ' + newBooksCount + ' new book(s)');
+                                } else {
+                                    showNotification('✅ All up to date');
+                                }
+                            } catch(e) {
+                                console.error('JSON parse error:', e);
+                                showNotification('⚠️ Sync failed. Invalid JSON format.');
+                            }
+                        } else {
+                            if (xhr.status === 0 || xhr.status === 404) {
+                                console.warn('Remote books list not found (404 or network error). Using local/cached books only.');
+                                showNotification('ℹ️ No new books found. Using built-in books.');
+                            } else {
+                                showNotification('⚠️ Sync failed. Status: ' + xhr.status);
                             }
                         }
                     }
-                    const remoteCache={};
-                    Object.keys(this.books).forEach(key=>{
-                        if(!this.books[key].isBuiltin)remoteCache[key]=this.books[key];
-                    });
-                    localStorage.setItem('kreative_remote_books',JSON.stringify(remoteCache));
-                    this.updateUI();
-                    if(newBooksCount>0){
-                        showNotification('📚 Found '+newBooksCount+' new book(s)');
-                    }else{
-                        showNotification('✅ All up to date');
-                    }
-                }catch(error){
-                    console.error('Sync error:',error);
-                    showNotification('⚠️ Sync failed: '+error.message);
-                }finally{
-                    this.isSyncing=false;
-                    this.setSyncButtonState(false);
-                }
+                };
+                xhr.onerror = function() {
+                    self.isSyncing = false;
+                    self.setSyncButtonState(false);
+                    console.warn('XHR error. Using local/cached books.');
+                    showNotification('ℹ️ No new books found. Using built-in books.');
+                };
+                xhr.send();
             }
+            
             getBookUrl(bookId){
                 const book=this.books[bookId];
                 if(!book)return null;
@@ -928,7 +943,19 @@
                 renderBooks(allBooks,this);
                 this.points.updateUI();
             }
-            autoSync(){setTimeout(()=>{this.syncRemoteBooks();},3000);}
+            autoSync(){
+                // Background auto-sync every 30 minutes (1800000 ms)
+                setInterval(() => {
+                    if(navigator.onLine){
+                        this.syncRemoteBooks();
+                    }
+                }, 1800000);
+            }
+            triggerAutoSync(){
+                if(navigator.onLine){
+                    this.syncRemoteBooks();
+                }
+            }
         }
         
         function renderBooks(bookList,manager){
@@ -1332,16 +1359,13 @@
             const overlay = document.getElementById('splash-ad-overlay');
             const img = document.getElementById('splash-ad-img');
             
-            // 1. GitHub ကနေ ယူဖို့ ကြိုးစားပါ
             img.src = CONFIG.BASE_URL + 'ads/ad.gif';
             
-            // 2. GitHub ကနေ မရရင် (Error ဖြစ်ရင်) Local ကနေ ယူပါ
             img.onerror = function(){
                 img.src = 'ads/ad.gif';
-                img.onerror = null; // ထပ်မံ Error မဖြစ်အောင်
+                img.onerror = null;
             };
 
-            // Google Analytics Event ပို့ခြင်း (GA4 အတွက်)
             if(typeof gtag !== 'undefined'){
                 gtag('event', 'ad_view', {
                     'event_category': 'Advertisement',
@@ -1406,7 +1430,19 @@
                 iframe.srcdoc='';
             });
             document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('close-btn').click();});
+            
+            // Start background auto-sync
             bookManager.autoSync();
+            
+            // Trigger sync when app becomes visible again
+            document.addEventListener('visibilitychange', function(){
+                if(!document.hidden && bookManager){
+                    setTimeout(() => {
+                        bookManager.triggerAutoSync();
+                    }, 500);
+                }
+            });
+            
             if(window.innerWidth > 820 && screen.orientation && screen.orientation.lock){
                 screen.orientation.lock('landscape').catch(()=>{});
             }
@@ -1417,7 +1453,6 @@
                 }
             },5000);
         });
-        document.addEventListener('visibilitychange',function(){if(!document.hidden&&bookManager)bookManager.syncRemoteBooks();});
         window.addEventListener('resize',function(){if(bookManager)bookManager.updateUI();});
         window.addEventListener('orientationchange',function(){setTimeout(()=>{if(bookManager)bookManager.updateUI();},300);});
     </script>
