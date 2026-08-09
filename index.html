@@ -407,6 +407,57 @@
     </div>
     
     <script>
+        // ============================================================
+        // 1. PRE-LOAD BOOKS LIST (Local + GitHub fallback)
+        // ============================================================
+        let BOOKS_LIST = null;
+        let BOOKS_LOADED = false;
+        
+        function loadBooksList() {
+            // Try local file first
+            fetch('books-list.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Local file not found');
+                    return response.json();
+                })
+                .then(data => {
+                    BOOKS_LIST = data;
+                    BOOKS_LOADED = true;
+                    console.log('✅ Books list loaded from local:', BOOKS_LIST);
+                    // If BookManager already exists, process the data
+                    if (window.bookManager && window.bookManager.processRemoteData) {
+                        window.bookManager.processRemoteData(BOOKS_LIST);
+                    }
+                })
+                .catch(() => {
+                    // If local fails, try GitHub
+                    const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
+                    fetch(githubUrl)
+                        .then(response => {
+                            if (!response.ok) throw new Error('GitHub file not found');
+                            return response.json();
+                        })
+                        .then(data => {
+                            BOOKS_LIST = data;
+                            BOOKS_LOADED = true;
+                            console.log('✅ Books list loaded from GitHub:', BOOKS_LIST);
+                            if (window.bookManager && window.bookManager.processRemoteData) {
+                                window.bookManager.processRemoteData(BOOKS_LIST);
+                            }
+                        })
+                        .catch(() => {
+                            console.warn('⚠️ Cannot load books-list.json from anywhere. Using built-in books.');
+                            showNotification('ℹ️ No new books found. Using built-in books.');
+                        });
+                });
+        }
+        
+        // Start loading books list immediately
+        loadBooksList();
+
+        // ============================================================
+        // 2. CONFIGURATION
+        // ============================================================
         const CONFIG={
             DAILY_LIMIT:3,
             STORAGE_KEY:'kreative_books_data',
@@ -484,6 +535,9 @@
             };
         }
         
+        // ============================================================
+        // 3. USER MANAGER
+        // ============================================================
         class UserManager {
             constructor() {
                 this.userName = this.loadUserName();
@@ -502,6 +556,9 @@
             getUserName() { return this.userName || 'Reader'; }
         }
         
+        // ============================================================
+        // 4. POINTS MANAGER
+        // ============================================================
         class PointsManager{
             constructor(){
                 this.data=this.loadData();
@@ -776,6 +833,9 @@
             }
         }
         
+        // ============================================================
+        // 5. BOOK MANAGER
+        // ============================================================
         class BookManager{
             constructor(){
                 this.points=new PointsManager();
@@ -794,116 +854,31 @@
                         });
                     }catch(e){}
                 }
+                
+                // If books list already loaded, process it
+                if (BOOKS_LOADED && BOOKS_LIST) {
+                    this.processRemoteData(BOOKS_LIST);
+                }
+                
                 this.updateUI();
                 this.points.updateUI();
-            }
-            syncRemoteBooks(){
-                const self = this;
-                if(self.isSyncing) return;
-                self.isSyncing = true;
-                self.setSyncButtonState(true);
-                
-                const localUrl = 'books-list.json';
-                const xhr = new XMLHttpRequest();
-                xhr.open("GET", localUrl, true);
-                
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            try {
-                                const remoteData = JSON.parse(xhr.responseText);
-                                self.processRemoteData(remoteData);
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                return;
-                            } catch(e) {
-                                console.error('Local JSON parse error:', e);
-                            }
-                        }
-                        
-                        const githubUrl = CONFIG.BASE_URL + 'books-list.json';
-                        const xhr2 = new XMLHttpRequest();
-                        xhr2.open("GET", githubUrl, true);
-                        xhr2.onreadystatechange = function() {
-                            if (xhr2.readyState === 4) {
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                if (xhr2.status === 200) {
-                                    try {
-                                        const remoteData = JSON.parse(xhr2.responseText);
-                                        self.processRemoteData(remoteData);
-                                    } catch(e) {
-                                        console.error('GitHub JSON parse error:', e);
-                                        showNotification('⚠️ Sync failed. Invalid JSON format.');
-                                    }
-                                } else {
-                                    if (xhr2.status === 0 || xhr2.status === 404) {
-                                        console.warn('Remote books list not found. Using built-in books only.');
-                                        showNotification('ℹ️ No new books found. Using built-in books.');
-                                    } else {
-                                        showNotification('⚠️ Sync failed. Status: ' + xhr2.status);
-                                    }
-                                }
-                            }
-                        };
-                        xhr2.onerror = function() {
-                            self.isSyncing = false;
-                            self.setSyncButtonState(false);
-                            console.warn('GitHub XHR error. Using built-in books.');
-                            showNotification('ℹ️ No new books found. Using built-in books.');
-                        };
-                        xhr2.send();
-                    }
-                };
-                xhr.onerror = function() {
-                    const githubUrl = CONFIG.BASE_URL + 'books-list.json';
-                    const xhr2 = new XMLHttpRequest();
-                    xhr2.open("GET", githubUrl, true);
-                    xhr2.onreadystatechange = function() {
-                        if (xhr2.readyState === 4) {
-                            self.isSyncing = false;
-                            self.setSyncButtonState(false);
-                            if (xhr2.status === 200) {
-                                try {
-                                    const remoteData = JSON.parse(xhr2.responseText);
-                                    self.processRemoteData(remoteData);
-                                } catch(e) {
-                                    console.error('GitHub JSON parse error:', e);
-                                    showNotification('⚠️ Sync failed. Invalid JSON format.');
-                                }
-                            } else {
-                                if (xhr2.status === 0 || xhr2.status === 404) {
-                                    console.warn('Remote books list not found. Using built-in books only.');
-                                    showNotification('ℹ️ No new books found. Using built-in books.');
-                                } else {
-                                    showNotification('⚠️ Sync failed. Status: ' + xhr2.status);
-                                }
-                            }
-                        }
-                    };
-                    xhr2.onerror = function() {
-                        self.isSyncing = false;
-                        self.setSyncButtonState(false);
-                        console.warn('GitHub XHR error. Using built-in books.');
-                        showNotification('ℹ️ No new books found. Using built-in books.');
-                    };
-                    xhr2.send();
-                };
-                xhr.send();
             }
             
             processRemoteData(remoteData){
                 let newBooksCount = 0;
                 if(remoteData.books && Array.isArray(remoteData.books)){
                     for(const book of remoteData.books){
-                        if(!this.books[book.id]){
-                            const onlineUrl = CONFIG.BASE_URL + 'books/' + book.id + '/index.html';
-                            this.books[book.id] = {
+                        // Convert book id to string for consistency
+                        const bookId = String(book.id);
+                        if(!this.books[bookId]){
+                            const onlineUrl = CONFIG.BASE_URL + 'books/' + bookId + '/index.html';
+                            this.books[bookId] = {
                                 title: book.title,
                                 cover: book.cover || 'covers/default.png',
                                 onlineUrl: onlineUrl,
                                 isBuiltin: false,
-                                isRemote: true
+                                isRemote: true,
+                                localPath: book.localPath || null
                             };
                             newBooksCount++;
                         }
@@ -917,15 +892,15 @@
                 this.updateUI();
                 if(newBooksCount > 0){
                     showNotification('📚 Found ' + newBooksCount + ' new book(s)');
-                } else {
-                    showNotification('✅ All up to date');
                 }
+                return newBooksCount;
             }
             
             getBookUrl(bookId){
                 const book=this.books[bookId];
                 if(!book)return null;
                 if(book.isBuiltin)return book.localPath;
+                if(book.localPath) return book.localPath;
                 if(book.onlineUrl)return book.onlineUrl;
                 return CONFIG.BASE_URL+'books/'+bookId+'/index.html';
             }
@@ -1000,6 +975,57 @@
                 renderBooks(allBooks,this);
                 this.points.updateUI();
             }
+            syncRemoteBooks(){
+                const self = this;
+                if(self.isSyncing) return;
+                self.isSyncing = true;
+                self.setSyncButtonState(true);
+                
+                // If books list is already loaded, use it
+                if (BOOKS_LOADED && BOOKS_LIST) {
+                    self.processRemoteData(BOOKS_LIST);
+                    self.isSyncing = false;
+                    self.setSyncButtonState(false);
+                    showNotification('✅ Sync completed');
+                    return;
+                }
+                
+                // Otherwise, try to fetch again
+                fetch('books-list.json')
+                    .then(r => {
+                        if (!r.ok) throw new Error('Not found');
+                        return r.json();
+                    })
+                    .then(data => {
+                        BOOKS_LIST = data;
+                        BOOKS_LOADED = true;
+                        self.processRemoteData(data);
+                        self.isSyncing = false;
+                        self.setSyncButtonState(false);
+                        showNotification('✅ Sync completed');
+                    })
+                    .catch(() => {
+                        const githubUrl = CONFIG.BASE_URL + 'books-list.json';
+                        fetch(githubUrl)
+                            .then(r => {
+                                if (!r.ok) throw new Error('Not found');
+                                return r.json();
+                            })
+                            .then(data => {
+                                BOOKS_LIST = data;
+                                BOOKS_LOADED = true;
+                                self.processRemoteData(data);
+                                self.isSyncing = false;
+                                self.setSyncButtonState(false);
+                                showNotification('✅ Sync completed');
+                            })
+                            .catch(() => {
+                                self.isSyncing = false;
+                                self.setSyncButtonState(false);
+                                showNotification('ℹ️ No new books found');
+                            });
+                    });
+            }
             autoSync(){
                 setInterval(() => {
                     if(navigator.onLine){
@@ -1014,6 +1040,9 @@
             }
         }
         
+        // ============================================================
+        // 6. RENDER FUNCTIONS
+        // ============================================================
         function renderBooks(bookList,manager){
             const container=document.getElementById('shelf-rows');
             const rows=chunkArray(bookList,4);
@@ -1435,6 +1464,9 @@
             }, 10000);
         }
         
+        // ============================================================
+        // 7. INITIALIZATION
+        // ============================================================
         let bookManager;
         document.addEventListener('DOMContentLoaded',function(){
             bookManager=new BookManager();
