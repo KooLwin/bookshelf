@@ -75,8 +75,9 @@
         .mobile-menu-slide.open{left:0}
         .mobile-menu-slide .menu-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:2px solid #e8ecf1;margin-bottom:12px}
         .mobile-menu-slide .menu-header h2{font-size:17px;font-weight:700;color:#1a1a2e}
-        .mobile-menu-slide .menu-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6c7a8e;padding:0 4px}
-        .mobile-menu-slide .menu-item{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;cursor:pointer;transition:.2s;font-size:14px;font-weight:600;color:#1a1a2e;border:none;background:none;width:100%;text-align:left}
+        .mobile-menu-slide .menu-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6c7a8e;padding:0 4px;touch-action:manipulation}
+        .mobile-menu-slide .menu-close:active{transform:scale(.9)}
+        .mobile-menu-slide .menu-item{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;cursor:pointer;transition:.2s;font-size:14px;font-weight:600;color:#1a1a2e;border:none;background:none;width:100%;text-align:left;touch-action:manipulation}
         .mobile-menu-slide .menu-item:active{transform:scale(.97);background:#f0f2f5}
         .mobile-menu-slide .menu-item .icon{font-size:18px;width:28px;text-align:center}
         .mobile-menu-slide .menu-divider{height:1px;background:#e8ecf1;margin:6px 0}
@@ -126,7 +127,8 @@
         .modal-overlay.active{display:flex}
         .modal-content{background:#fff;border-radius:16px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;-webkit-overflow-scrolling:touch}
         .modal-content h2{font-size:clamp(18px,2.2vw,24px);margin-bottom:12px;color:#1a1a2e}
-        .modal-close{position:absolute;top:10px;right:14px;font-size:22px;cursor:pointer;color:#999;background:none;border:none}
+        .modal-close{position:absolute;top:10px;right:14px;font-size:22px;cursor:pointer;color:#999;background:none;border:none;touch-action:manipulation;padding:8px;line-height:1}
+        .modal-close:active{transform:scale(.9)}
         .modal-close:hover{color:#333}
         
         .reward-item{background:#f8f9fc;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e8ecf1}
@@ -134,7 +136,7 @@
         .reward-item .name{font-weight:600;font-size:13px}
         .reward-item .desc{font-size:11px;color:#6c7a8e}
         .reward-item .cost{font-weight:700;color:#d4880f;margin:0 6px}
-        .reward-item .btn-redeem{padding:4px 14px;border:none;border-radius:14px;font-weight:600;font-size:11px;cursor:pointer;transition:.2s}
+        .reward-item .btn-redeem{padding:4px 14px;border:none;border-radius:14px;font-weight:600;font-size:11px;cursor:pointer;transition:.2s;touch-action:manipulation}
         .reward-item .btn-redeem:active{transform:scale(.95)}
         .reward-item .btn-redeem.available{background:#4a6fa5;color:#fff}
         .reward-item .btn-redeem.unavailable{background:#e8ecf1;color:#999;cursor:not-allowed}
@@ -233,7 +235,7 @@
         .cert-name-wrapper .edit-hint { font-size: 12px; color: #6c7a8e; cursor: pointer; padding: 4px 12px; background: #e8ecf1; border-radius: 20px; transition: .2s; }
         .cert-name-wrapper .edit-hint:active { transform: scale(.95); }
         
-        .btn-export{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;margin:4px}
+        .btn-export{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;margin:4px;touch-action:manipulation}
         .btn-export:active{transform:scale(.95)}
         .btn-export.pdf{background:#dc2626;color:#fff}
         .btn-export.png{background:#4a6fa5;color:#fff}
@@ -353,19 +355,19 @@
     
     <div class="modal-overlay" id="rewardsModal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('rewardsModal')">✕</button>
+            <button class="modal-close" id="closeRewardsModal">✕</button>
             <h2>🎁 Rewards Shop</h2>
             <p style="margin-bottom:10px;">Your Points: <strong id="modalPoints">0</strong></p>
             <div id="rewards-list"></div>
             <p style="font-size:11px;color:#6c7a8e;margin-top:10px;">💡 Read NEW books to earn points. Re-read anytime for free!</p>
             <div style="margin-top:15px; border-top:2px solid #e8ecf1; padding-top:12px; text-align:center;">
-                <button class="btn-header buy" onclick="openBuyPoints()" style="background:#f59e0b;color:#fff;font-size:14px;padding:6px 20px;">💰 Buy Points</button>
+                <button class="btn-header buy" id="buyPointsBtn" style="background:#f59e0b;color:#fff;font-size:14px;padding:6px 20px;">💰 Buy Points</button>
             </div>
         </div>
     </div>
     <div class="modal-overlay" id="logModal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('logModal')">✕</button>
+            <button class="modal-close" id="closeLogModal">✕</button>
             <h2>📖 Reading Log</h2>
             <p style="font-size:11px;color:#6c7a8e;margin-bottom:6px;">All books you've read (including re-reads)</p>
             <div id="reading-log-list"></div>
@@ -377,7 +379,7 @@
     </div>
     <div class="modal-overlay" id="badgesModal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('badgesModal')">✕</button>
+            <button class="modal-close" id="closeBadgesModal">✕</button>
             <h2>🏆 Your Badges</h2>
             <p style="font-size:11px;color:#6c7a8e;margin-bottom:10px;">Collect all 25 badges by reading NEW books!</p>
             <div id="badgeGrid"></div>
@@ -385,7 +387,7 @@
     </div>
     <div class="modal-overlay" id="stickersModal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('stickersModal')">✕</button>
+            <button class="modal-close" id="closeStickersModal">✕</button>
             <h2>🎨 Your Stickers</h2>
             <p style="font-size:11px;color:#6c7a8e;margin-bottom:10px;">Collect stickers by reading books!</p>
             <div id="stickerGrid"></div>
@@ -394,22 +396,22 @@
     
     <div class="modal-overlay" id="certificateModal">
         <div class="modal-content" style="max-width:700px;padding:16px;">
-            <button class="modal-close" onclick="closeModal('certificateModal')">✕</button>
+            <button class="modal-close" id="closeCertModal">✕</button>
             <h2>📜 Certificates</h2>
             <p style="font-size:12px;color:#6c7a8e;margin-bottom:10px;">🎉 Earn certificates by reading NEW books! Click the name to edit.</p>
             <div id="certificateContainer" style="overflow-x:auto;padding:8px 0;display:flex;flex-direction:column;align-items:center;"></div>
             <div style="text-align:center;margin-top:10px;" class="no-print">
-                <button class="btn-export pdf" onclick="exportCertificate('pdf')">📄 Download PDF</button>
-                <button class="btn-export png" onclick="exportCertificate('png')">🖼️ Download PNG</button>
-                <button class="btn-export gallery" onclick="exportCertificate('gallery')">📱 Save to Gallery</button>
-                <button class="btn-export" style="background:#6c7a8e;color:#fff;" onclick="window.print()">🖨️ Print</button>
+                <button class="btn-export pdf" id="exportPdfBtn">📄 Download All PDF</button>
+                <button class="btn-export png" id="exportPngBtn">🖼️ Download PNG (Choose)</button>
+                <button class="btn-export gallery" id="exportGalleryBtn">📱 Save to Gallery</button>
+                <button class="btn-export" id="printBtn" style="background:#6c7a8e;color:#fff;">🖨️ Print</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="redeemCodeModal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('redeemCodeModal')">✕</button>
+            <button class="modal-close" id="closeRedeemModal">✕</button>
             <h2>🔑 Redeem Points Code</h2>
             <p style="margin-bottom:10px;">Enter your 5-character code below to claim bonus points!</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -568,44 +570,68 @@
         }
 
         // ============================================================
-        // 4. PRE-LOAD BOOKS LIST (Local + GitHub fallback)
+        // 4. PRE-LOAD BOOKS LIST (GitHub first, then cache, then local)
         // ============================================================
         let BOOKS_LIST = null;
         let BOOKS_LOADED = false;
         
         function loadBooksList() {
-            // Try local file first
-            fetch('books-list.json')
+            // 1. Try GitHub first (online)
+            const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
+            
+            fetch(githubUrl + '?t=' + Date.now())
                 .then(response => {
-                    if (!response.ok) throw new Error('Local file not found');
+                    if (!response.ok) throw new Error('GitHub file not found');
                     return response.json();
                 })
                 .then(data => {
                     BOOKS_LIST = data;
                     BOOKS_LOADED = true;
-                    console.log('✅ Books list loaded from local:', BOOKS_LIST);
+                    console.log('✅ Books list loaded from GitHub:', BOOKS_LIST);
+                    
+                    // Update local cache
+                    localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
+                    
                     if (window.bookManager && window.bookManager.processRemoteData) {
                         window.bookManager.processRemoteData(BOOKS_LIST);
                     }
                 })
                 .catch(() => {
-                    // If local fails, try GitHub
-                    const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
-                    fetch(githubUrl)
+                    console.warn('⚠️ Cannot load from GitHub. Trying cache...');
+                    
+                    // 2. Try cache (offline)
+                    const cached = localStorage.getItem('kreative_remote_books_cache');
+                    if (cached) {
+                        try {
+                            const data = JSON.parse(cached);
+                            BOOKS_LIST = data;
+                            BOOKS_LOADED = true;
+                            console.log('✅ Books list loaded from cache');
+                            if (window.bookManager && window.bookManager.processRemoteData) {
+                                window.bookManager.processRemoteData(BOOKS_LIST);
+                            }
+                            return;
+                        } catch(e) {
+                            console.warn('⚠️ Cache error');
+                        }
+                    }
+                    
+                    // 3. Try local file (fallback)
+                    fetch('books-list.json')
                         .then(response => {
-                            if (!response.ok) throw new Error('GitHub file not found');
+                            if (!response.ok) throw new Error('Local file not found');
                             return response.json();
                         })
                         .then(data => {
                             BOOKS_LIST = data;
                             BOOKS_LOADED = true;
-                            console.log('✅ Books list loaded from GitHub:', BOOKS_LIST);
+                            console.log('✅ Books list loaded from local file');
                             if (window.bookManager && window.bookManager.processRemoteData) {
                                 window.bookManager.processRemoteData(BOOKS_LIST);
                             }
                         })
                         .catch(() => {
-                            console.warn('⚠️ Cannot load books-list.json from anywhere. Using built-in books.');
+                            console.warn('⚠️ Cannot load books-list.json from anywhere.');
                             showNotification('ℹ️ No new books found. Using built-in books.');
                         });
                 });
@@ -625,7 +651,8 @@
             STICKER_ICONS_KEY:'kreative_sticker_icons',
             USER_NAME_KEY:'kreative_user_name',
             CACHE_VERSION:'1.0.0',
-            BASE_URL:window.location.href.includes('github.io')?'https://koolwin.github.io/bookshelf/':'./',
+            BASE_URL: './',  // Use local files only for badges and stickers
+            LOCAL_BASE_URL: './',  // Local only
             POINTS:{PER_BOOK:10,FIRST_BOOK_BONUS:5,STREAK_BONUS:2,STREAK_THRESHOLD:3},
             API_URL:'https://script.google.com/macros/s/AKfycbwytFQwFPoKArgUn2PmK07matEZPs26mVxG6gbSKBExMGUTc0uQkVL2T7ou5t9nLLaelg/exec',
             BADGES:{
@@ -726,6 +753,7 @@
                 this.redeemed=this.loadRedeemed();
                 this.certificates=this.loadCertificates();
                 this.baseUrl=CONFIG.BASE_URL;
+                this.localBaseUrl=CONFIG.LOCAL_BASE_URL;
                 this.newBookReads=this.loadNewBookReads();
                 this.dailyNewReads=this.loadDailyNewReads();
                 this.userManager = new UserManager();
@@ -778,8 +806,13 @@
                 try{const raw=localStorage.getItem('kreative_daily_new');return raw?JSON.parse(raw):{};}catch(e){return{};}
             }
             saveDailyNewReads(){localStorage.setItem('kreative_daily_new',JSON.stringify(this.dailyNewReads));}
-            getBadgeIcon(key){return this.baseUrl+CONFIG.BADGES[key].icon;}
-            getStickerIcon(key){return this.baseUrl+CONFIG.STICKERS[key].icon;}
+            getBadgeIcon(key){
+                // Use local files only
+                return CONFIG.LOCAL_BASE_URL + CONFIG.BADGES[key].icon;
+            }
+            getStickerIcon(key){
+                return CONFIG.LOCAL_BASE_URL + CONFIG.STICKERS[key].icon;
+            }
             getToday(){return new Date().toISOString().split('T')[0];}
             getUserName(){return this.userManager.getUserName();}
             setUserName(name){this.userManager.saveUserName(name);}
@@ -1194,55 +1227,73 @@
                 self.isSyncing = true;
                 self.setSyncButtonState(true);
                 
-                if (BOOKS_LOADED && BOOKS_LIST) {
-                    self.processRemoteData(BOOKS_LIST);
-                    self.isSyncing = false;
-                    self.setSyncButtonState(false);
-                    showNotification('✅ Sync completed');
-                    return;
-                }
+                // 1. Try GitHub first (online)
+                const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
                 
-                fetch('books-list.json')
+                fetch(githubUrl + '?t=' + Date.now())
                     .then(r => {
-                        if (!r.ok) throw new Error('Not found');
+                        if (!r.ok) throw new Error('GitHub not found');
                         return r.json();
                     })
                     .then(data => {
                         BOOKS_LIST = data;
                         BOOKS_LOADED = true;
-                        self.processRemoteData(data);
+                        
+                        // Update cache
+                        localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
+                        
+                        const newCount = self.processRemoteData(data);
                         self.isSyncing = false;
                         self.setSyncButtonState(false);
-                        showNotification('✅ Sync completed');
+                        
+                        if (newCount > 0) {
+                            showNotification('✅ Found ' + newCount + ' new book(s)!');
+                        } else {
+                            showNotification('✅ Sync completed - No new books');
+                        }
                     })
                     .catch(() => {
-                        const githubUrl = CONFIG.BASE_URL + 'books-list.json';
-                        fetch(githubUrl)
+                        console.warn('⚠️ GitHub sync failed, trying cache...');
+                        
+                        // 2. Try cache (offline)
+                        const cached = localStorage.getItem('kreative_remote_books_cache');
+                        if (cached) {
+                            try {
+                                const data = JSON.parse(cached);
+                                const newCount = self.processRemoteData(data);
+                                self.isSyncing = false;
+                                self.setSyncButtonState(false);
+                                showNotification('✅ Using cached books (' + newCount + ' loaded)');
+                                return;
+                            } catch(e) {}
+                        }
+                        
+                        // 3. Try local file (fallback)
+                        fetch('books-list.json')
                             .then(r => {
-                                if (!r.ok) throw new Error('Not found');
+                                if (!r.ok) throw new Error('Local not found');
                                 return r.json();
                             })
                             .then(data => {
-                                BOOKS_LIST = data;
-                                BOOKS_LOADED = true;
-                                self.processRemoteData(data);
+                                const newCount = self.processRemoteData(data);
                                 self.isSyncing = false;
                                 self.setSyncButtonState(false);
-                                showNotification('✅ Sync completed');
+                                showNotification('✅ Local sync completed');
                             })
                             .catch(() => {
                                 self.isSyncing = false;
                                 self.setSyncButtonState(false);
-                                showNotification('ℹ️ No new books found');
+                                showNotification('ℹ️ No books found. Check internet.');
                             });
                     });
             }
             autoSync(){
+                // Sync every 5 minutes if online
                 setInterval(() => {
                     if(navigator.onLine){
                         this.syncRemoteBooks();
                     }
-                }, 1800000);
+                }, 300000);
             }
             triggerAutoSync(){
                 if(navigator.onLine){
@@ -1335,8 +1386,34 @@
         }
         function chunkArray(arr,size){const result=[];for(let i=0;i<arr.length;i+=size)result.push(arr.slice(i,i+size));return result;}
         
-        function openModal(id){document.getElementById(id).classList.add('active');}
-        function closeModal(id){document.getElementById(id).classList.remove('active');}
+        function openModal(id){
+            const modal = document.getElementById(id);
+            if(modal) modal.classList.add('active');
+        }
+        function closeModal(id){
+            const modal = document.getElementById(id);
+            if(modal) modal.classList.remove('active');
+        }
+        
+        // Setup modal close buttons
+        function setupModalClose(modalId, buttonId) {
+            const btn = document.getElementById(buttonId);
+            if(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeModal(modalId);
+                });
+            }
+            // Click outside to close
+            const modal = document.getElementById(modalId);
+            if(modal) {
+                modal.addEventListener('click', function(e) {
+                    if(e.target === this) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        }
         
         function openBuyPoints(){
             openWebView('http://buypoint.kkl.education/', 'Buy Points');
@@ -1365,26 +1442,49 @@
                 }
                 html+='<div class="reward-item"><div class="info"><div class="name">'+reward.name+'</div><div class="desc">'+reward.desc+'</div></div>';
                 html+='<div><span class="cost">⭐ '+reward.cost+'</span>';
-                html+='<button class="'+btnClass+'" onclick="'+(disabled?'':"redeemReward('"+id+"')")+'" '+(disabled?'disabled':'')+'>'+btnText+'</button></div></div>';
+                html+='<button class="'+btnClass+'" data-reward="'+id+'" '+(disabled?'disabled':'')+'>'+btnText+'</button></div></div>';
             }
             list.innerHTML=html;
+            
+            // Add event listeners to all redeem buttons
+            list.querySelectorAll('.btn-redeem.available').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const rewardId = this.dataset.reward;
+                    redeemReward(rewardId);
+                });
+            });
         }
+        
         function redeemReward(rewardId){
             const manager=window.bookManager;
-            if(!manager)return;
-            const success=manager.points.redeemReward(rewardId);
+            if(!manager){
+                showNotification('❌ System not ready');
+                return;
+            }
+            const points=manager.getPointsManager();
+            if(!points){
+                showNotification('❌ Points system not ready');
+                return;
+            }
+            const success=points.redeemReward(rewardId);
             if(success){
                 renderRewards(manager);
                 manager.updateUI();
                 const reward=CONFIG.REWARDS[rewardId];
-                if(reward.type === 'extra_book'){
+                if(reward && reward.type === 'extra_book'){
                     showNotification('🎁 Extra Book redeemed! (Limit +1)');
+                } else if(reward) {
+                    showNotification('🎁 '+reward.name+' redeemed!');
                 } else {
                     showNotification('🎁 Reward redeemed!');
                 }
             }
-            else{showNotification('❌ Cannot redeem');}
+            else{
+                showNotification('❌ Cannot redeem - Not enough points or already redeemed');
+            }
         }
+        
         function renderLog(manager){
             const points=manager.getPointsManager();
             const list=document.getElementById('reading-log-list');
@@ -1466,6 +1566,16 @@
                 return;
             }
             let html='';
+            // Show certificate selection for PNG download
+            if(certs.length > 1) {
+                html += '<div style="margin-bottom:12px;padding:10px;background:#f0f2f5;border-radius:10px;text-align:center;">';
+                html += '<p style="font-size:13px;font-weight:600;color:#1a1a2e;">📸 Select certificate for PNG download:</p>';
+                html += '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px;">';
+                for(const cert of certs) {
+                    html += `<button class="btn-export png" style="padding:4px 12px;font-size:12px;" onclick="exportSingleCertificate(${cert.milestone})">📄 ${cert.milestone} Books</button>`;
+                }
+                html += '</div></div>';
+            }
             for(const cert of certs){
                 const date=new Date(cert.earnedAt);
                 const dateStr=date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
@@ -1503,27 +1613,26 @@
             }
         }
         
-        async function exportCertificate(format){
-            const container=document.getElementById('certificateContainer');
-            const certEls = container.querySelectorAll('.certificate-a4');
-            if(certEls.length === 0){
-                showNotification('❌ No certificate to export. Read 5 NEW books first!');
+        // Export single certificate as PNG
+        async function exportSingleCertificate(milestone){
+            const certEl = document.getElementById('certificate-' + milestone);
+            if(!certEl) {
+                showNotification('❌ Certificate not found');
                 return;
             }
             try{
-                showNotification('⏳ Generating '+format.toUpperCase()+'...');
-                const originalCert = certEls[0];
-                const clone = originalCert.cloneNode(true);
+                showNotification('⏳ Generating PNG...');
                 const isMobile = window.innerWidth < 821;
                 const wrapper = document.createElement('div');
                 wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
                 document.body.appendChild(wrapper);
                 let width, height;
-                if (isMobile && format === 'gallery') {
+                if (isMobile) {
                     width = 1080;
                     height = 1920;
                     wrapper.style.width = width + 'px';
                     wrapper.style.height = height + 'px';
+                    const clone = certEl.cloneNode(true);
                     clone.style.width = '100%';
                     clone.style.height = '100%';
                     clone.style.maxWidth = '100%';
@@ -1537,11 +1646,13 @@
                     clone.querySelector('.cert-subtitle').style.fontSize = '22px';
                     clone.querySelector('.cert-icon').style.fontSize = '80px';
                     clone.querySelector('.cert-stamp').style.fontSize = '100px';
+                    wrapper.appendChild(clone);
                 } else {
                     width = 210 * 3.78;
                     height = 297 * 3.78;
                     wrapper.style.width = width + 'px';
                     wrapper.style.height = height + 'px';
+                    const clone = certEl.cloneNode(true);
                     clone.style.width = '100%';
                     clone.style.height = '100%';
                     clone.style.maxWidth = '210mm';
@@ -1549,41 +1660,165 @@
                     clone.style.padding = '20mm 15mm';
                     clone.style.borderRadius = '8px';
                     clone.style.margin = '0 auto';
+                    wrapper.appendChild(clone);
                 }
-                wrapper.appendChild(clone);
                 const canvas = await html2canvas(wrapper, {
                     scale: 3,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     logging: false,
                     width: width,
-                    height: height,
-                    onclone: function(doc) {}
+                    height: height
                 });
                 document.body.removeChild(wrapper);
-                if(format === 'png'){
-                    const link=document.createElement('a');
-                    link.download='certificate.png';
-                    link.href=canvas.toDataURL('image/png');
-                    link.click();
-                    showNotification('✅ PNG downloaded!');
-                } else if(format === 'pdf'){
-                    const imgData=canvas.toDataURL('image/png');
-                    const {jsPDF}=window.jspdf;
-                    const pdf=new jsPDF('p','mm','a4');
-                    pdf.addImage(imgData,'PNG',0,0,210,297);
-                    pdf.save('certificate.pdf');
-                    showNotification('✅ PDF downloaded!');
-                } else if(format === 'gallery'){
-                    const link=document.createElement('a');
-                    link.download='certificate.png';
-                    link.href=canvas.toDataURL('image/png');
-                    link.click();
-                    showNotification('✅ Saved to Gallery!');
-                }
+                const link=document.createElement('a');
+                link.download=`certificate_${milestone}books.png`;
+                link.href=canvas.toDataURL('image/png');
+                link.click();
+                showNotification(`✅ Certificate (${milestone} books) downloaded!`);
             } catch(error){
                 console.error('Export failed:',error);
                 showNotification('❌ Export failed. Please try again.');
+            }
+        }
+        
+        // Export all certificates as PDF
+        async function exportAllCertificatesPDF() {
+            const container = document.getElementById('certificateContainer');
+            const certEls = container.querySelectorAll('.certificate-a4');
+            if(certEls.length === 0){
+                showNotification('❌ No certificate to export. Read 5 NEW books first!');
+                return;
+            }
+            try{
+                showNotification('⏳ Generating PDF with ' + certEls.length + ' certificates...');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                for(let i = 0; i < certEls.length; i++) {
+                    const isMobile = window.innerWidth < 821;
+                    const wrapper = document.createElement('div');
+                    wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
+                    document.body.appendChild(wrapper);
+                    
+                    const width = 210 * 3.78;
+                    const height = 297 * 3.78;
+                    wrapper.style.width = width + 'px';
+                    wrapper.style.height = height + 'px';
+                    
+                    const clone = certEls[i].cloneNode(true);
+                    clone.style.width = '100%';
+                    clone.style.height = '100%';
+                    clone.style.maxWidth = '210mm';
+                    clone.style.minHeight = '297mm';
+                    clone.style.padding = '20mm 15mm';
+                    clone.style.borderRadius = '8px';
+                    clone.style.margin = '0 auto';
+                    wrapper.appendChild(clone);
+                    
+                    const canvas = await html2canvas(wrapper, {
+                        scale: 3,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        width: width,
+                        height: height
+                    });
+                    document.body.removeChild(wrapper);
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    
+                    if(i > 0) {
+                        pdf.addPage();
+                    }
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                }
+                
+                pdf.save('certificates_all.pdf');
+                showNotification('✅ All certificates saved as PDF!');
+            } catch(error){
+                console.error('Export failed:', error);
+                showNotification('❌ Export failed. Please try again.');
+            }
+        }
+        
+        async function exportCertificate(format){
+            if(format === 'pdf') {
+                await exportAllCertificatesPDF();
+            } else if(format === 'png' || format === 'gallery') {
+                const container = document.getElementById('certificateContainer');
+                const certEls = container.querySelectorAll('.certificate-a4');
+                if(certEls.length === 0){
+                    showNotification('❌ No certificate to export. Read 5 NEW books first!');
+                    return;
+                }
+                // For PNG/Gallery, export all certificates as separate files
+                try{
+                    showNotification('⏳ Generating ' + certEls.length + ' certificate(s)...');
+                    for(let i = 0; i < certEls.length; i++) {
+                        const isMobile = window.innerWidth < 821;
+                        const wrapper = document.createElement('div');
+                        wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
+                        document.body.appendChild(wrapper);
+                        let width, height;
+                        if (isMobile && format === 'gallery') {
+                            width = 1080;
+                            height = 1920;
+                            wrapper.style.width = width + 'px';
+                            wrapper.style.height = height + 'px';
+                            const clone = certEls[i].cloneNode(true);
+                            clone.style.width = '100%';
+                            clone.style.height = '100%';
+                            clone.style.maxWidth = '100%';
+                            clone.style.minHeight = 'auto';
+                            clone.style.borderRadius = '0';
+                            clone.style.margin = '0';
+                            clone.style.padding = '40px 30px';
+                            clone.style.border = '6px solid #d4a373';
+                            clone.querySelector('.cert-title').style.fontSize = '38px';
+                            clone.querySelector('.cert-name').style.fontSize = '44px';
+                            clone.querySelector('.cert-subtitle').style.fontSize = '22px';
+                            clone.querySelector('.cert-icon').style.fontSize = '80px';
+                            clone.querySelector('.cert-stamp').style.fontSize = '100px';
+                            wrapper.appendChild(clone);
+                        } else {
+                            width = 210 * 3.78;
+                            height = 297 * 3.78;
+                            wrapper.style.width = width + 'px';
+                            wrapper.style.height = height + 'px';
+                            const clone = certEls[i].cloneNode(true);
+                            clone.style.width = '100%';
+                            clone.style.height = '100%';
+                            clone.style.maxWidth = '210mm';
+                            clone.style.minHeight = '297mm';
+                            clone.style.padding = '20mm 15mm';
+                            clone.style.borderRadius = '8px';
+                            clone.style.margin = '0 auto';
+                            wrapper.appendChild(clone);
+                        }
+                        const canvas = await html2canvas(wrapper, {
+                            scale: 3,
+                            useCORS: true,
+                            backgroundColor: '#ffffff',
+                            logging: false,
+                            width: width,
+                            height: height
+                        });
+                        document.body.removeChild(wrapper);
+                        
+                        const milestone = certEls[i].querySelector('.cert-subtitle strong')?.textContent || (i + 1);
+                        const link=document.createElement('a');
+                        link.download=`certificate_${milestone}books.png`;
+                        link.href=canvas.toDataURL('image/png');
+                        link.click();
+                        // Small delay between downloads
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    showNotification('✅ All certificates downloaded!');
+                } catch(error){
+                    console.error('Export failed:',error);
+                    showNotification('❌ Export failed. Please try again.');
+                }
             }
         }
         
@@ -1655,12 +1890,21 @@
             const overlay = document.getElementById('splash-ad-overlay');
             const img = document.getElementById('splash-ad-img');
             
-            img.src = CONFIG.BASE_URL + 'ads/ad.gif';
+            // Try GitHub first, fallback to local
+            const adUrl = 'https://koolwin.github.io/bookshelf/ads/ad.gif';
+            const localAdUrl = './ads/ad.gif';
             
-            img.onerror = function(){
-                img.src = 'ads/ad.gif';
-                img.onerror = null;
-            };
+            // Check if online
+            if(navigator.onLine) {
+                img.src = adUrl + '?t=' + Date.now();
+                img.onerror = function() {
+                    // Fallback to local
+                    img.src = localAdUrl + '?t=' + Date.now();
+                };
+            } else {
+                // Offline - use local
+                img.src = localAdUrl + '?t=' + Date.now();
+            }
 
             if(typeof gtag !== 'undefined'){
                 gtag('event', 'ad_view', {
@@ -1682,13 +1926,55 @@
         document.addEventListener('DOMContentLoaded',function(){
             bookManager=new BookManager();
             window.bookManager=bookManager;
+            
+            // Make functions globally accessible
+            window.exportSingleCertificate = exportSingleCertificate;
+            window.editCertName = editCertName;
+            window.exportCertificate = exportCertificate;
+            
             showSplashAd();
+            
+            // Setup all modal close buttons
+            setupModalClose('rewardsModal', 'closeRewardsModal');
+            setupModalClose('logModal', 'closeLogModal');
+            setupModalClose('badgesModal', 'closeBadgesModal');
+            setupModalClose('stickersModal', 'closeStickersModal');
+            setupModalClose('certificateModal', 'closeCertModal');
+            setupModalClose('redeemCodeModal', 'closeRedeemModal');
+            
+            // Setup Buy Points button
+            document.getElementById('buyPointsBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                openBuyPoints();
+            });
+            
+            // Setup Certificate export buttons
+            document.getElementById('exportPdfBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                exportCertificate('pdf');
+            });
+            document.getElementById('exportPngBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                exportCertificate('png');
+            });
+            document.getElementById('exportGalleryBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                exportCertificate('gallery');
+            });
+            document.getElementById('printBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                window.print();
+            });
+            
             document.getElementById('btnSync').addEventListener('click',function(){bookManager.syncRemoteBooks();});
             document.getElementById('btnBuyCode').addEventListener('click',function(){openWebView('https://bookcode.kkl.education','Book Code');});
             document.getElementById('btnRedeemCode').addEventListener('click', openRedeemModal);
             document.getElementById('btnSubmitCode').addEventListener('click', handleRedeemCode);
             document.getElementById('codeInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') handleRedeemCode(); });
-            document.getElementById('btnRewards').addEventListener('click',function(){renderRewards(bookManager);openModal('rewardsModal');});
+            document.getElementById('btnRewards').addEventListener('click',function(){
+                renderRewards(bookManager);
+                openModal('rewardsModal');
+            });
             document.getElementById('btnLog').addEventListener('click',function(){renderLog(bookManager);openModal('logModal');});
             document.getElementById('btnBadges').addEventListener('click',function(){renderBadges(bookManager);openModal('badgesModal');});
             document.getElementById('btnStickers').addEventListener('click',function(){renderStickers(bookManager);openModal('stickersModal');});
@@ -1841,13 +2127,6 @@
             
             console.log('✅ FCM Token saved to Firestore');
             
-            // Option 2: Send to your backend server
-            // await fetch('/api/save-fcm-token', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ token, userId })
-            // });
-            
         } catch (error) {
             console.warn('⚠️ Failed to save token to server:', error);
             // Fallback: Save in localStorage
@@ -1902,7 +2181,6 @@
                         if (subscription) {
                             console.log('✅ Existing push subscription found');
                         } else {
-                            // Auto-subscribe after user interaction
                             console.log('ℹ️ No push subscription found');
                         }
                     });
@@ -1937,23 +2215,6 @@
         subscribeBtn.addEventListener('click', requestNotificationPermission);
         headerRight.insertBefore(subscribeBtn, headerRight.firstChild);
     }
-
-    // ============================================================
-    // 6. Auto-subscribe on user interaction
-    // ============================================================
-    // Auto-subscribe after 10 seconds if not already subscribed
-    setTimeout(async () => {
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
-            if (!subscription) {
-                console.log('Auto-subscribing to push...');
-                // Don't auto-subscribe - let user click button
-            }
-        } catch (e) {
-            console.warn(' Auto-subscribe check failed:', e);
-        }
-    }, 10000);
 
     console.log(' FCM initialized successfully!');
 </script>
