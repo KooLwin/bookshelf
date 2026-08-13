@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+    (function() {
+        // 1. Referer ကို စစ်ဆေးပါ
+        const referer = document.referrer;
+        
+        // 2. index.html ကနေလား စစ်ပါ
+        const isFromIndex = referer.includes(window.location.origin + '/') || 
+                           referer.includes(window.location.origin + '/?');
+        
+        // 3. တိုက်ရိုက်လာတာဆိုရင် (referer မရှိရင် သို့မဟုတ် index ကနေမဟုတ်ရင်)
+        if (!isFromIndex) {
+            // ဘယ် plan လဲဆိုတာ သိမ်းထားမယ်
+            const isPremium = window.location.pathname.includes('premium.html');
+            const plan = isPremium ? 'premium' : 'free';
+            
+            // index.html ဆီ ပြန်ညွှန်းမယ်
+            window.location.href = '/?plan=' + plan;
+        }
+    })();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#1a1a2e">
