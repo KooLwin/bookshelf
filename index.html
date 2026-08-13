@@ -1,2158 +1,768 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <title>Kreative Bookshelf</title>
-    
-    <!-- Google Analytics (gtag) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1WDTM3GRWP"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-1WDTM3GRWP');
-    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Kreative · Access</title>
 
-    <!-- Firebase SDK v12.17.1 with Module format -->
-    <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js",
-            "firebase/analytics": "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js",
-            "firebase/database": "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js",
-            "firebase/storage": "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js"
-        }
-    }
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== CSS ===== */
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        html,body{width:100%;height:100%;overflow:hidden;background:#f8f9fc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1a1a2e;position:relative}
-        #app{width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#f8f9fc;overflow:hidden;padding:8px 12px 4px 12px;position:relative;z-index:1}
-        
-        .header{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 8px 2px;flex-shrink:0;border-bottom:2px solid #e8ecf1;flex-wrap:nowrap;gap:4px 6px;position:relative;z-index:10;min-height:40px;background:#f8f9fc}
-        .header-left{display:flex;align-items:center;gap:4px;flex-shrink:0}
-        .hamburger-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:2px 4px;color:#1a1a2e;touch-action:manipulation;line-height:1}
-        .hamburger-btn:active{transform:scale(.9)}
-        .header h1{font-size:clamp(14px,2.5vw,22px);font-weight:800;color:#1a1a2e;letter-spacing:.3px;white-space:nowrap}
-        .header h1 span{color:#e94560}
-        
-        .header-center{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;flex:1;justify-content:center;min-width:0;overflow:hidden}
-        .header-center .points-display{font-size:clamp(8px,1.2vw,12px);padding:2px 8px;background:#fef3c7;border-radius:14px;color:#d4880f;font-weight:700;white-space:nowrap;flex-shrink:0}
-        .header-center .streak-display{font-size:clamp(8px,1.2vw,12px);padding:2px 8px;background:#dbeafe;border-radius:14px;color:#1a56db;font-weight:700;white-space:nowrap;flex-shrink:0}
-        .header-center .daily-limit-info{font-size:clamp(7px,1vw,11px);color:#6c7a8e;padding:2px 8px;background:#eef1f5;border-radius:10px;white-space:nowrap;flex-shrink:0}
-        .header-center .daily-limit-info .count{font-weight:700;color:#1a1a2e}
-        .header-center .daily-limit-info .new-badge{font-size:7px;color:#e94560;margin-left:2px}
-        
-        .header-right{display:flex;align-items:center;gap:3px;flex-shrink:0;flex-wrap:nowrap}
-        .btn-header{padding:4px 10px;border:none;border-radius:14px;font-size:clamp(8px,1.1vw,12px);font-weight:600;cursor:pointer;touch-action:manipulation;white-space:nowrap;transition:.2s;flex-shrink:0}
-        .btn-header:active{transform:scale(.92)}
-        .btn-header.sync{background:#4a6fa5;color:#fff}
-        .btn-header.sync.syncing{background:#f59e0b;pointer-events:none}
-        .btn-header.buy{background:#e94560;color:#fff;box-shadow:0 2px 8px rgba(233,69,96,.25)}
-        .btn-header.rewards{background:#8b5cf6;color:#fff}
-        .btn-header.log{background:#0ea5e9;color:#fff}
-        .btn-header.badges{background:#f59e0b;color:#fff}
-        .btn-header.stickers{background:#ec4899;color:#fff}
-        .btn-header.cert{background:#8b5cf6;color:#fff}
-        .btn-header.redeem{background:#10b981;color:#fff;font-weight:700;}
-        
-        .mobile-menu-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .3s ease;pointer-events:none}
-        .mobile-menu-overlay.active{display:block;opacity:1;pointer-events:auto}
-        .mobile-menu-slide{position:fixed;top:0;left:-280px;width:270px;max-width:80%;height:100%;background:#ffffff;z-index:101;box-shadow:4px 0 30px rgba(0,0,0,.15);transition:left .35s cubic-bezier(.4,0,.2,1);padding:16px 14px;overflow-y:auto;display:flex;flex-direction:column}
-        .mobile-menu-slide.open{left:0}
-        .mobile-menu-slide .menu-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:2px solid #e8ecf1;margin-bottom:12px}
-        .mobile-menu-slide .menu-header h2{font-size:17px;font-weight:700;color:#1a1a2e}
-        .mobile-menu-slide .menu-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6c7a8e;padding:0 4px;touch-action:manipulation}
-        .mobile-menu-slide .menu-close:active{transform:scale(.9)}
-        .mobile-menu-slide .menu-item{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:10px;cursor:pointer;transition:.2s;font-size:14px;font-weight:600;color:#1a1a2e;border:none;background:none;width:100%;text-align:left;touch-action:manipulation}
-        .mobile-menu-slide .menu-item:active{transform:scale(.97);background:#f0f2f5}
-        .mobile-menu-slide .menu-item .icon{font-size:18px;width:28px;text-align:center}
-        .mobile-menu-slide .menu-divider{height:1px;background:#e8ecf1;margin:6px 0}
-        .mobile-menu-slide .menu-points{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fef3c7;border-radius:10px;margin-bottom:6px;font-size:12px;font-weight:600;color:#d4880f}
-        .mobile-menu-slide .menu-streak{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#dbeafe;border-radius:10px;margin-bottom:12px;font-size:12px;font-weight:600;color:#1a56db}
-        
-        .shelf-container{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0 4px 0;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-        .shelf-container::-webkit-scrollbar{width:4px}
-        .shelf-container::-webkit-scrollbar-track{background:#f0f2f5;border-radius:4px}
-        .shelf-container::-webkit-scrollbar-thumb{background:#d0d5dd;border-radius:4px}
-        
-        .shelf-row{margin-bottom:16px;position:relative}
-        .shelf-row::after{content:'';position:absolute;bottom:-4px;left:2%;width:96%;height:8px;background:linear-gradient(180deg,#d4a373,#b8895c);border-radius:0 0 4px 4px;box-shadow:0 2px 8px rgba(0,0,0,.06);z-index:0}
-        .shelf-row::before{content:'';position:absolute;bottom:-6px;left:4%;width:92%;height:10px;background:radial-gradient(ellipse at 50% 0%,rgba(0,0,0,.05) 0%,transparent 70%);z-index:0;filter:blur(3px)}
-        .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px;padding:0 4px 2px 4px;position:relative;z-index:1}
-        
-        .book-card{background:#fff;border-radius:8px 8px 4px 4px;overflow:hidden;cursor:pointer;transition:.2s ease;box-shadow:0 1px 4px rgba(0,0,0,.06),0 1px 8px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);display:flex;flex-direction:column;position:relative;touch-action:manipulation;-webkit-touch-callout:none}
-        .book-card.locked{opacity:0.5;pointer-events:none;cursor:not-allowed;filter:grayscale(0.2)}
-        .book-card.locked .lock-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;z-index:5;color:#1a1a2e;text-shadow:0 0 10px rgba(255,255,255,0.8)}
-        .book-card:active{transform:scale(.96) translateY(-1px)}
-        .book-card .cover-wrap{position:relative;width:100%;background:#f0f2f5;overflow:hidden}
-        .book-card .cover-wrap img{display:block;width:100%;height:auto;background:#f0f2f5;transition:.3s;object-fit:contain}
-        .book-card .cover-wrap .placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8ecf1,#d5dbe4);font-size:clamp(24px,4vw,40px);color:rgba(0,0,0,.1)}
-        .book-card .book-info{padding:3px 5px 5px 5px;display:flex;justify-content:space-between;align-items:center;gap:3px;background:#fff;flex-shrink:0}
-        .book-card .book-title{font-size:clamp(8px,1.2vw,12px);font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-        .status-badge{font-size:clamp(6px,0.9vw,10px);padding:1px 5px;border-radius:8px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:.3s}
-        .status-badge.ready{background:#e6f7ed;color:#1a9c5e}
-        .status-badge.pending{background:#f0f2f5;color:#8a9aa8}
-        .status-badge.read{background:#fef3c7;color:#d4880f}
-        .status-badge.completed{background:#dbeafe;color:#1a56db}
-        .status-badge.repeat{background:#e0e7ff;color:#4f46e5}
-        .status-badge.today-new{background:#fce7f3;color:#db2777}
-        .status-badge.locked-status{background:#e8ecf1;color:#999}
-        .book-card .offline-badge{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;font-size:6px;padding:1px 4px;border-radius:4px;z-index:2}
-        .book-card .badge-icon{position:absolute;top:3px;left:3px;font-size:14px;z-index:2;filter:drop-shadow(0 1px 4px rgba(0,0,0,.3))}
-        .today-label{font-size:6px;color:#e94560;background:#fce7f3;padding:1px 4px;border-radius:4px;margin-left:2px}
-        
-        #notification{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:#1a1a2e;color:#fff;padding:8px 20px;border-radius:24px;font-size:clamp(11px,1.3vw,14px);opacity:0;transition:.4s cubic-bezier(.16,1,.3,1);pointer-events:none;max-width:90%;text-align:center;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.2);font-weight:500}
-        #notification.show{opacity:1;transform:translateX(-50%) translateY(0)}
-        
-        #webview-container{display:none;width:100vw;height:100vh;height:100dvh;position:fixed;top:0;left:0;z-index:1000;background:#fff;overflow:hidden}
-        #webview-container iframe{width:100%;height:100%;border:none;display:block;background:#fff}
-        #close-btn{position:absolute;top:10px;right:14px;font-size:clamp(20px,3vw,28px);color:#1a1a2e;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.08);border-radius:50%;width:clamp(34px,5vw,42px);height:clamp(34px,5vw,42px);cursor:pointer;z-index:1001;transition:.2s;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 4px 16px rgba(0,0,0,.1);font-weight:700;touch-action:manipulation}
-        #close-btn:active{transform:scale(.88)}
-        
-        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;justify-content:center;align-items:center;padding:16px}
-        .modal-overlay.active{display:flex}
-        .modal-content{background:#fff;border-radius:16px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;-webkit-overflow-scrolling:touch}
-        .modal-content h2{font-size:clamp(18px,2.2vw,24px);margin-bottom:12px;color:#1a1a2e}
-        .modal-close{position:absolute;top:10px;right:14px;font-size:22px;cursor:pointer;color:#999;background:none;border:none;touch-action:manipulation;padding:8px;line-height:1}
-        .modal-close:active{transform:scale(.9)}
-        .modal-close:hover{color:#333}
-        
-        .reward-item{background:#f8f9fc;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e8ecf1}
-        .reward-item .info{flex:1}
-        .reward-item .name{font-weight:600;font-size:13px}
-        .reward-item .desc{font-size:11px;color:#6c7a8e}
-        .reward-item .cost{font-weight:700;color:#d4880f;margin:0 6px}
-        .reward-item .btn-redeem{padding:4px 14px;border:none;border-radius:14px;font-weight:600;font-size:11px;cursor:pointer;transition:.2s;touch-action:manipulation}
-        .reward-item .btn-redeem:active{transform:scale(.95)}
-        .reward-item .btn-redeem.available{background:#4a6fa5;color:#fff}
-        .reward-item .btn-redeem.unavailable{background:#e8ecf1;color:#999;cursor:not-allowed}
-        .reward-item .btn-redeem.redeemed{background:#e6f7ed;color:#1a9c5e}
-        
-        .log-entry{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e8ecf1;font-size:13px}
-        .log-entry .date{color:#6c7a8e}
-        .log-entry .book{font-weight:500}
-        .log-entry .points{color:#d4880f;font-weight:600}
-        .log-entry .badge{font-size:11px;color:#6c7a8e}
-        
-        .badge-grid,.sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
-        .badge-item,.sticker-item{text-align:center;padding:10px 6px;background:#f8f9fc;border-radius:10px;border:2px solid #e8ecf1;transition:.3s}
-        .badge-item.unlocked{border-color:#f59e0b;background:#fef3c7}
-        .badge-item.locked{opacity:.5;filter:grayscale(1)}
-        .badge-item .icon{font-size:36px;display:block;margin-bottom:2px}
-        .badge-item .icon img{width:44px;height:44px;object-fit:contain;border-radius:50%}
-        .badge-item .name{font-size:9px;font-weight:600;margin-top:2px}
-        .badge-item .desc{font-size:8px;color:#6c7a8e}
-        
-        .sticker-item.unlocked{border-color:#ec4899;background:#fdf2f8}
-        .sticker-item.locked{opacity:.5;filter:grayscale(1)}
-        .sticker-item .icon{font-size:40px;display:block;margin-bottom:2px}
-        .sticker-item .icon img{width:48px;height:48px;object-fit:contain}
-        .sticker-item .name{font-size:9px;font-weight:600;margin-top:2px}
-        .sticker-item .desc{font-size:8px;color:#6c7a8e}
-        
-        .chart-container{background:#f8f9fc;border-radius:10px;padding:12px;margin:10px 0;overflow-x:auto}
-        .chart-bars{display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:16px;position:relative}
-        .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
-        .chart-bar{width:100%;max-width:24px;background:linear-gradient(180deg,#4a6fa5,#6c8fc7);border-radius:3px 3px 0 0;transition:height .5s ease;min-height:3px}
-        .chart-bar-label{font-size:8px;color:#6c7a8e;margin-top:3px;text-align:center}
-        .chart-bar-value{font-size:7px;font-weight:600;color:#1a1a2e;margin-bottom:2px}
-        
-        .certificate-a4 {
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 30%, #eef2f7, #d9e0eb);
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+        .glass-panel {
             width: 100%;
-            max-width: 210mm;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #fef9e7, #fdebd0);
-            border: 8px solid #d4a373;
-            border-radius: 8px;
-            box-shadow: 0 8px 40px rgba(0,0,0,.12);
-            position: relative;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px 15px;
-            min-height: auto;
+            max-width: 420px;
+            padding: 32px 28px 28px;
+            background: rgba(255,255,255,0.42);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-radius: 56px;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 30px 60px -20px rgba(0,20,40,0.25), inset 0 1px 0 rgba(255,255,255,0.7);
+            max-height: 98vh;
+            overflow-y: auto;
         }
-        .certificate-a4 .border-deco {
-            position: absolute;
-            top: 12px;
-            left: 10px;
-            right: 10px;
-            bottom: 12px;
-            border: 3px double #d4a373;
-            border-radius: 4px;
-            pointer-events: none;
-        }
-        .certificate-a4 .cert-icon { font-size: 40px; margin-bottom: 4px; }
-        .certificate-a4 .cert-title { font-size: 24px; font-weight: 800; color: #b8895c; letter-spacing: 2px; margin-bottom: 2px; font-family: 'Georgia', serif; }
-        .certificate-a4 .cert-subtitle { font-size: 14px; color: #6c7a8e; margin-bottom: 6px; font-weight: 400; }
-        .certificate-a4 .cert-subtitle strong { color: #b8895c; font-weight: 700; }
-        .certificate-a4 .cert-name { font-size: 28px; font-weight: 700; color: #1a1a2e; margin: 6px 0 4px 0; padding: 2px 20px; border-bottom: 3px solid #d4a373; display: inline-block; font-family: 'Georgia', serif; letter-spacing: 2px; }
-        .certificate-a4 .cert-name-input { font-size: 24px; font-weight: 700; color: #1a1a2e; border: none; border-bottom: 3px dashed #d4a373; background: transparent; text-align: center; padding: 2px 10px; margin: 6px 0 4px 0; min-width: 120px; max-width: 80%; font-family: 'Georgia', serif; letter-spacing: 2px; outline: none; }
-        .certificate-a4 .cert-name-input:focus { border-bottom-color: #e94560; }
-        .certificate-a4 .cert-name-input::placeholder { color: #ccc; font-size: 14px; font-weight: 400; font-family: 'Segoe UI', sans-serif; }
-        .certificate-a4 .cert-date { font-size: 12px; color: #6c7a8e; margin-top: 4px; }
-        .certificate-a4 .cert-stamp { font-size: 50px; margin-top: 6px; }
-        .certificate-a4 .cert-footer { margin-top: 10px; font-size: 12px; color: #b0b8c4; }
-        .certificate-a4 .cert-footer span { color: #d4a373; font-weight: 700; }
+        .glass-panel::-webkit-scrollbar { width: 3px; }
+        .glass-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+        .brand { text-align: center; margin-bottom: 24px; }
+        .brand h1 { font-weight: 700; font-size: 28px; letter-spacing: -0.02em; color: #1c1c1e; background: linear-gradient(145deg, #1c1c1e, #3a3a3e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand h1 span { font-weight: 400; color: #6b6b70; background: none; -webkit-text-fill-color: #6b6b70; }
+        .brand .sub { font-size: 14px; font-weight: 500; color: #5b5b60; margin-top: 4px; opacity: 0.7; }
+        .tab-bar { display: flex; background: rgba(0,0,0,0.04); border-radius: 40px; padding: 4px; margin-bottom: 24px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 12px 0; border-radius: 40px; font-weight: 600; font-size: 15px; color: #5b5b60; cursor: pointer; transition: all 0.25s; font-family: inherit; }
+        .tab-btn.active { background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); color: #1c1c1e; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+        .tab-btn:active { transform: scale(0.96); }
+        .panel { display: none; animation: fade 0.25s ease; }
+        .panel.active { display: block; }
+        @keyframes fade { 0% { opacity: 0.5; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 12px; font-weight: 600; color: #3a3a3e; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 5px; opacity: 0.7; }
+        .field input { width: 100%; padding: 16px 18px; border: 1.5px solid rgba(0,0,0,0.06); border-radius: 24px; background: rgba(255,255,255,0.6); backdrop-filter: blur(4px); font-size: 16px; font-family: inherit; color: #1c1c1e; outline: none; transition: all 0.2s; }
+        .field input:focus { border-color: #007aff; background: rgba(255,255,255,0.8); box-shadow: 0 0 0 6px rgba(0,122,255,0.08); }
+        .field input::placeholder { color: #8e8e93; opacity: 0.6; }
+        .field input.error { border-color: #ff3b30; background: rgba(255,59,48,0.04); }
+        .plan-box { background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,215,0,0.02)); border: 1.5px solid rgba(255,215,0,0.25); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; }
+        .plan-box .title { font-weight: 700; font-size: 14px; color: #b8860b; display: flex; align-items: center; gap: 6px; }
+        .plan-box .title .badge { background: #b8860b; color: white; font-size: 9px; padding: 2px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .plan-box .details { font-size: 13px; color: #5b5b60; margin-top: 4px; line-height: 1.5; }
+        .plan-box .details strong { color: #1c1c1e; }
+        .plan-box .kbz-info { background: rgba(0,122,255,0.06); border-radius: 10px; padding: 10px 12px; margin-top: 8px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+        .plan-box .kbz-info .number { font-weight: 700; color: #007aff; font-size: 15px; letter-spacing: 0.5px; }
+        .plan-box .kbz-info .copy-btn { background: rgba(0,122,255,0.1); border: none; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #007aff; cursor: pointer; font-family: inherit; }
+        .plan-box .kbz-info .copy-btn:active { transform: scale(0.95); }
+        .transaction-id-input { margin-top: 8px; }
+        .transaction-id-input input { text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .transaction-id-input .hint { font-size: 11px; color: #8e8e93; margin-top: 4px; }
+        .btn-primary { width: 100%; padding: 16px; border: none; border-radius: 40px; background: #007aff; color: white; font-weight: 600; font-size: 17px; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(4px); box-shadow: 0 8px 24px -6px rgba(0,122,255,0.3); margin-top: 4px; font-family: inherit; }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; }
+        .btn-primary.loading { pointer-events: none; opacity: 0.7; }
+        .btn-primary.premium-btn { background: linear-gradient(135deg, #f59e0b, #d4880f); box-shadow: 0 8px 24px -6px rgba(245,158,11,0.35); }
+        .status { min-height: 28px; font-size: 14px; font-weight: 500; text-align: center; margin-top: 14px; color: #3a3a3e; transition: 0.2s; }
+        .status.error { color: #ff3b30; }
+        .status.success { color: #34c759; }
+        .status.info { color: #007aff; }
+        .status.warning { color: #f59e0b; }
+        .meta-bar { display: flex; justify-content: space-between; margin-top: 20px; font-size: 12px; color: #6b6b70; border-top: 0.5px solid rgba(0,0,0,0.05); padding-top: 14px; }
+        .meta-bar .dot { display: inline-block; width: 8px; height: 8px; border-radius: 10px; margin-right: 6px; }
+        .dot.online { background: #34c759; }
+        .dot.offline { background: #ff9500; }
+        .meta-bar a { color: #007aff; text-decoration: none; font-weight: 500; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: rgba(28,28,30,0.92); backdrop-filter: blur(16px); padding: 12px 28px; border-radius: 40px; color: white; font-weight: 500; font-size: 14px; opacity: 0; transition: all 0.35s cubic-bezier(0.16,1,0.3,1); pointer-events: none; white-space: nowrap; max-width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .radio-group { display: flex; gap: 10px; margin-top: 4px; }
+        .radio-option { flex: 1; position: relative; }
+        .radio-option input[type="radio"] { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; top: 0; left: 0; }
+        .radio-option .radio-label { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 14px 10px; border: 1.5px solid rgba(0,0,0,0.06); border-radius: 16px; background: rgba(255,255,255,0.4); font-weight: 600; font-size: 14px; color: #5b5b60; transition: all 0.2s; text-align: center; }
+        .radio-option input[type="radio"]:checked + .radio-label { border-color: #007aff; background: rgba(0,122,255,0.06); color: #007aff; box-shadow: 0 0 0 4px rgba(0,122,255,0.06); }
+        .radio-option input[type="radio"]:checked + .radio-label.premium-label { border-color: #f59e0b; background: rgba(245,158,11,0.06); color: #b8860b; box-shadow: 0 0 0 4px rgba(245,158,11,0.06); }
+        .radio-option .radio-label .emoji { font-size: 18px; }
         
-        @media (min-width: 821px) {
-            .certificate-a4 {
-                width: 210mm;
-                min-height: 297mm;
-                padding: 20mm 15mm;
-                border-radius: 8px;
-            }
-            .certificate-a4 .border-deco { top: 12mm; left: 10mm; right: 10mm; bottom: 12mm; }
-            .certificate-a4 .cert-icon { font-size: 56px; margin-bottom: 8px; }
-            .certificate-a4 .cert-title { font-size: 36px; letter-spacing: 4px; margin-bottom: 4px; }
-            .certificate-a4 .cert-subtitle { font-size: 20px; margin-bottom: 12px; }
-            .certificate-a4 .cert-name { font-size: 42px; margin: 12px 0 8px 0; padding: 4px 30px; }
-            .certificate-a4 .cert-name-input { font-size: 36px; padding: 4px 20px; margin: 12px 0 8px 0; min-width: 200px; }
-            .certificate-a4 .cert-date { font-size: 16px; margin-top: 8px; }
-            .certificate-a4 .cert-stamp { font-size: 72px; margin-top: 12px; }
-            .certificate-a4 .cert-footer { margin-top: 16px; font-size: 14px; }
-            .certificate-a4 .cert-name-input::placeholder { font-size: 20px; }
-        }
-        
-        .cert-name-wrapper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 4px 0; }
-        .cert-name-wrapper .edit-hint { font-size: 12px; color: #6c7a8e; cursor: pointer; padding: 4px 12px; background: #e8ecf1; border-radius: 20px; transition: .2s; }
-        .cert-name-wrapper .edit-hint:active { transform: scale(.95); }
-        
-        .btn-export{padding:6px 16px;border:none;border-radius:16px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;margin:4px;touch-action:manipulation}
-        .btn-export:active{transform:scale(.95)}
-        .btn-export.pdf{background:#dc2626;color:#fff}
-        .btn-export.png{background:#4a6fa5;color:#fff}
-        .btn-export.gallery{background:#10b981;color:#fff}
-        .btn-export:hover{opacity:.85}
-        
-        .cert-empty{color:#6c7a8e;text-align:center;padding:30px 10px;font-size:14px}
-        
-        .footer{text-align:center;font-size:clamp(7px,0.9vw,10px);color:#b0b8c4;padding:4px 0 2px 0;flex-shrink:0;border-top:1px solid #e8ecf1;letter-spacing:.3px;background:#f8f9fc}
-        .scroll-hint{text-align:center;font-size:clamp(9px,1vw,11px);color:#b0b8c4;padding:2px 0 2px 0;opacity:.6;flex-shrink:0}
-        .scroll-hint .arrow{display:inline-block;animation:bounce 1.8s infinite}
-        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
-        
-        @media(orientation:landscape){.book-grid{grid-template-columns:repeat(4,1fr);gap:14px 12px}.header{padding:6px 4px 10px 4px}.btn-header{padding:6px 14px;font-size:clamp(10px,1.2vw,13px)}}
-        
-        @media(orientation:portrait){#app{padding:4px 8px 2px 8px}.book-grid{grid-template-columns:repeat(2,1fr);gap:8px 6px}.header{min-height:34px;padding:3px 2px 5px 2px;gap:3px}.header h1{font-size:clamp(12px,2vw,16px)}.header-center .points-display{font-size:clamp(7px,1vw,9px);padding:1px 5px}.header-center .streak-display{font-size:clamp(7px,1vw,9px);padding:1px 5px}.header-center .daily-limit-info{font-size:clamp(6px,0.9vw,9px);padding:1px 5px}.btn-header{padding:2px 6px;font-size:clamp(7px,0.9vw,9px);border-radius:10px}.hamburger-btn{font-size:18px;padding:1px 3px}.book-card .book-title{font-size:clamp(7px,1vw,10px)}.book-card .book-info{padding:2px 4px 4px 4px}.status-badge{font-size:clamp(6px,0.8vw,8px);padding:1px 4px}.shelf-row{margin-bottom:12px}.shelf-row::after{height:6px;bottom:-4px}.shelf-row::before{height:8px;bottom:-6px}.badge-grid,.sticker-grid{grid-template-columns:repeat(2,1fr)}.mobile-menu-slide{width:240px;left:-240px}.modal-content{padding:14px;max-width:100%;margin:0 4px}#notification{font-size:clamp(10px,1vw,12px);padding:6px 14px;bottom:12px}.footer{font-size:clamp(6px,0.8vw,8px);padding:2px 0 2px 0}.scroll-hint{font-size:clamp(8px,0.9vw,10px);padding:2px 0}}
-        
-        @media(max-width:400px)and(orientation:portrait){.book-grid{grid-template-columns:repeat(2,1fr);gap:6px 4px}.header h1{font-size:11px}.header-center .points-display{font-size:6px;padding:1px 4px}.header-center .streak-display{font-size:6px;padding:1px 4px}.header-center .daily-limit-info{font-size:6px;padding:1px 4px}.btn-header{padding:2px 5px;font-size:6px}.hamburger-btn{font-size:16px}.book-card .book-title{font-size:6px}.mobile-menu-slide{width:200px;left:-200px}}
-        
-        @media(min-width:821px){.hamburger-btn{display:none}.mobile-menu-overlay{display:none!important}.mobile-menu-slide{display:none!important}}
-        @media(max-width:820px){.hamburger-btn{display:block}.mobile-menu-overlay{display:block}.header-right .btn-header{display:none}.header-center .daily-limit-info{display:none}}
-        
-        @media print {
-            .certificate-a4 { border: none; box-shadow: none; border-radius: 0; padding: 20mm 15mm; width: 100%; min-height: 100vh; }
-            .certificate-a4 .border-deco { top: 15mm; left: 12mm; right: 12mm; bottom: 15mm; }
-            .no-print { display: none !important; }
-        }
-        
-        .badge-icon-img{width:44px;height:44px;object-fit:contain;border-radius:50%;display:block;margin:0 auto}
-        .sticker-icon-img{width:48px;height:48px;object-fit:contain;display:block;margin:0 auto}
-        
-        #splash-ad-overlay {
+        /* Popup Modal */
+        .popup-overlay {
+            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            background: rgba(0,0,0,0.85);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
             z-index: 9999;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
+            align-items: center;
+            padding: 20px;
         }
-        #splash-ad-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
+        .popup-overlay.active {
+            display: flex;
         }
-        #splash-ad-overlay img {
-            max-width: 95%;
-            max-height: 95%;
-            object-fit: contain;
+        .popup-modal {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.3s ease;
+            text-align: center;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .popup-modal .icon { font-size: 48px; margin-bottom: 12px; display: block; }
+        .popup-modal h2 { font-size: 20px; font-weight: 700; color: #1c1c1e; margin-bottom: 8px; }
+        .popup-modal p { font-size: 15px; color: #5b5b60; line-height: 1.6; margin-bottom: 16px; }
+        .popup-modal .btn-close-popup {
+            width: 100%;
+            padding: 14px;
+            border: none;
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            background: #007aff;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: inherit;
         }
+        .popup-modal .btn-close-popup:active { transform: scale(0.97); }
+        .popup-modal .btn-close-popup.warning { background: #f59e0b; }
+        .popup-modal .btn-close-popup.danger { background: #dc2626; }
+        
+        @media (max-width: 460px) { .glass-panel { padding: 20px 14px; border-radius: 36px; } .brand h1 { font-size: 24px; } .field input { padding: 14px 16px; } .radio-option .radio-label { padding: 12px 8px; font-size: 13px; } .plan-box { padding: 12px; } .popup-modal { padding: 24px 18px; } }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div class="header">
-            <div class="header-left">
-                <button class="hamburger-btn" id="hamburgerBtn">☰</button>
-                <h1>📚 <span>Kreative</span>Bookshelf</h1>
-            </div>
-            <div class="header-center" id="headerCenter">
-                <span class="points-display" id="pointsDisplay">⭐ 0 pts</span>
-                <span class="streak-display" id="streakDisplay">🔥 0 days</span>
-                <span class="daily-limit-info">📖 Today <span class="count" id="todayCount">0</span>/3 <span class="new-badge">NEW</span></span>
-            </div>
-            <div class="header-right">
-                <button class="btn-header redeem" id="btnRedeemCode">🔑 Redeem Code</button>
-                <button class="btn-header badges" id="btnBadges">🏆 Badges</button>
-                <button class="btn-header cert" id="btnCert">📜 Cert</button>
-                <button class="btn-header stickers" id="btnStickers">🎨 Stickers</button>
-                <button class="btn-header rewards" id="btnRewards">🎁 Rewards</button>
-                <button class="btn-header log" id="btnLog">📖 Log</button>
-                <button class="btn-header sync" id="btnSync">🔄 Sync</button>
-                <button class="btn-header buy" id="btnBuyCode">🔑 Buy Code</button>
-            </div>
-        </div>
-        
-        <div class="mobile-menu-overlay" id="mobileOverlay"></div>
-        <div class="mobile-menu-slide" id="mobileMenu">
-            <div class="menu-header">
-                <h2>📚 Menu</h2>
-                <button class="menu-close" id="menuClose">✕</button>
-            </div>
-            <div class="menu-points" id="menuPoints">⭐ 0 pts</div>
-            <div class="menu-streak" id="menuStreak">🔥 0 days</div>
-            <button class="menu-item" data-action="redeem"><span class="icon">🔑</span> Redeem Code</button>
-            <button class="menu-item" data-action="badges"><span class="icon">🏆</span> Badges</button>
-            <button class="menu-item" data-action="cert"><span class="icon">📜</span> Certificates</button>
-            <button class="menu-item" data-action="stickers"><span class="icon">🎨</span> Stickers</button>
-            <button class="menu-item" data-action="rewards"><span class="icon">🎁</span> Rewards</button>
-            <button class="menu-item" data-action="log"><span class="icon">📖</span> Reading Log</button>
-            <div class="menu-divider"></div>
-            <button class="menu-item" data-action="sync"><span class="icon">🔄</span> Sync Books</button>
-            <button class="menu-item" data-action="buy"><span class="icon">🔑</span> Buy Code</button>
-        </div>
-        
-        <div class="shelf-container" id="shelf-container">
-            <div id="shelf-rows"></div>
-            <div class="scroll-hint"><span class="arrow">⬇</span> Scroll to browse <span class="arrow">⬇</span></div>
-        </div>
-        <div class="footer">📡 Read NEW books (3/day) for points • Re-read anytime for free!</div>
+
+<!-- Popup Modal for Reminders -->
+<div class="popup-overlay" id="popupOverlay">
+    <div class="popup-modal" id="popupModal">
+        <span class="icon" id="popupIcon">⏰</span>
+        <h2 id="popupTitle">Premium Expiry Reminder</h2>
+        <p id="popupMessage">Your Premium subscription will expire in 3 days.</p>
+        <button class="btn-close-popup" id="popupBtn">OK, Got it!</button>
     </div>
-    
-    <div id="notification"></div>
-    
-    <div id="webview-container">
-        <button id="close-btn">✕</button>
-        <iframe id="book-iframe" allowfullscreen></iframe>
-    </div>
-    
-    <div class="modal-overlay" id="rewardsModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeRewardsModal">✕</button>
-            <h2>🎁 Rewards Shop</h2>
-            <p style="margin-bottom:10px;">Your Points: <strong id="modalPoints">0</strong></p>
-            <div id="rewards-list"></div>
-            <p style="font-size:11px;color:#6c7a8e;margin-top:10px;">💡 Read NEW books to earn points. Re-read anytime for free!</p>
-            <div style="margin-top:15px; border-top:2px solid #e8ecf1; padding-top:12px; text-align:center;">
-                <button class="btn-header buy" id="buyPointsBtn" style="background:#f59e0b;color:#fff;font-size:14px;padding:6px 20px;">💰 Buy Points</button>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="logModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeLogModal">✕</button>
-            <h2>📖 Reading Log</h2>
-            <p style="font-size:11px;color:#6c7a8e;margin-bottom:6px;">All books you've read (including re-reads)</p>
-            <div id="reading-log-list"></div>
-            <div style="margin-top:12px;">
-                <p style="font-weight:600;font-size:13px;">📊 Weekly Progress</p>
-                <div class="chart-container"><div class="chart-bars" id="chartBars"></div></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="badgesModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeBadgesModal">✕</button>
-            <h2>🏆 Your Badges</h2>
-            <p style="font-size:11px;color:#6c7a8e;margin-bottom:10px;">Collect all 25 badges by reading NEW books!</p>
-            <div id="badgeGrid"></div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="stickersModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeStickersModal">✕</button>
-            <h2>🎨 Your Stickers</h2>
-            <p style="font-size:11px;color:#6c7a8e;margin-bottom:10px;">Collect stickers by reading books!</p>
-            <div id="stickerGrid"></div>
-        </div>
-    </div>
-    
-    <div class="modal-overlay" id="certificateModal">
-        <div class="modal-content" style="max-width:700px;padding:16px;">
-            <button class="modal-close" id="closeCertModal">✕</button>
-            <h2>📜 Certificates</h2>
-            <p style="font-size:12px;color:#6c7a8e;margin-bottom:10px;">🎉 Earn certificates by reading NEW books! Click the name to edit.</p>
-            <div id="certificateContainer" style="overflow-x:auto;padding:8px 0;display:flex;flex-direction:column;align-items:center;"></div>
-            <div style="text-align:center;margin-top:10px;" class="no-print">
-                <button class="btn-export pdf" id="exportPdfBtn">📄 Download All PDF</button>
-                <button class="btn-export png" id="exportPngBtn">🖼️ Download PNG (Choose)</button>
-                <button class="btn-export gallery" id="exportGalleryBtn">📱 Save to Gallery</button>
-                <button class="btn-export" id="printBtn" style="background:#6c7a8e;color:#fff;">🖨️ Print</button>
-            </div>
-        </div>
+</div>
+
+<div class="glass-panel">
+
+    <div class="brand">
+        <h1>Kreative<span>Bookshelf</span></h1>
+        <div class="sub">premium · secure · unlimited</div>
     </div>
 
-    <div class="modal-overlay" id="redeemCodeModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeRedeemModal">✕</button>
-            <h2>🔑 Redeem Points Code</h2>
-            <p style="margin-bottom:10px;">Enter your 5-character code below to claim bonus points!</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <input type="text" id="codeInput" placeholder="e.g. ABCDE" style="flex:1;min-width:150px;padding:10px;border:1px solid #e8ecf1;border-radius:10px;font-size:14px;outline:none;background:#f8f9fc;text-transform:uppercase;">
-                <button class="btn-header redeem" id="btnSubmitCode" style="background:#10b981;color:#fff;border:none;border-radius:10px;font-weight:700;">Redeem</button>
-            </div>
-        </div>
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="signin">Sign In</button>
+        <button class="tab-btn" data-tab="register">Register</button>
     </div>
 
-    <div id="splash-ad-overlay">
-        <img id="splash-ad-img" src="" alt="Advertisement">
+    <!-- SIGN IN -->
+    <div class="panel active" id="panel-signin">
+        <form id="signin-form">
+            <div class="field"><label>Username or email</label><input type="text" id="login-user" placeholder="Enter your username" /></div>
+            <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="Enter your password" /></div>
+            <button type="submit" class="btn-primary" id="login-btn">Sign In</button>
+        </form>
+        <div class="status" id="login-status"></div>
     </div>
-    
-    <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js",
-            "firebase/analytics": "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js",
-            "firebase/database": "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js",
-            "firebase/storage": "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js"
-        }
-    }
-    </script>
 
-    <script type="module">
-        // ============================================================
-        // 1. FIREBASE INITIALIZATION
-        // ============================================================
-        import { initializeApp } from "firebase/app";
-        import { getAnalytics, logEvent } from "firebase/analytics";
-        import { getAuth, onAuthStateChanged, signInAnonymously } from "firebase/auth";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-        import { getDatabase } from "firebase/database";
+    <!-- REGISTER -->
+    <div class="panel" id="panel-register">
+        <form id="register-form">
+            <div class="field"><label>Full name</label><input type="text" id="reg-name" placeholder="Your full name" /></div>
+            <div class="field"><label>Username</label><input type="text" id="reg-user" placeholder="Choose a username" /></div>
+            <div class="field"><label>Email address</label><input type="email" id="reg-email" placeholder="your@email.com" /></div>
+            <div class="field"><label>Password (min 6 chars)</label><input type="password" id="reg-pass" placeholder="Create a password" /></div>
+            <div class="field"><label>Confirm password</label><input type="password" id="reg-pass-confirm" placeholder="Confirm your password" /></div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBl6MK40r4rrVQ3w3RTzEgioxYoOJIb4RA",
-            authDomain: "k-reader-cde45.firebaseapp.com",
-            projectId: "k-reader-cde45",
-            storageBucket: "k-reader-cde45.firebasestorage.app",
-            messagingSenderId: "732905849808",
-            appId: "1:732905849808:web:edf0f30a07b2c57ea1afd5",
-            measurementId: "G-JC8RSEZ5L3"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const rtdb = getDatabase(app);
-
-        logEvent(analytics, 'page_view', {
-            page_title: 'Kreative Bookshelf',
-            page_location: window.location.href
-        });
-
-        console.log('🔥 Firebase initialized successfully!');
-
-        // ============================================================
-        // 2. AUTH - Anonymous Sign In
-        // ============================================================
-        let currentUser = null;
-        let userId = null;
-
-        signInAnonymously(auth)
-            .then((userCredential) => {
-                currentUser = userCredential.user;
-                userId = currentUser.uid;
-                console.log('✅ Signed in anonymously:', userId);
-                logEvent(analytics, 'login', { method: 'anonymous' });
-                loadUserDataFromFirestore(userId);
-            })
-            .catch((error) => {
-                console.error('❌ Auth error:', error);
-                userId = 'local_' + Date.now();
-            });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                userId = user.uid;
-                console.log('👤 User signed in:', userId);
-            } else {
-                console.log('👤 User signed out');
-                userId = 'local_' + Date.now();
-            }
-        });
-
-        // ============================================================
-        // 3. FIRESTORE DATA FUNCTIONS
-        // ============================================================
-        async function loadUserDataFromFirestore(uid) {
-            try {
-                const userRef = doc(db, 'users', uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const data = userSnap.data();
-                    console.log('📦 Firestore data loaded:', data);
-                    
-                    if (data.points !== undefined) {
-                        const pointsManager = window.bookManager?.points;
-                        if (pointsManager) {
-                            pointsManager.data.totalPoints = Math.max(pointsManager.data.totalPoints, data.points || 0);
-                            pointsManager.saveData();
-                            pointsManager.updateUI();
-                        }
-                    }
-                    
-                    if (data.streak !== undefined) {
-                        const pointsManager = window.bookManager?.points;
-                        if (pointsManager) {
-                            pointsManager.data.streak = Math.max(pointsManager.data.streak, data.streak || 0);
-                            pointsManager.saveData();
-                        }
-                    }
-                } else {
-                    console.log('📦 No Firestore data found, creating new user...');
-                    await setDoc(userRef, {
-                        points: 0,
-                        streak: 0,
-                        booksRead: [],
-                        createdAt: new Date().toISOString()
-                    });
-                }
-            } catch (error) {
-                console.warn('⚠️ Firestore load error:', error);
-            }
-        }
-
-        async function syncToFirestore(uid, data) {
-            try {
-                const userRef = doc(db, 'users', uid);
-                await updateDoc(userRef, {
-                    points: data.totalPoints || 0,
-                    streak: data.streak || 0,
-                    lastReadDate: data.lastReadDate || null,
-                    lastUpdated: new Date().toISOString()
-                });
-                console.log('✅ Synced to Firestore');
-                logEvent(analytics, 'sync_data', { 
-                    points: data.totalPoints,
-                    streak: data.streak
-                });
-            } catch (error) {
-                console.warn('⚠️ Firestore sync error:', error);
-            }
-        }
-
-        // ============================================================
-        // 4. PRE-LOAD BOOKS LIST
-        // ============================================================
-        let BOOKS_LIST = null;
-        let BOOKS_LOADED = false;
-        
-        function loadBooksList() {
-            const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
-            
-            fetch(githubUrl + '?t=' + Date.now())
-                .then(response => {
-                    if (!response.ok) throw new Error('GitHub file not found');
-                    return response.json();
-                })
-                .then(data => {
-                    BOOKS_LIST = data;
-                    BOOKS_LOADED = true;
-                    console.log('✅ Books list loaded from GitHub:', BOOKS_LIST);
-                    localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
-                    if (window.bookManager && window.bookManager.processRemoteData) {
-                        window.bookManager.processRemoteData(BOOKS_LIST);
-                    }
-                })
-                .catch(() => {
-                    console.warn('⚠️ Cannot load from GitHub. Trying cache...');
-                    const cached = localStorage.getItem('kreative_remote_books_cache');
-                    if (cached) {
-                        try {
-                            const data = JSON.parse(cached);
-                            BOOKS_LIST = data;
-                            BOOKS_LOADED = true;
-                            console.log('✅ Books list loaded from cache');
-                            if (window.bookManager && window.bookManager.processRemoteData) {
-                                window.bookManager.processRemoteData(BOOKS_LIST);
-                            }
-                            return;
-                        } catch(e) {}
-                    }
-                    
-                    fetch('books-list.json')
-                        .then(response => {
-                            if (!response.ok) throw new Error('Local file not found');
-                            return response.json();
-                        })
-                        .then(data => {
-                            BOOKS_LIST = data;
-                            BOOKS_LOADED = true;
-                            console.log('✅ Books list loaded from local file');
-                            if (window.bookManager && window.bookManager.processRemoteData) {
-                                window.bookManager.processRemoteData(BOOKS_LIST);
-                            }
-                        })
-                        .catch(() => {
-                            console.warn('⚠️ Cannot load books-list.json from anywhere.');
-                            showNotification('ℹ️ No new books found. Using built-in books.');
-                        });
-                });
-        }
-        
-        loadBooksList();
-
-        // ============================================================
-        // 5. CONFIGURATION
-        // ============================================================
-        const CONFIG={
-            DAILY_LIMIT:3,
-            STORAGE_KEY:'kreative_books_data',
-            POINTS_KEY:'kreative_points_data',
-            BADGE_ICONS_KEY:'kreative_badge_icons',
-            STICKER_ICONS_KEY:'kreative_sticker_icons',
-            USER_NAME_KEY:'kreative_user_name',
-            CACHE_VERSION:'1.0.0',
-            BASE_URL: './',
-            LOCAL_BASE_URL: './',
-            POINTS:{PER_BOOK:10,FIRST_BOOK_BONUS:5,STREAK_BONUS:2,STREAK_THRESHOLD:3},
-            API_URL:'https://script.google.com/macros/s/AKfycbwytFQwFPoKArgUn2PmK07matEZPs26mVxG6gbSKBExMGUTc0uQkVL2T7ou5t9nLLaelg/exec',
-            BADGES:{
-                page_hopper:{name:'Page Hopper',desc:'Read 5 new books',threshold:5,icon:'badges/page_hopper.png'},
-                bookworm:{name:'Bookworm',desc:'Read 10 new books',threshold:10,icon:'badges/bookworm.png'},
-                rookie_library:{name:'Rookie Library',desc:'Read 15 new books',threshold:15,icon:'badges/rookie_library.png'},
-                keymaster:{name:'Keymaster',desc:'Read 20 new books',threshold:20,icon:'badges/keymaster.png'},
-                cover_inspector:{name:'Cover Inspector',desc:'Read 25 new books',threshold:25,icon:'badges/cover_inspector.png'},
-                clock_crusher:{name:'Clock Crusher',desc:'Read 30 new books',threshold:30,icon:'badges/clock_crusher.png'},
-                midnight_miner:{name:'Midnight Miner',desc:'Read 35 new books',threshold:35,icon:'badges/midnight_miner.png'},
-                sunrise_scholar:{name:'Sunrise Scholar',desc:'Read 40 new books',threshold:40,icon:'badges/sunrise_scholar.png'},
-                speed_demon:{name:'Speed Demon',desc:'Read 45 new books',threshold:45,icon:'badges/speed_demon.png'},
-                double_trouble:{name:'Double Trouble',desc:'Read 50 new books',threshold:50,icon:'badges/double_trouble.png'},
-                weekly_warrior:{name:'Weekly Warrior',desc:'Read 7 days in a row',threshold:7,type:'streak',icon:'badges/weekly_warrior.png'},
-                streak_master:{name:'Streak Master',desc:'Read 14 days in a row',threshold:14,type:'streak',icon:'badges/streak_master.png'},
-                weekend_wonder:{name:'Weekend Wonder',desc:'Read 21 days in a row',threshold:21,type:'streak',icon:'badges/weekend_wonder.png'},
-                dino_discoverer:{name:'Dino Discoverer',desc:'Read 28 days in a row',threshold:28,type:'streak',icon:'badges/dino_discoverer.png'},
-                sci_fi_cadet:{name:'Sci-Fi Cadet',desc:'Read 35 days in a row',threshold:35,type:'streak',icon:'badges/sci_fi_cadet.png'},
-                mystery_detective:{name:'Mystery Detective',desc:'Read 42 days in a row',threshold:42,type:'streak',icon:'badges/mystery_detective.png'},
-                fantasy_wizard:{name:'Fantasy Wizard',desc:'Read 49 days in a row',threshold:49,type:'streak',icon:'badges/fantasy_wizard.png'},
-                quiz_whiz:{name:'Quiz Whiz',desc:'Read 100 new books',threshold:100,icon:'badges/quiz_whiz.png'},
-                brain_boss:{name:'Brain Boss',desc:'Read 120 new books',threshold:120,icon:'badges/brain_boss.png'},
-                word_collector:{name:'Word Collector',desc:'Read 140 new books',threshold:140,icon:'badges/word_collector.png'},
-                review_royalty:{name:'Review Royalty',desc:'Read 160 new books',threshold:160,icon:'badges/review_royalty.png'},
-                stack_starter:{name:'Stack Starter',desc:'Read 180 new books',threshold:180,icon:'badges/stack_starter.png'},
-                chapter_champion:{name:'Chapter Champion',desc:'Read 200 new books',threshold:200,icon:'badges/chapter_champion.png'},
-                book_mountain_climber:{name:'Book Mountain Climber',desc:'Read 250 new books',threshold:250,icon:'badges/book_mountain_climber.png'},
-                ultimate_legend:{name:'Ultimate Legend',desc:'Read 300 new books',threshold:300,icon:'badges/ultimate_legend.png'}
-            },
-            STICKERS:{
-                star_sticker:{name:'⭐ Star Sticker',desc:'First book reward',cost:0,type:'auto',icon:'stickers/star_sticker.png'},
-                rainbow_sticker:{name:'🌈 Rainbow Sticker',desc:'Read 5 books',cost:0,type:'auto',icon:'stickers/rainbow_sticker.png'},
-                heart_sticker:{name:'❤️ Heart Sticker',desc:'Read 10 books',cost:0,type:'auto',icon:'stickers/heart_sticker.png'},
-                rocket_sticker:{name:'🚀 Rocket Sticker',desc:'Read 15 books',cost:0,type:'auto',icon:'stickers/rocket_sticker.png'},
-                unicorn_sticker:{name:'🦄 Unicorn Sticker',desc:'Read 20 books',cost:0,type:'auto',icon:'stickers/unicorn_sticker.png'},
-                dragon_sticker:{name:'🐉 Dragon Sticker',desc:'Read 30 books',cost:0,type:'auto',icon:'stickers/dragon_sticker.png'},
-                crown_sticker:{name:'👑 Crown Sticker',desc:'Read 40 books',cost:0,type:'auto',icon:'stickers/crown_sticker.png'},
-                diamond_sticker:{name:'💎 Diamond Sticker',desc:'Read 50 books',cost:0,type:'auto',icon:'stickers/diamond_sticker.png'},
-                glow_sticker:{name:'✨ Glow Sticker',desc:'Redeem 20 points',cost:20,type:'redeem',icon:'stickers/glow_sticker.png'},
-                sparkle_sticker:{name:'🌟 Sparkle Sticker',desc:'Redeem 30 points',cost:30,type:'redeem',icon:'stickers/sparkle_sticker.png'},
-                gold_sticker:{name:'🏅 Gold Sticker',desc:'Redeem 40 points',cost:40,type:'redeem',icon:'stickers/gold_sticker.png'},
-                legend_sticker:{name:'👑 Legend Sticker',desc:'Redeem 50 points',cost:50,type:'redeem',icon:'stickers/legend_sticker.png'}
-            },
-            REWARDS:{
-                extra_book:{name:'📚 Extra Book',desc:'Read 1 extra new book today',cost:20,type:'extra_book'},
-                glow_sticker:{name:'✨ Glow Sticker',desc:'Unlock glow sticker',cost:20,type:'sticker'},
-                sparkle_sticker:{name:'🌟 Sparkle Sticker',desc:'Unlock sparkle sticker',cost:30,type:'sticker'},
-                gold_sticker:{name:'🏅 Gold Sticker',desc:'Unlock gold sticker',cost:40,type:'sticker'},
-                legend_sticker:{name:'👑 Legend Sticker',desc:'Unlock legend sticker',cost:50,type:'sticker'}
-            }
-        };
-        const BUILTIN_COUNT=18;
-        CONFIG.BUILTIN_BOOKS={};
-        const JollyReaderTitles=[
-            'Mud','Inky','Zack','Snake','Monster Footsteps','Moat Farm',
-            'The Rocket','Monsters','The Pond','Helping','The Wind and the Sun',
-            'Book Week','Star and Fish','A Dog Has Pups','A Shoal of Fish',
-            'Slugs and Snails','Foxes','Insects'
-        ];
-        for(let i=1;i<=BUILTIN_COUNT;i++){
-            CONFIG.BUILTIN_BOOKS['book'+i]={
-                title:JollyReaderTitles[i-1],
-                cover:'covers/book'+i+'.png',
-                localPath:'books/book'+i+'/index.html',
-                isBuiltin:true
-            };
-        }
-        
-        // ============================================================
-        // 6. USER MANAGER
-        // ============================================================
-        class UserManager {
-            constructor() {
-                this.userName = this.loadUserName();
-            }
-            loadUserName() {
-                try {
-                    return localStorage.getItem(CONFIG.USER_NAME_KEY) || '';
-                } catch(e) { return ''; }
-            }
-            saveUserName(name) {
-                try {
-                    localStorage.setItem(CONFIG.USER_NAME_KEY, name);
-                    this.userName = name;
-                } catch(e) {}
-            }
-            getUserName() { return this.userName || 'Reader'; }
-        }
-        
-        // ============================================================
-        // 7. POINTS MANAGER
-        // ============================================================
-        class PointsManager{
-            constructor(){
-                this.data=this.loadData();
-                this.badges=this.loadBadges();
-                this.stickers=this.loadStickers();
-                this.redeemed=this.loadRedeemed();
-                this.certificates=this.loadCertificates();
-                this.baseUrl=CONFIG.BASE_URL;
-                this.localBaseUrl=CONFIG.LOCAL_BASE_URL;
-                this.newBookReads=this.loadNewBookReads();
-                this.dailyNewReads=this.loadDailyNewReads();
-                this.userManager = new UserManager();
-                this.syncTimeout = null;
-            }
-            loadData(){
-                try{
-                    const raw=localStorage.getItem(CONFIG.POINTS_KEY);
-                    if(raw){
-                        const data=JSON.parse(raw);
-                        if(data.version===CONFIG.CACHE_VERSION)return data;
-                    }
-                }catch(e){}
-                return{version:CONFIG.CACHE_VERSION,totalPoints:0,booksRead:[],streak:0,lastReadDate:null,extraBooksToday:0};
-            }
-            saveData(){
-                localStorage.setItem(CONFIG.POINTS_KEY,JSON.stringify(this.data));
-                this.syncToFirebase();
-            }
-            syncToFirebase() {
-                if (this.syncTimeout) clearTimeout(this.syncTimeout);
-                this.syncTimeout = setTimeout(() => {
-                    if (userId && userId.startsWith('local_') === false) {
-                        syncToFirestore(userId, this.data);
-                    }
-                }, 3000);
-            }
-            loadBadges(){
-                try{const raw=localStorage.getItem('kreative_badges');return raw?JSON.parse(raw):{};}catch(e){return{};}
-            }
-            saveBadges(){localStorage.setItem('kreative_badges',JSON.stringify(this.badges));}
-            loadStickers(){
-                try{const raw=localStorage.getItem('kreative_stickers');return raw?JSON.parse(raw):{};}catch(e){return{};}
-            }
-            saveStickers(){localStorage.setItem('kreative_stickers',JSON.stringify(this.stickers));}
-            loadRedeemed(){
-                try{const raw=localStorage.getItem('kreative_redeemed');return raw?JSON.parse(raw):{};}catch(e){return{};}
-            }
-            saveRedeemed(){localStorage.setItem('kreative_redeemed',JSON.stringify(this.redeemed));}
-            loadCertificates(){
-                try{const raw=localStorage.getItem('kreative_certificates');return raw?JSON.parse(raw):[];}catch(e){return[];}
-            }
-            saveCertificates(){localStorage.setItem('kreative_certificates',JSON.stringify(this.certificates));}
-            loadNewBookReads(){
-                try{const raw=localStorage.getItem('kreative_new_reads');return raw?JSON.parse(raw):{};}catch(e){return{};}
-            }
-            saveNewBookReads(){localStorage.setItem('kreative_new_reads',JSON.stringify(this.newBookReads));}
-            loadDailyNewReads(){
-                try{const raw=localStorage.getItem('kreative_daily_new');return raw?JSON.parse(raw):{};}catch(e){return{};}
-            }
-            saveDailyNewReads(){localStorage.setItem('kreative_daily_new',JSON.stringify(this.dailyNewReads));}
-            getBadgeIcon(key){
-                return CONFIG.LOCAL_BASE_URL + CONFIG.BADGES[key].icon;
-            }
-            getStickerIcon(key){
-                return CONFIG.LOCAL_BASE_URL + CONFIG.STICKERS[key].icon;
-            }
-            getToday(){return new Date().toISOString().split('T')[0];}
-            getUserName(){return this.userManager.getUserName();}
-            setUserName(name){this.userManager.saveUserName(name);}
-            isNewBook(bookId){return !this.newBookReads[bookId];}
-            isReadToday(bookId){
-                const today=this.getToday();
-                return this.data.booksRead.some(b=>b.bookId===bookId&&b.date===today);
-            }
-            getTodayNewCount(){
-                const today=this.getToday();
-                const todayReads=this.dailyNewReads[today]||[];
-                return todayReads.length;
-            }
-            getMaxNewBooksToday(){return CONFIG.DAILY_LIMIT+this.getExtraBooksToday();}
-            canReadNewToday(){return this.getTodayNewCount()<this.getMaxNewBooksToday();}
-            
-            // ===== REDEEM CODE - FIXED =====
-            async redeemCode(code) {
-                const upperCode = code.toUpperCase().trim();
-                
-                // Validate code format
-                if(upperCode.length !== 5){
-                    return {success: false, message: '⚠️ Code must be exactly 5 characters.'};
-                }
-                if(!/^[A-Z0-9]{5}$/.test(upperCode)){
-                    return {success: false, message: '⚠️ Code must contain only letters and numbers.'};
-                }
-                
-                // Check if already used locally
-                const usedCodes = JSON.parse(localStorage.getItem('kreative_used_codes') || '[]');
-                if(usedCodes.includes(upperCode)){
-                    return {success: false, message: '❌ This code has already been redeemed!'};
-                }
-                
-                try {
-                    // Call API
-                    const url = CONFIG.API_URL + '?code=' + encodeURIComponent(upperCode) + '&userId=' + encodeURIComponent(this.getUserName());
-                    console.log('📡 Calling API:', url);
-                    
-                    const response = await fetch(url);
-                    const result = await response.json();
-                    console.log('📡 API Response:', result);
-                    
-                    if(result.success){
-                        // Add points
-                        this.data.totalPoints += result.points;
-                        this.saveData();
-                        
-                        // Mark code as used
-                        usedCodes.push(upperCode);
-                        localStorage.setItem('kreative_used_codes', JSON.stringify(usedCodes));
-                        this.updateUI();
-                        
-                        // Log to Firebase
-                        logEvent(analytics, 'redeem_code', {
-                            code_used: upperCode,
-                            points_earned: result.points
-                        });
-                        
-                        return {success: true, message: result.message || '✅ Code redeemed! +' + result.points + ' points', points: result.points};
-                    } else {
-                        return {success: false, message: result.message || '❌ Invalid code. Please check and try again.'};
-                    }
-                } catch(error) {
-                    console.error('❌ Redeem error:', error);
-                    return {success: false, message: '❌ Connection error. Please check your internet and try again.'};
-                }
-            }
-            
-            addPoints(bookId,title){
-                const today=this.getToday();
-                const isNew=this.isNewBook(bookId);
-                const isReadToday=this.isReadToday(bookId);
-                let points=0;
-                let isFirstBookToday=false;
-                if(isNew && !isReadToday){
-                    if(!this.canReadNewToday()){
-                        return {points:0,isNew:false,isReadToday:true,limitReached:true};
-                    }
-                    points=CONFIG.POINTS.PER_BOOK;
-                    const todayNewReads=this.dailyNewReads[today]||[];
-                    if(todayNewReads.length===0){points+=CONFIG.POINTS.FIRST_BOOK_BONUS;isFirstBookToday=true;}
-                    this.updateStreak();
-                    if(this.data.streak>=CONFIG.POINTS.STREAK_THRESHOLD)points+=CONFIG.POINTS.STREAK_BONUS;
-                    this.data.totalPoints+=points;
-                    this.newBookReads[bookId]=true;
-                    this.saveNewBookReads();
-                    if(!this.dailyNewReads[today])this.dailyNewReads[today]=[];
-                    if(!this.dailyNewReads[today].includes(bookId)){
-                        this.dailyNewReads[today].push(bookId);
-                        this.saveDailyNewReads();
-                    }
-                    
-                    logEvent(analytics, 'read_book', {
-                        book_id: bookId,
-                        book_title: title,
-                        points_earned: points,
-                        is_new: true,
-                        streak: this.data.streak
-                    });
-                }
-                this.data.booksRead.push({
-                    bookId:bookId,
-                    title:title,
-                    date:today,
-                    points:points,
-                    isFirstBook:isFirstBookToday,
-                    isNew:isNew,
-                    isReadToday:isReadToday
-                });
-                this.saveData();
-                if(isNew && points>0){
-                    this.checkBadges(bookId,title);
-                    this.checkStickers();
-                    this.checkCertificates();
-                }
-                this.updateUI();
-                return {points,isNew,isReadToday,limitReached:false};
-            }
-            updateStreak(){
-                const today=this.getToday();
-                const lastDate=this.data.lastReadDate;
-                if(!lastDate)this.data.streak=1;
-                else if(lastDate===today){}
-                else{
-                    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
-                    const yesterdayStr=yesterday.toISOString().split('T')[0];
-                    if(lastDate===yesterdayStr)this.data.streak+=1;
-                    else this.data.streak=1;
-                }
-                this.data.lastReadDate=today;
-            }
-            checkBadges(bookId,title){
-                const totalNewBooks=Object.keys(this.newBookReads).length;
-                const streak=this.data.streak;
-                for(const[key,badge]of Object.entries(CONFIG.BADGES)){
-                    if(this.badges[key])continue;
-                    let unlocked=false;
-                    if(badge.type==='streak'){
-                        if(streak>=badge.threshold)unlocked=true;
-                    }else{
-                        if(totalNewBooks>=badge.threshold)unlocked=true;
-                    }
-                    if(unlocked){
-                        this.badges[key]={unlockedAt:new Date().toISOString(),bookId,title};
-                        this.saveBadges();
-                        showNotification('🏆 New Badge: '+badge.name+'!');
-                        
-                        logEvent(analytics, 'unlock_badge', {
-                            badge_name: badge.name,
-                            badge_key: key,
-                            total_books: totalNewBooks
-                        });
-                        break;
-                    }
-                }
-            }
-            checkStickers(){
-                const totalBooks=this.data.booksRead.length;
-                const stickerMap={
-                    star_sticker:1,rainbow_sticker:5,heart_sticker:10,
-                    rocket_sticker:15,unicorn_sticker:20,dragon_sticker:30,
-                    crown_sticker:40,diamond_sticker:50
-                };
-                for(const[key,threshold]of Object.entries(stickerMap)){
-                    if(this.stickers[key])continue;
-                    if(totalBooks>=threshold){
-                        this.stickers[key]={unlockedAt:new Date().toISOString()};
-                        this.saveStickers();
-                        showNotification('🎨 New Sticker: '+CONFIG.STICKERS[key].name+'!');
-                        
-                        logEvent(analytics, 'unlock_sticker', {
-                            sticker_name: CONFIG.STICKERS[key].name,
-                            sticker_key: key
-                        });
-                    }
-                }
-            }
-            checkCertificates(){
-                const totalNewBooks=Object.keys(this.newBookReads).length;
-                const milestones=[5,10,20,50,100,150,200,300];
-                for(const m of milestones){
-                    if(totalNewBooks>=m){
-                        const existing=this.certificates.find(c=>c.milestone===m);
-                        if(!existing){
-                            this.certificates.push({milestone:m,earnedAt:new Date().toISOString(),booksRead:totalNewBooks});
-                            this.saveCertificates();
-                            showNotification('📜 Certificate: '+m+' New Books!');
-                            
-                            logEvent(analytics, 'earn_certificate', {
-                                milestone: m,
-                                total_books: totalNewBooks
-                            });
-                        }
-                    }
-                }
-            }
-            getTotalPoints(){return this.data.totalPoints;}
-            getStreak(){return this.data.streak;}
-            getBooksRead(){return this.data.booksRead;}
-            getBadges(){return this.badges;}
-            getStickers(){return this.stickers;}
-            getCertificates(){return this.certificates;}
-            getRedeemed(){return this.redeemed;}
-            getExtraBooksToday(){
-                const today=this.getToday();
-                const redeemedToday=this.redeemed[today]||{};
-                return redeemedToday.extra_book || 0;
-            }
-            canRedeem(rewardId){
-                const reward=CONFIG.REWARDS[rewardId];
-                if(!reward)return false;
-                if(this.data.totalPoints<reward.cost)return false;
-                if(reward.type==='sticker'){
-                    const today=this.getToday();
-                    const redeemedToday=this.redeemed[today]||{};
-                    if(redeemedToday[rewardId]&&redeemedToday[rewardId]>=1)return false;
-                }
-                return true;
-            }
-            redeemReward(rewardId){
-                if(!this.canRedeem(rewardId))return false;
-                const reward=CONFIG.REWARDS[rewardId];
-                const today=this.getToday();
-                this.data.totalPoints-=reward.cost;
-                this.saveData();
-                if(!this.redeemed[today])this.redeemed[today]={};
-                if(!this.redeemed[today][rewardId])this.redeemed[today][rewardId]=0;
-                this.redeemed[today][rewardId]+=1;
-                this.saveRedeemed();
-                if(reward.type==='sticker'){
-                    const stickerKey=rewardId;
-                    if(!this.stickers[stickerKey]){
-                        this.stickers[stickerKey]={unlockedAt:new Date().toISOString()};
-                        this.saveStickers();
-                    }
-                    showNotification('🎨 Sticker Unlocked: '+reward.name+'!');
-                    
-                    logEvent(analytics, 'redeem_sticker', {
-                        sticker_name: reward.name,
-                        cost: reward.cost
-                    });
-                }else{
-                    showNotification('🎁 '+reward.name+' redeemed!');
-                    logEvent(analytics, 'redeem_reward', {
-                        reward_name: reward.name,
-                        reward_type: reward.type,
-                        cost: reward.cost
-                    });
-                }
-                this.updateUI();
-                return true;
-            }
-            getWeeklyData(){
-                const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-                const result={};
-                const today=new Date();
-                for(let i=6;i>=0;i--){
-                    const date=new Date(today);date.setDate(date.getDate()-i);
-                    const dateStr=date.toISOString().split('T')[0];
-                    const dayName=days[date.getDay()];
-                    const count=this.data.booksRead.filter(b=>b.date===dateStr).length;
-                    result[dayName]=count;
-                }
-                return result;
-            }
-            updateUI(){
-                document.getElementById('pointsDisplay').textContent='⭐ '+this.data.totalPoints+' pts';
-                document.getElementById('streakDisplay').textContent='🔥 '+this.data.streak+' days';
-                document.getElementById('todayCount').textContent=this.getTodayNewCount();
-                const info=document.querySelector('.daily-limit-info');
-                const remaining=this.getMaxNewBooksToday()-this.getTodayNewCount();
-                if(remaining<=0)info.style.color='#dc2626';
-                else if(remaining<=1)info.style.color='#f59e0b';
-                else info.style.color='#6c7a8e';
-                const menuPoints=document.getElementById('menuPoints');
-                const menuStreak=document.getElementById('menuStreak');
-                if(menuPoints)menuPoints.textContent='⭐ '+this.data.totalPoints+' pts';
-                if(menuStreak)menuStreak.textContent='🔥 '+this.data.streak+' days';
-            }
-        }
-        
-        // ============================================================
-        // 8. BOOK MANAGER
-        // ============================================================
-        class BookManager{
-            constructor(){
-                this.points=new PointsManager();
-                this.books={};
-                this.isSyncing=false;
-                this.init();
-            }
-            init(){
-                this.books={...CONFIG.BUILTIN_BOOKS};
-                const cached=localStorage.getItem('kreative_remote_books');
-                if(cached){
-                    try{
-                        const data=JSON.parse(cached);
-                        Object.keys(data).forEach(key=>{
-                            if(!this.books[key])this.books[key]=data[key];
-                        });
-                    }catch(e){}
-                }
-                
-                if (BOOKS_LOADED && BOOKS_LIST) {
-                    this.processRemoteData(BOOKS_LIST);
-                }
-                
-                this.updateUI();
-                this.points.updateUI();
-            }
-            
-            processRemoteData(remoteData){
-                let newBooksCount = 0;
-                if(remoteData.books && Array.isArray(remoteData.books)){
-                    for(const book of remoteData.books){
-                        const bookId = String(book.id);
-                        if(!this.books[bookId]){
-                            const onlineUrl = CONFIG.BASE_URL + 'books/' + bookId + '/index.html';
-                            this.books[bookId] = {
-                                title: book.title,
-                                cover: book.cover || 'covers/default.png',
-                                onlineUrl: onlineUrl,
-                                isBuiltin: false,
-                                isRemote: true,
-                                localPath: book.localPath || null
-                            };
-                            newBooksCount++;
-                        }
-                    }
-                }
-                const remoteCache = {};
-                Object.keys(this.books).forEach(key => {
-                    if(!this.books[key].isBuiltin) remoteCache[key] = this.books[key];
-                });
-                localStorage.setItem('kreative_remote_books', JSON.stringify(remoteCache));
-                this.updateUI();
-                if(newBooksCount > 0){
-                    showNotification('📚 Found ' + newBooksCount + ' new book(s)');
-                }
-                return newBooksCount;
-            }
-            
-            getBookUrl(bookId){
-                const book=this.books[bookId];
-                if(!book)return null;
-                if(book.isBuiltin)return book.localPath;
-                if(book.localPath) return book.localPath;
-                if(book.onlineUrl)return book.onlineUrl;
-                return CONFIG.BASE_URL+'books/'+bookId+'/index.html';
-            }
-            isBookReadToday(bookId){return this.points.isReadToday(bookId);}
-            isNewBook(bookId){return this.points.isNewBook(bookId);}
-            getTodayNewCount(){return this.points.getTodayNewCount();}
-            getMaxNewBooksToday(){return this.points.getMaxNewBooksToday();}
-            canReadNewToday(){return this.points.canReadNewToday();}
-            async openBook(bookId){
-                const book=this.books[bookId];
-                if(!book){showNotification('❌ Book not found');return;}
-                const url=this.getBookUrl(bookId);
-                if(!url){showNotification('❌ Cannot open book');return;}
-                const isNew=this.isNewBook(bookId);
-                const isReadToday=this.isBookReadToday(bookId);
-                if(isNew && !isReadToday && !this.canReadNewToday()){
-                    showNotification('🔒 Daily limit reached. Read existing books or wait until tomorrow!');
-                    return;
-                }
-                openWebView(url, book.title);
-                if(isNew && !isReadToday){
-                    if(this.canReadNewToday()){
-                        const result=this.points.addPoints(bookId,book.title);
-                        this.points.updateUI();
-                        this.updateUI();
-                        if(result.points>0){
-                            showNotification('📖 '+book.title+' • +'+result.points+' pts ⭐ (New!)');
-                        }
-                    }
-                } else if(isReadToday && isNew){
-                    showNotification('📖 '+book.title+' (Already read today)');
-                } else {
-                    showNotification('📖 '+book.title+' (Re-read)');
-                }
-            }
-            getBook(bookId){return this.books[bookId]||null;}
-            getAllBooks(){
-                const builtInKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin === true);
-                const builtInBooks = builtInKeys.map(key => ({
-                    id: key,
-                    ...this.books[key],
-                    readToday: this.isBookReadToday(key),
-                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
-                    isNew: this.isNewBook(key),
-                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
-                }));
-                const remoteKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin !== true);
-                const sortedRemoteKeys = remoteKeys.sort((a, b) => {
-                    const numA = parseInt(a.replace('book', ''), 10);
-                    const numB = parseInt(b.replace('book', ''), 10);
-                    return numA - numB;
-                });
-                const remoteBooks = sortedRemoteKeys.map(key => ({
-                    id: key,
-                    ...this.books[key],
-                    readToday: this.isBookReadToday(key),
-                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
-                    isNew: this.isNewBook(key),
-                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
-                }));
-                return [...builtInBooks, ...remoteBooks];
-            }
-            getPointsManager(){return this.points;}
-            setSyncButtonState(syncing){
-                const btn=document.getElementById('btnSync');
-                if(!btn)return;
-                if(syncing){btn.classList.add('syncing');btn.textContent='⏳ Syncing...';}
-                else{btn.classList.remove('syncing');btn.textContent='🔄 Sync';}
-            }
-            updateUI(){
-                const allBooks=this.getAllBooks();
-                renderBooks(allBooks,this);
-                this.points.updateUI();
-            }
-            syncRemoteBooks(){
-                const self = this;
-                if(self.isSyncing) return;
-                self.isSyncing = true;
-                self.setSyncButtonState(true);
-                
-                const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
-                
-                fetch(githubUrl + '?t=' + Date.now())
-                    .then(r => {
-                        if (!r.ok) throw new Error('GitHub not found');
-                        return r.json();
-                    })
-                    .then(data => {
-                        BOOKS_LIST = data;
-                        BOOKS_LOADED = true;
-                        localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
-                        const newCount = self.processRemoteData(data);
-                        self.isSyncing = false;
-                        self.setSyncButtonState(false);
-                        if (newCount > 0) {
-                            showNotification('✅ Found ' + newCount + ' new book(s)!');
-                        } else {
-                            showNotification('✅ Sync completed - No new books');
-                        }
-                    })
-                    .catch(() => {
-                        const cached = localStorage.getItem('kreative_remote_books_cache');
-                        if (cached) {
-                            try {
-                                const data = JSON.parse(cached);
-                                const newCount = self.processRemoteData(data);
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                showNotification('✅ Using cached books (' + newCount + ' loaded)');
-                                return;
-                            } catch(e) {}
-                        }
-                        
-                        fetch('books-list.json')
-                            .then(r => {
-                                if (!r.ok) throw new Error('Local not found');
-                                return r.json();
-                            })
-                            .then(data => {
-                                const newCount = self.processRemoteData(data);
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                showNotification('✅ Local sync completed');
-                            })
-                            .catch(() => {
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                showNotification('ℹ️ No books found. Check internet.');
-                            });
-                    });
-            }
-            autoSync(){
-                setInterval(() => {
-                    if(navigator.onLine){
-                        this.syncRemoteBooks();
-                    }
-                }, 300000);
-            }
-            triggerAutoSync(){
-                if(navigator.onLine){
-                    this.syncRemoteBooks();
-                }
-            }
-        }
-        
-        // ============================================================
-        // 9. RENDER FUNCTIONS
-        // ============================================================
-        function renderBooks(bookList,manager){
-            const container=document.getElementById('shelf-rows');
-            const rows=chunkArray(bookList,4);
-            let html='';
-            const canReadNew = manager.canReadNewToday();
-            for(const row of rows){
-                html+='<div class="shelf-row"><div class="book-grid">';
-                for(const book of row){
-                    const isBuiltin=book.isBuiltin||false;
-                    const readToday=book.readToday||false;
-                    const readBefore=book.readBefore||false;
-                    const isNew=book.isNew!==undefined?book.isNew:true;
-                    const isNewToday=book.isNewToday||false;
-                    const shouldLock = !isBuiltin && !canReadNew && isNew && !readToday && !isNewToday;
-                    let statusClass='pending';
-                    let statusIcon='🌐';
-                    let label='';
-                    if(shouldLock){
-                        statusClass = 'locked-status';
-                        statusIcon = '🔒';
-                    } else if(isBuiltin){
-                        statusClass='ready';
-                        statusIcon=readToday?'📖':(readBefore?'🔄':'📚');
-                    } else if(isNewToday){
-                        statusClass='today-new';
-                        statusIcon='⭐';
-                        label='NEW';
-                    } else if(readToday){
-                        statusClass='read';
-                        statusIcon='📖';
-                    } else if(readBefore){
-                        statusClass='repeat';
-                        statusIcon='🔄';
-                    } else if(isNew){
-                        statusClass='pending';
-                        statusIcon='📚';
-                    }
-                    const onlineBadge=!isBuiltin?'<div class="offline-badge">🌐 Online</div>':'';
-                    let badgeIcon='';
-                    if(shouldLock) badgeIcon = '🔒';
-                    else if(isNewToday)badgeIcon='⭐';
-                    else if(readToday)badgeIcon='📖';
-                    else if(readBefore&&!readToday)badgeIcon='🔄';
-                    else if(isNew)badgeIcon='📚';
-                    html+='<div class="book-card '+(shouldLock ? 'locked' : '')+'" data-book="'+book.id+'">';
-                    html+='<div class="cover-wrap" id="cover-'+book.id+'">';
-                    if(shouldLock) html+='<div class="lock-icon">🔒</div>';
-                    html+='<img src="'+book.cover+'" alt="'+book.title+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
-                    html+='<div class="placeholder" style="display:none;">📖</div>';
-                    if(badgeIcon && !shouldLock)html+='<div class="badge-icon">'+badgeIcon+'</div>';
-                    html+=onlineBadge;
-                    html+='</div>';
-                    html+='<div class="book-info"><span class="book-title">'+book.title+'</span>';
-                    if(label)html+='<span class="today-label">'+label+'</span>';
-                    html+='<span class="status-badge '+statusClass+'">'+statusIcon+'</span></div></div>';
-                }
-                html+='</div></div>';
-            }
-            container.innerHTML=html;
-            container.querySelectorAll('.book-card .cover-wrap img').forEach(img=>{
-                const coverWrap=img.closest('.cover-wrap');
-                if(img.complete&&img.naturalWidth>0)setAspectRatio(coverWrap,img.naturalWidth,img.naturalHeight);
-                else{
-                    img.addEventListener('load',function(){setAspectRatio(coverWrap,this.naturalWidth,this.naturalHeight);});
-                    img.addEventListener('error',function(){coverWrap.style.aspectRatio='4 / 3';});
-                }
-            });
-            container.querySelectorAll('.book-card:not(.locked)').forEach(el=>{
-                el.addEventListener('click',function(e){
-                    e.stopPropagation();
-                    const bookId=this.dataset.book;
-                    manager.openBook(bookId);
-                });
-            });
-        }
-        function setAspectRatio(coverWrap,width,height){
-            if(width>0&&height>0)coverWrap.style.aspectRatio=width+' / '+height;
-            else coverWrap.style.aspectRatio='4 / 3';
-        }
-        function chunkArray(arr,size){const result=[];for(let i=0;i<arr.length;i+=size)result.push(arr.slice(i,i+size));return result;}
-        
-        function openModal(id){
-            const modal = document.getElementById(id);
-            if(modal) modal.classList.add('active');
-        }
-        function closeModal(id){
-            const modal = document.getElementById(id);
-            if(modal) modal.classList.remove('active');
-        }
-        
-        function setupModalClose(modalId, buttonId) {
-            const btn = document.getElementById(buttonId);
-            if(btn) {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    closeModal(modalId);
-                });
-            }
-            const modal = document.getElementById(modalId);
-            if(modal) {
-                modal.addEventListener('click', function(e) {
-                    if(e.target === this) {
-                        closeModal(modalId);
-                    }
-                });
-            }
-        }
-        
-        function openBuyPoints(){
-            openWebView('http://buypoint.kkl.education/', 'Buy Points');
-        }
-        
-        function renderRewards(manager){
-            const points=manager.getPointsManager();
-            const list=document.getElementById('rewards-list');
-            document.getElementById('modalPoints').textContent=points.getTotalPoints();
-            let html='';
-            for(const[id,reward]of Object.entries(CONFIG.REWARDS)){
-                const canAfford=points.canRedeem(id);
-                const isRedeemedToday=points.redeemed[points.getToday()]?.[id]>0;
-                let btnClass='btn-redeem unavailable';
-                let btnText='🔒 Locked';
-                let disabled=true;
-                if(reward.type === 'sticker' && isRedeemedToday){
-                    btnClass='btn-redeem redeemed';
-                    btnText='✅ Redeemed';
-                    disabled=true;
-                } 
-                else if(canAfford){
-                    btnClass='btn-redeem available';
-                    btnText='🎁 Redeem';
-                    disabled=false;
-                }
-                html+='<div class="reward-item"><div class="info"><div class="name">'+reward.name+'</div><div class="desc">'+reward.desc+'</div></div>';
-                html+='<div><span class="cost">⭐ '+reward.cost+'</span>';
-                html+='<button class="'+btnClass+'" data-reward="'+id+'" '+(disabled?'disabled':'')+'>'+btnText+'</button></div></div>';
-            }
-            list.innerHTML=html;
-            
-            list.querySelectorAll('.btn-redeem.available').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const rewardId = this.dataset.reward;
-                    redeemReward(rewardId);
-                });
-            });
-        }
-        
-        function redeemReward(rewardId){
-            const manager=window.bookManager;
-            if(!manager){
-                showNotification('❌ System not ready');
-                return;
-            }
-            const points=manager.getPointsManager();
-            if(!points){
-                showNotification('❌ Points system not ready');
-                return;
-            }
-            const success=points.redeemReward(rewardId);
-            if(success){
-                renderRewards(manager);
-                manager.updateUI();
-                const reward=CONFIG.REWARDS[rewardId];
-                if(reward && reward.type === 'extra_book'){
-                    showNotification('🎁 Extra Book redeemed! (Limit +1)');
-                } else if(reward) {
-                    showNotification('🎁 '+reward.name+' redeemed!');
-                } else {
-                    showNotification('🎁 Reward redeemed!');
-                }
-            }
-            else{
-                showNotification('❌ Cannot redeem - Not enough points or already redeemed');
-            }
-        }
-        
-        function renderLog(manager){
-            const points=manager.getPointsManager();
-            const list=document.getElementById('reading-log-list');
-            const books=points.getBooksRead();
-            if(books.length===0)list.innerHTML='<p style="color:#6c7a8e;text-align:center;padding:16px;">No books read yet. Start reading!</p>';
-            else{
-                let html='';
-                const sorted=[...books].reverse().slice(0,50);
-                for(const entry of sorted){
-                    const date=new Date(entry.date);
-                    const dateStr=date.toLocaleDateString();
-                    let status='📖 Read';
-                    if(entry.isNew && entry.isReadToday)status='⭐ New Today';
-                    else if(entry.isNew)status='⭐ New';
-                    else if(entry.isReadToday)status='🔄 Re-read Today';
-                    else status='🔄 Re-read';
-                    html+='<div class="log-entry"><span class="date">'+dateStr+'</span><span class="book">'+entry.title+'</span><span class="points">'+(entry.isNew?'+'+entry.points+' pts':'')+'</span><span class="badge">'+status+'</span></div>';
-                }
-                list.innerHTML=html;
-            }
-            renderChart(points);
-        }
-        function renderChart(points){
-            const container=document.getElementById('chartBars');
-            const data=points.getWeeklyData();
-            const maxVal=Math.max(1,...Object.values(data));
-            let html='';
-            const colors=['#4a6fa5','#6c8fc7','#8b5cf6','#e94560','#f59e0b','#0ea5e9','#10b981'];
-            let i=0;
-            for(const[day,count]of Object.entries(data)){
-                const height=(count/maxVal)*100;
-                html+='<div class="chart-bar-wrap"><div class="chart-bar-value">'+count+'</div><div class="chart-bar" style="height:'+Math.max(4,height)+'%;background:'+colors[i%colors.length]+';"></div><div class="chart-bar-label">'+day+'</div></div>';
-                i++;
-            }
-            container.innerHTML=html;
-        }
-        function renderBadges(manager){
-            const points=manager.getPointsManager();
-            const grid=document.getElementById('badgeGrid');
-            const unlocked=points.getBadges();
-            let html='';
-            for(const[key,badge]of Object.entries(CONFIG.BADGES)){
-                const isUnlocked=!!unlocked[key];
-                const iconPath=points.getBadgeIcon(key);
-                html+='<div class="badge-item '+(isUnlocked?'unlocked':'locked')+'">';
-                html+='<span class="icon">';
-                html+='<img src="'+iconPath+'" alt="'+badge.name+'" class="badge-icon-img" onerror="this.style.display=\'none\';this.parentElement.textContent=\'🏆\'">';
-                html+='</span>';
-                html+='<div class="name">'+badge.name+'</div>';
-                html+='<div class="desc">'+(isUnlocked?'✅ Unlocked':badge.desc)+'</div></div>';
-            }
-            grid.innerHTML=html;
-        }
-        function renderStickers(manager){
-            const points=manager.getPointsManager();
-            const grid=document.getElementById('stickerGrid');
-            const unlocked=points.getStickers();
-            let html='';
-            for(const[key,sticker]of Object.entries(CONFIG.STICKERS)){
-                const isUnlocked=!!unlocked[key];
-                const iconPath=points.getStickerIcon(key);
-                html+='<div class="sticker-item '+(isUnlocked?'unlocked':'locked')+'">';
-                html+='<span class="icon">';
-                html+='<img src="'+iconPath+'" alt="'+sticker.name+'" class="sticker-icon-img" onerror="this.style.display=\'none\';this.parentElement.textContent=\''+sticker.name.split(' ')[0]+'\'">';
-                html+='</span>';
-                html+='<div class="name">'+sticker.name+'</div>';
-                html+='<div class="desc">'+(isUnlocked?'✅ Unlocked':sticker.desc)+'</div></div>';
-            }
-            grid.innerHTML=html;
-        }
-        
-        function renderCertificates(manager){
-            const points=manager.getPointsManager();
-            const container=document.getElementById('certificateContainer');
-            const certs=points.getCertificates();
-            const userName = points.getUserName() || 'Reader';
-            if(certs.length===0){
-                container.innerHTML='<div class="cert-empty">📚 Read <strong>5 NEW books</strong> to earn your first certificate!<br><span style="font-size:12px;color:#b0b8c4;">(Re-read books do not count)</span></div>';
-                return;
-            }
-            let html='';
-            if(certs.length > 1) {
-                html += '<div style="margin-bottom:12px;padding:10px;background:#f0f2f5;border-radius:10px;text-align:center;">';
-                html += '<p style="font-size:13px;font-weight:600;color:#1a1a2e;">📸 Select certificate for PNG download:</p>';
-                html += '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px;">';
-                for(const cert of certs) {
-                    html += `<button class="btn-export png" style="padding:4px 12px;font-size:12px;" onclick="exportSingleCertificate(${cert.milestone})">📄 ${cert.milestone} Books</button>`;
-                }
-                html += '</div></div>';
-            }
-            for(const cert of certs){
-                const date=new Date(cert.earnedAt);
-                const dateStr=date.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-                html+=`
-                    <div class="certificate-a4" id="certificate-${cert.milestone}" style="margin-bottom:24px;">
-                        <div class="border-deco"></div>
-                        <div class="cert-icon">📖</div>
-                        <div class="cert-subtitle">🅺🆁🅴🅰🆃🅸🆅🅴 🅱🅾🅾🅺🆂🅷🅴🅻🅵</div>
-                        <div class="cert-title">CERTIFICATE OF ACHIEVEMENT</div>
-                        <div class="cert-subtitle">This certificate is proudly presented to</div>
-                        <div class="cert-name-wrapper">
-                            <span class="cert-name" id="certNameDisplay-${cert.milestone}" onclick="editCertName('${cert.milestone}')">${userName}</span>
-                        </div>
-                        <div class="cert-subtitle" style="font-size:18px;margin-top:4px;">
-                            For reading completely <strong>${cert.milestone}</strong> NEW books from Kreative Book Shelf.
-                        </div>
-                        <div class="cert-date">Earned on: ${dateStr}</div>
-                        <div class="cert-stamp">🏆</div>
-                        <div class="cert-footer">✦ <span>𝔎𝔯𝔢𝔞𝔱𝔦𝔳𝔢  𝔎𝔦𝔡'𝔰 𝔏𝔞𝔟</span> ✦</div>
-                        <div class="cert-date">𝐰𝐰𝐰.𝐤𝐤𝐥.𝐞𝐝𝐮𝐜𝐚𝐭𝐢𝐨𝐧</div>
+            <div class="field">
+                <label>Select Plan</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="plan" value="free" id="plan-free" checked />
+                        <label class="radio-label" for="plan-free"><span class="emoji">📖</span> Free</label>
                     </div>
-                `;
-            }
-            container.innerHTML=html;
-        }
-        
-        function editCertName(milestone){
-            const points = window.bookManager.getPointsManager();
-            const currentName = points.getUserName() || 'Reader';
-            const newName = prompt('Enter your name for the certificate:', currentName);
-            if(newName !== null && newName.trim() !== ''){
-                points.setUserName(newName.trim());
-                renderCertificates(window.bookManager);
-                showNotification('✅ Name updated!');
-            }
-        }
-        
-        async function exportSingleCertificate(milestone){
-            const certEl = document.getElementById('certificate-' + milestone);
-            if(!certEl) {
-                showNotification('❌ Certificate not found');
-                return;
-            }
-            try{
-                showNotification('⏳ Generating PNG...');
-                const isMobile = window.innerWidth < 821;
-                const wrapper = document.createElement('div');
-                wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
-                document.body.appendChild(wrapper);
-                let width, height;
-                if (isMobile) {
-                    width = 1080;
-                    height = 1920;
-                    wrapper.style.width = width + 'px';
-                    wrapper.style.height = height + 'px';
-                    const clone = certEl.cloneNode(true);
-                    clone.style.width = '100%';
-                    clone.style.height = '100%';
-                    clone.style.maxWidth = '100%';
-                    clone.style.minHeight = 'auto';
-                    clone.style.borderRadius = '0';
-                    clone.style.margin = '0';
-                    clone.style.padding = '40px 30px';
-                    clone.style.border = '6px solid #d4a373';
-                    clone.querySelector('.cert-title').style.fontSize = '38px';
-                    clone.querySelector('.cert-name').style.fontSize = '44px';
-                    clone.querySelector('.cert-subtitle').style.fontSize = '22px';
-                    clone.querySelector('.cert-icon').style.fontSize = '80px';
-                    clone.querySelector('.cert-stamp').style.fontSize = '100px';
-                    wrapper.appendChild(clone);
-                } else {
-                    width = 210 * 3.78;
-                    height = 297 * 3.78;
-                    wrapper.style.width = width + 'px';
-                    wrapper.style.height = height + 'px';
-                    const clone = certEl.cloneNode(true);
-                    clone.style.width = '100%';
-                    clone.style.height = '100%';
-                    clone.style.maxWidth = '210mm';
-                    clone.style.minHeight = '297mm';
-                    clone.style.padding = '20mm 15mm';
-                    clone.style.borderRadius = '8px';
-                    clone.style.margin = '0 auto';
-                    wrapper.appendChild(clone);
-                }
-                const canvas = await html2canvas(wrapper, {
-                    scale: 3,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    width: width,
-                    height: height
-                });
-                document.body.removeChild(wrapper);
-                const link=document.createElement('a');
-                link.download=`certificate_${milestone}books.png`;
-                link.href=canvas.toDataURL('image/png');
-                link.click();
-                showNotification(`✅ Certificate (${milestone} books) downloaded!`);
-            } catch(error){
-                console.error('Export failed:',error);
-                showNotification('❌ Export failed. Please try again.');
-            }
-        }
-        
-        async function exportAllCertificatesPDF() {
-            const container = document.getElementById('certificateContainer');
-            const certEls = container.querySelectorAll('.certificate-a4');
-            if(certEls.length === 0){
-                showNotification('❌ No certificate to export. Read 5 NEW books first!');
-                return;
-            }
-            try{
-                showNotification('⏳ Generating PDF with ' + certEls.length + ' certificates...');
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                for(let i = 0; i < certEls.length; i++) {
-                    const wrapper = document.createElement('div');
-                    wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
-                    document.body.appendChild(wrapper);
-                    
-                    const width = 210 * 3.78;
-                    const height = 297 * 3.78;
-                    wrapper.style.width = width + 'px';
-                    wrapper.style.height = height + 'px';
-                    
-                    const clone = certEls[i].cloneNode(true);
-                    clone.style.width = '100%';
-                    clone.style.height = '100%';
-                    clone.style.maxWidth = '210mm';
-                    clone.style.minHeight = '297mm';
-                    clone.style.padding = '20mm 15mm';
-                    clone.style.borderRadius = '8px';
-                    clone.style.margin = '0 auto';
-                    wrapper.appendChild(clone);
-                    
-                    const canvas = await html2canvas(wrapper, {
-                        scale: 3,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        logging: false,
-                        width: width,
-                        height: height
-                    });
-                    document.body.removeChild(wrapper);
-                    
-                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                    
-                    if(i > 0) {
-                        pdf.addPage();
-                    }
-                    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-                }
-                
-                pdf.save('certificates_all.pdf');
-                showNotification('✅ All certificates saved as PDF!');
-            } catch(error){
-                console.error('Export failed:', error);
-                showNotification('❌ Export failed. Please try again.');
-            }
-        }
-        
-        async function exportCertificate(format){
-            if(format === 'pdf') {
-                await exportAllCertificatesPDF();
-            } else if(format === 'png' || format === 'gallery') {
-                const container = document.getElementById('certificateContainer');
-                const certEls = container.querySelectorAll('.certificate-a4');
-                if(certEls.length === 0){
-                    showNotification('❌ No certificate to export. Read 5 NEW books first!');
-                    return;
-                }
-                try{
-                    showNotification('⏳ Generating ' + certEls.length + ' certificate(s)...');
-                    for(let i = 0; i < certEls.length; i++) {
-                        const isMobile = window.innerWidth < 821;
-                        const wrapper = document.createElement('div');
-                        wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;display:flex;align-items:center;justify-content:center;';
-                        document.body.appendChild(wrapper);
-                        let width, height;
-                        if (isMobile && format === 'gallery') {
-                            width = 1080;
-                            height = 1920;
-                            wrapper.style.width = width + 'px';
-                            wrapper.style.height = height + 'px';
-                            const clone = certEls[i].cloneNode(true);
-                            clone.style.width = '100%';
-                            clone.style.height = '100%';
-                            clone.style.maxWidth = '100%';
-                            clone.style.minHeight = 'auto';
-                            clone.style.borderRadius = '0';
-                            clone.style.margin = '0';
-                            clone.style.padding = '40px 30px';
-                            clone.style.border = '6px solid #d4a373';
-                            clone.querySelector('.cert-title').style.fontSize = '38px';
-                            clone.querySelector('.cert-name').style.fontSize = '44px';
-                            clone.querySelector('.cert-subtitle').style.fontSize = '22px';
-                            clone.querySelector('.cert-icon').style.fontSize = '80px';
-                            clone.querySelector('.cert-stamp').style.fontSize = '100px';
-                            wrapper.appendChild(clone);
-                        } else {
-                            width = 210 * 3.78;
-                            height = 297 * 3.78;
-                            wrapper.style.width = width + 'px';
-                            wrapper.style.height = height + 'px';
-                            const clone = certEls[i].cloneNode(true);
-                            clone.style.width = '100%';
-                            clone.style.height = '100%';
-                            clone.style.maxWidth = '210mm';
-                            clone.style.minHeight = '297mm';
-                            clone.style.padding = '20mm 15mm';
-                            clone.style.borderRadius = '8px';
-                            clone.style.margin = '0 auto';
-                            wrapper.appendChild(clone);
-                        }
-                        const canvas = await html2canvas(wrapper, {
-                            scale: 3,
-                            useCORS: true,
-                            backgroundColor: '#ffffff',
-                            logging: false,
-                            width: width,
-                            height: height
-                        });
-                        document.body.removeChild(wrapper);
-                        
-                        const milestone = certEls[i].querySelector('.cert-subtitle strong')?.textContent || (i + 1);
-                        const link=document.createElement('a');
-                        link.download=`certificate_${milestone}books.png`;
-                        link.href=canvas.toDataURL('image/png');
-                        link.click();
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-                    showNotification('✅ All certificates downloaded!');
-                } catch(error){
-                    console.error('Export failed:',error);
-                    showNotification('❌ Export failed. Please try again.');
-                }
-            }
-        }
-        
-        function openWebView(url,title=''){
-            const iframe=document.getElementById('book-iframe');
-            const container=document.getElementById('webview-container');
-            if(!url){showNotification('❌ Book URL not found');return;}
-            try{
-                if(title)showNotification('⏳ Opening '+title+'...');
-                iframe.src=url;
-                container.style.display='block';
-                if(container.requestFullscreen){try{container.requestFullscreen();}catch(e){}}
-            }catch(error){console.error('Error opening book:',error);showNotification('❌ Cannot open book');}
-        }
-        function showNotification(msg){
-            const el=document.getElementById('notification');
-            el.textContent=msg;
-            el.classList.add('show');
-            clearTimeout(el._timer);
-            el._timer=setTimeout(()=>el.classList.remove('show'),4000);
-        }
-        
-        function toggleMobileMenu(open){
-            const overlay=document.getElementById('mobileOverlay');
-            const menu=document.getElementById('mobileMenu');
-            if(open){
-                overlay.classList.add('active');
-                menu.classList.add('open');
-            }else{
-                overlay.classList.remove('active');
-                menu.classList.remove('open');
-            }
-        }
+                    <div class="radio-option">
+                        <input type="radio" name="plan" value="premium" id="plan-premium" />
+                        <label class="radio-label premium-label" for="plan-premium"><span class="emoji">⭐</span> Premium</label>
+                    </div>
+                </div>
+            </div>
 
-        function openRedeemModal(){
-            document.getElementById('codeInput').value = '';
-            openModal('redeemCodeModal');
-        }
+            <div id="premium-section" style="display: none;">
+                <div class="plan-box">
+                    <div class="title">⭐ Premium Plan <span class="badge">5,000 MMK</span></div>
+                    <div class="details"><strong>✓ Unlimited books</strong><br />✓ All badges & stickers<br />✓ Premium certificates<br />✓ Priority support</div>
+                    <div class="kbz-info">
+                        <span>💳 KBZ Pay</span>
+                        <span class="number">09771055911</span>
+                        <button type="button" class="copy-btn" id="copyKbzBtn">Copy</button>
+                    </div>
+                    <div class="details" style="font-size:12px; color:#8e8e93; margin-top:4px;">
+                        Send <strong>5,000 MMK</strong> to the number above and enter your Transaction ID below.
+                    </div>
+                </div>
 
-        // ===== HANDLE REDEEM CODE - FIXED =====
-        async function handleRedeemCode(){
-            const input = document.getElementById('codeInput');
-            const code = input.value.trim().toUpperCase();
-            const manager = window.bookManager;
-            
-            if(!manager){
-                showNotification('❌ System not ready. Please wait...');
-                return;
-            }
-            
-            if(code.length !== 5){
-                showNotification('⚠️ Code must be exactly 5 characters!');
-                input.focus();
-                input.select();
-                return;
-            }
-            if(!/^[A-Z0-9]{5}$/.test(code)){
-                showNotification('⚠️ Code must contain only letters and numbers (5 chars).');
-                input.focus();
-                input.select();
-                return;
-            }
-            
-            // Show loading
-            const btn = document.getElementById('btnSubmitCode');
-            const originalText = btn.textContent;
-            btn.textContent = '⏳ Checking...';
-            btn.disabled = true;
-            
-            try {
-                const result = await manager.points.redeemCode(code);
-                showNotification(result.message);
-                
-                if(result.success){
-                    closeModal('redeemCodeModal');
-                    manager.updateUI();
-                    input.value = '';
-                } else {
-                    input.focus();
-                    input.select();
-                }
-            } catch(error) {
-                showNotification('❌ Error: ' + error.message);
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        function showSplashAd(){
-            const overlay = document.getElementById('splash-ad-overlay');
-            const img = document.getElementById('splash-ad-img');
-            
-            const adUrl = 'https://koolwin.github.io/bookshelf/ads/ad.gif';
-            const localAdUrl = './ads/ad.gif';
-            
-            if(navigator.onLine) {
-                img.src = adUrl + '?t=' + Date.now();
-                img.onerror = function() {
-                    img.src = localAdUrl + '?t=' + Date.now();
-                };
-            } else {
-                img.src = localAdUrl + '?t=' + Date.now();
-            }
+                <div class="field transaction-id-input">
+                    <label>Transaction ID</label>
+                    <input type="text" id="transaction-id" placeholder="Enter your KBZ Pay Transaction ID" />
+                    <div class="hint">Example: TXN123456 or KBZ202601011234</div>
+                </div>
+            </div>
 
-            if(typeof gtag !== 'undefined'){
-                gtag('event', 'ad_view', {
-                    'event_category': 'Advertisement',
-                    'event_label': 'Splash Screen Ad'
-                });
-            }
-            
-            overlay.classList.add('active');
-            setTimeout(()=>{
-                overlay.classList.remove('active');
-            }, 10000);
-        }
-        
-        // ============================================================
-        // 10. INITIALIZATION
-        // ============================================================
-        let bookManager;
-        document.addEventListener('DOMContentLoaded',function(){
-            bookManager=new BookManager();
-            window.bookManager=bookManager;
-            
-            window.exportSingleCertificate = exportSingleCertificate;
-            window.editCertName = editCertName;
-            window.exportCertificate = exportCertificate;
-            
-            showSplashAd();
-            
-            setupModalClose('rewardsModal', 'closeRewardsModal');
-            setupModalClose('logModal', 'closeLogModal');
-            setupModalClose('badgesModal', 'closeBadgesModal');
-            setupModalClose('stickersModal', 'closeStickersModal');
-            setupModalClose('certificateModal', 'closeCertModal');
-            setupModalClose('redeemCodeModal', 'closeRedeemModal');
-            
-            document.getElementById('buyPointsBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                openBuyPoints();
-            });
-            
-            document.getElementById('exportPdfBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                exportCertificate('pdf');
-            });
-            document.getElementById('exportPngBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                exportCertificate('png');
-            });
-            document.getElementById('exportGalleryBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                exportCertificate('gallery');
-            });
-            document.getElementById('printBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                window.print();
-            });
-            
-            document.getElementById('btnSync').addEventListener('click',function(){bookManager.syncRemoteBooks();});
-            document.getElementById('btnBuyCode').addEventListener('click',function(){openWebView('https://bookcode.kkl.education','Book Code');});
-            document.getElementById('btnRedeemCode').addEventListener('click', openRedeemModal);
-            document.getElementById('btnSubmitCode').addEventListener('click', handleRedeemCode);
-            document.getElementById('codeInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') handleRedeemCode(); });
-            document.getElementById('btnRewards').addEventListener('click',function(){
-                renderRewards(bookManager);
-                openModal('rewardsModal');
-            });
-            document.getElementById('btnLog').addEventListener('click',function(){renderLog(bookManager);openModal('logModal');});
-            document.getElementById('btnBadges').addEventListener('click',function(){renderBadges(bookManager);openModal('badgesModal');});
-            document.getElementById('btnStickers').addEventListener('click',function(){renderStickers(bookManager);openModal('stickersModal');});
-            document.getElementById('btnCert').addEventListener('click',function(){
-                renderCertificates(bookManager);
-                openModal('certificateModal');
-            });
-            document.getElementById('hamburgerBtn').addEventListener('click',function(e){
-                e.stopPropagation();
-                toggleMobileMenu(true);
-            });
-            document.getElementById('menuClose').addEventListener('click',function(){toggleMobileMenu(false);});
-            document.getElementById('mobileOverlay').addEventListener('click',function(){toggleMobileMenu(false);});
-            document.querySelectorAll('.menu-item[data-action]').forEach(item=>{
-                item.addEventListener('click',function(){
-                    const action=this.dataset.action;
-                    toggleMobileMenu(false);
-                    setTimeout(()=>{
-                        switch(action){
-                            case 'redeem': openRedeemModal(); break;
-                            case 'badges': renderBadges(bookManager); openModal('badgesModal'); break;
-                            case 'cert': renderCertificates(bookManager); openModal('certificateModal'); break;
-                            case 'stickers': renderStickers(bookManager); openModal('stickersModal'); break;
-                            case 'rewards': renderRewards(bookManager); openModal('rewardsModal'); break;
-                            case 'log': renderLog(bookManager); openModal('logModal'); break;
-                            case 'sync': bookManager.syncRemoteBooks(); break;
-                            case 'buy': openWebView('https://bookcode.kkl.education','Book Code'); break;
-                        }
-                    },300);
-                });
-            });
-            document.getElementById('close-btn').addEventListener('click',function(){
-                const container=document.getElementById('webview-container');
-                const iframe=document.getElementById('book-iframe');
-                if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
-                container.style.display='none';
-                iframe.src='';
-                iframe.srcdoc='';
-            });
-            document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('close-btn').click();});
-            
-            bookManager.autoSync();
-            
-            document.addEventListener('visibilitychange', function(){
-                if(!document.hidden && bookManager){
-                    setTimeout(() => {
-                        bookManager.triggerAutoSync();
-                    }, 500);
-                }
-            });
-            
-            if(window.innerWidth > 820 && screen.orientation && screen.orientation.lock){
-                screen.orientation.lock('landscape').catch(()=>{});
-            }
-            setTimeout(()=>{
-                const certs=bookManager.getPointsManager().getCertificates();
-                if(certs.length>0){
-                    showNotification('📜 You have '+certs.length+' certificate(s)!');
-                }
-            },5000);
-        });
-        window.addEventListener('resize',function(){if(bookManager)bookManager.updateUI();});
-        window.addEventListener('orientationchange',function(){setTimeout(()=>{if(bookManager)bookManager.updateUI();},300);});
-    </script>
-<!-- Firebase Cloud Messaging -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
-    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+            <button type="submit" class="btn-primary" id="register-btn">Create Account</button>
+        </form>
+        <div class="status" id="register-status"></div>
+    </div>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBl6MK40r4rrVQ3w3RTzEgioxYoOJIb4RA",
-        authDomain: "k-reader-cde45.firebaseapp.com",
-        projectId: "k-reader-cde45",
-        storageBucket: "k-reader-cde45.firebasestorage.app",
-        messagingSenderId: "732905849808",
-        appId: "1:732905849808:web:edf0f30a07b2c57ea1afd5",
-        measurementId: "G-JC8RSEZ5L3"
+    <div class="meta-bar">
+        <span><span class="dot online" id="conn-dot"></span><span id="conn-label">Online</span></span>
+        <span><a href="#" id="help-link">Help</a> · <a href="#" id="about-link">About</a></span>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+    'use strict';
+
+    const CONFIG = {
+        API_URL: 'https://script.google.com/macros/s/AKfycbyQ4EIWl_UT97WbT0YaONtkgYNLX3DPAUh2_Q8QbYpdoTXvpp8F1Xo68X1uUNp9Dhg/exec',
+        SESSION_DURATION: 24 * 60 * 60 * 1000,
+        KBZ_NUMBER: '09771055911'
     };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const messaging = getMessaging(app);
+    const $ = id => document.getElementById(id);
+    const DOM = {
+        loginForm: $('signin-form'),
+        loginUsername: $('login-user'),
+        loginPassword: $('login-pass'),
+        loginBtn: $('login-btn'),
+        loginStatus: $('login-status'),
+        registerForm: $('register-form'),
+        regName: $('reg-name'),
+        regUsername: $('reg-user'),
+        regEmail: $('reg-email'),
+        regPassword: $('reg-pass'),
+        regConfirm: $('reg-pass-confirm'),
+        registerBtn: $('register-btn'),
+        registerStatus: $('register-status'),
+        transactionId: $('transaction-id'),
+        planFree: $('plan-free'),
+        planPremium: $('plan-premium'),
+        premiumSection: $('premium-section'),
+        copyBtn: $('copyKbzBtn'),
+        toast: $('toast'),
+        connDot: $('conn-dot'),
+        connLabel: $('conn-label'),
+        helpLink: $('help-link'),
+        aboutLink: $('about-link'),
+        popupOverlay: $('popupOverlay'),
+        popupModal: $('popupModal'),
+        popupIcon: $('popupIcon'),
+        popupTitle: $('popupTitle'),
+        popupMessage: $('popupMessage'),
+        popupBtn: $('popupBtn')
+    };
 
-    const VAPID_KEY = 'BASjJdEoZ9nrhkMvAcYM8NtN_Qrj5jlHMacm-pkj7BzcofRnY01jqTdXAeggVKSfj89QP3NpdozLQTQpbjoxcCw';
-
-    async function requestNotificationPermission() {
-        try {
-            const permission = await Notification.requestPermission();
-            
-            if (permission === 'granted') {
-                console.log('✅ Notification permission granted');
-                const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-                console.log('✅ FCM Token:', token);
-                await saveTokenToServer(token);
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({ type: 'SUBSCRIBE_PUSH' });
-                }
-                logEvent(analytics, 'push_subscribed', { token_obtained: true });
-                return token;
-            } else {
-                console.warn('❌ Notification permission denied');
-                showNotification('🔔 Please enable notifications for better experience');
-            }
-        } catch (error) {
-            console.error('❌ Error getting FCM token:', error);
-        }
-        return null;
+    // ============================================================
+    // POPUP FUNCTIONS
+    // ============================================================
+    
+    function showPopup(icon, title, message, btnText, btnClass) {
+        DOM.popupIcon.textContent = icon || '📢';
+        DOM.popupTitle.textContent = title || 'Notification';
+        DOM.popupMessage.textContent = message || 'Message';
+        DOM.popupBtn.textContent = btnText || 'OK';
+        DOM.popupBtn.className = 'btn-close-popup ' + (btnClass || '');
+        DOM.popupOverlay.classList.add('active');
     }
 
-    async function saveTokenToServer(token) {
-        try {
-            const userId = localStorage.getItem('fcm_user_id') || 'user_' + Date.now();
-            const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js');
-            const db = getFirestore();
-            await setDoc(doc(db, 'fcm_tokens', userId), {
-                token: token,
-                userId: userId,
-                createdAt: new Date().toISOString(),
-                userAgent: navigator.userAgent,
-                platform: navigator.platform
-            }, { merge: true });
-            console.log('✅ FCM Token saved to Firestore');
-        } catch (error) {
-            console.warn('⚠️ Failed to save token to server:', error);
-            localStorage.setItem('fcm_token', token);
-        }
-    }
+    DOM.popupBtn.addEventListener('click', function() {
+        DOM.popupOverlay.classList.remove('active');
+    });
 
-    onMessage(messaging, (payload) => {
-        console.log('📨 Foreground message received:', payload);
-        const title = payload.notification?.title || '📚 Kreative Bookshelf';
-        const body = payload.notification?.body || 'New update available!';
-        const bookId = payload.data?.bookId || null;
-        showNotification(`🔔 ${title}: ${body}`);
-        logEvent(analytics, 'notification_received', { title: title, book_id: bookId });
-        if (bookId) {
-            setTimeout(() => {
-                if (confirm(`📖 Open "${title}" now?`)) {
-                    if (window.bookManager) {
-                        window.bookManager.openBook(bookId);
-                    }
-                }
-            }, 1000);
+    DOM.popupOverlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
         }
     });
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered');
-                registration.pushManager.getSubscription()
-                    .then(subscription => {
-                        if (subscription) {
-                            console.log('✅ Existing push subscription found');
-                        } else {
-                            console.log('ℹ️ No push subscription found');
-                        }
-                    });
-            })
-            .catch(error => {
-                console.error('❌ Service Worker registration failed:', error);
-            });
-            
-        navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data?.type === 'OPEN_BOOK') {
-                const bookId = event.data.bookId;
-                if (window.bookManager) {
-                    window.bookManager.openBook(bookId);
+    // ============================================================
+    // CHECK EXPIRY ON APP START
+    // ============================================================
+
+    async function checkUserExpiry(username) {
+        try {
+            const url = CONFIG.API_URL + '?action=checkExpiry&username=' + encodeURIComponent(username) + '&t=' + Date.now();
+            const response = await fetch(url);
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.warn('Expiry check failed:', error);
+            return null;
+        }
+    }
+
+    // ============================================================
+    // SHOW EXPIRY POPUP
+    // ============================================================
+
+    function showExpiryPopup(daysRemaining, expiryDate) {
+        if (daysRemaining <= 0) {
+            showPopup(
+                '🔴',
+                'Premium Expired',
+                'Your Premium subscription has expired on ' + expiryDate + '. You have been moved to Free plan.',
+                'OK, I understand',
+                'danger'
+            );
+            return true;
+        } else if (daysRemaining <= 3) {
+            showPopup(
+                '⏰',
+                'Premium Expiry Reminder',
+                'Your Premium subscription will expire in ' + daysRemaining + ' days on ' + expiryDate + '. Please renew to continue enjoying premium features.',
+                'OK, Got it!',
+                'warning'
+            );
+            return true;
+        }
+        return false;
+    }
+
+    // ============================================================
+    // SHOW TOAST
+    // ============================================================
+
+    function showToast(msg, isError) {
+        const el = DOM.toast;
+        el.textContent = msg;
+        el.style.background = isError ? 'rgba(255,59,48,0.92)' : 'rgba(28,28,30,0.92)';
+        el.classList.add('show');
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => el.classList.remove('show'), 3800);
+    }
+
+    function setStatus(el, msg, type) {
+        el.textContent = msg;
+        el.className = 'status ' + (type || '');
+    }
+
+    function setLoading(btn, loading) {
+        if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
+        if (loading) {
+            btn.classList.add('loading');
+            btn.disabled = true;
+            btn.textContent = 'Please wait…';
+        } else {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            btn.textContent = btn.dataset.originalText;
+        }
+    }
+
+    function getVal(id) { return $(id) ? $(id).value.trim() : ''; }
+    function setVal(id, value) { if ($(id)) $(id).value = value; }
+    function clearErrors() { document.querySelectorAll('.field input').forEach(el => el.classList.remove('error')); }
+
+    // ============================================================
+    // API CALL
+    // ============================================================
+
+    async function callApi(action, params, usePost) {
+        try {
+            if (usePost) {
+                const res = await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ action, ...params })
+                });
+                if (res.ok) {
+                    const text = await res.text();
+                    try { const data = JSON.parse(text); if (data && data.success !== undefined) return data; } catch(e) {}
                 }
             }
+        } catch(e) { console.warn('POST failed:', e.message); }
+
+        try {
+            const urlParams = new URLSearchParams();
+            urlParams.append('action', action);
+            Object.keys(params).forEach(key => {
+                if (params[key] !== undefined && params[key] !== null && typeof params[key] !== 'object') {
+                    urlParams.append(key, String(params[key]));
+                }
+            });
+            urlParams.append('t', Date.now());
+            const url = CONFIG.API_URL + '?' + urlParams.toString();
+            const res = await fetch(url);
+            const text = await res.text();
+            try { const data = JSON.parse(text); return data; } catch(e) { return { success: false, message: 'Invalid server response' }; }
+        } catch(error) {
+            return { success: false, message: 'Network error: ' + error.message };
+        }
+    }
+
+    // ============================================================
+    // LOGIN - WITH EXPIRY CHECK
+    // ============================================================
+
+    DOM.loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearErrors();
+        const username = getVal('login-user');
+        const password = getVal('login-pass');
+        if (!username || !password) {
+            setStatus(DOM.loginStatus, 'Please fill in all fields', 'error');
+            if (!username) DOM.loginUsername.classList.add('error');
+            if (!password) DOM.loginPassword.classList.add('error');
+            return;
+        }
+        setLoading(DOM.loginBtn, true);
+        setStatus(DOM.loginStatus, 'Authenticating…', 'info');
+        try {
+            const result = await callApi('login', { username, password });
+            if (result && result.success) {
+                // Check expiry and show popup
+                const user = result.user;
+                if (user.isPremium && user.daysRemaining !== null) {
+                    const popupShown = showExpiryPopup(user.daysRemaining, user.expiryDate);
+                    if (popupShown) {
+                        // If expired, redirect to free
+                        if (user.daysRemaining <= 0) {
+                            setTimeout(() => {
+                                window.location.href = 'free.html';
+                            }, 2000);
+                            setStatus(DOM.loginStatus, 'Premium expired. Redirecting to Free...', 'warning');
+                            setLoading(DOM.loginBtn, false);
+                            return;
+                        }
+                    }
+                }
+                
+                setStatus(DOM.loginStatus, 'Welcome back! Redirecting…', 'success');
+                showToast('Signed in successfully');
+                if (result.user) {
+                    try {
+                        localStorage.setItem('kreative_user', JSON.stringify(result.user));
+                        localStorage.setItem('kreative_premium', result.user.isPremium ? 'true' : 'false');
+                        localStorage.setItem('kreative_login_time', String(Date.now()));
+                        localStorage.setItem('kreative_expiry', result.user.expiryDate || '');
+                        localStorage.setItem('kreative_days_remaining', String(result.user.daysRemaining || ''));
+                    } catch(e) {}
+                }
+                setTimeout(() => {
+                    const isPremium = result.user?.isPremium === true;
+                    window.location.href = isPremium ? 'premium.html' : 'free.html';
+                }, 1500);
+            } else {
+                const msg = result?.message || 'Invalid credentials';
+                setStatus(DOM.loginStatus, msg, 'error');
+                showToast(msg, true);
+                DOM.loginPassword.classList.add('error');
+            }
+        } catch(err) {
+            setStatus(DOM.loginStatus, 'Connection error. Please try again.', 'error');
+            showToast('Network error', true);
+        } finally {
+            setLoading(DOM.loginBtn, false);
+        }
+    });
+
+    // ============================================================
+    // REGISTER
+    // ============================================================
+
+    DOM.registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearErrors();
+
+        const fullName = getVal('reg-name');
+        const username = getVal('reg-user');
+        const email = getVal('reg-email');
+        const password = getVal('reg-pass');
+        const confirm = getVal('reg-pass-confirm');
+        const plan = document.querySelector('input[name="plan"]:checked').value;
+        const isPremium = plan === 'premium';
+        const transactionId = getVal('transaction-id');
+
+        let valid = true;
+        if (!fullName || !username || !email || !password || !confirm) {
+            setStatus(DOM.registerStatus, 'All fields are required', 'error');
+            valid = false;
+        }
+        if (valid && password.length < 6) {
+            setStatus(DOM.registerStatus, 'Password must be at least 6 characters', 'error');
+            DOM.regPassword.classList.add('error');
+            valid = false;
+        }
+        if (valid && password !== confirm) {
+            setStatus(DOM.registerStatus, 'Passwords do not match', 'error');
+            DOM.regPassword.classList.add('error');
+            DOM.regConfirm.classList.add('error');
+            valid = false;
+        }
+        if (valid && !email.includes('@')) {
+            setStatus(DOM.registerStatus, 'Please enter a valid email', 'error');
+            DOM.regEmail.classList.add('error');
+            valid = false;
+        }
+        if (valid && (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username))) {
+            setStatus(DOM.registerStatus, 'Username: 3+ chars, letters/numbers/_ only', 'error');
+            DOM.regUsername.classList.add('error');
+            valid = false;
+        }
+        if (valid && isPremium && !transactionId) {
+            setStatus(DOM.registerStatus, 'Please enter your Transaction ID for Premium', 'error');
+            DOM.transactionId.classList.add('error');
+            valid = false;
+        }
+        if (valid && isPremium && transactionId.length < 4) {
+            setStatus(DOM.registerStatus, 'Please enter a valid Transaction ID (min 4 chars)', 'error');
+            DOM.transactionId.classList.add('error');
+            valid = false;
+        }
+
+        if (!valid) return;
+
+        setLoading(DOM.registerBtn, true);
+        setStatus(DOM.registerStatus, 'Creating account…', 'info');
+
+        try {
+            const payload = {
+                fullName, username, email, password,
+                plan: plan,
+                isPremium: isPremium ? 'TRUE' : 'FALSE',
+                transactionId: isPremium ? transactionId : ''
+            };
+
+            const result = await callApi('register', payload, isPremium);
+
+            if (result && result.success) {
+                const msg = isPremium ? '✅ Premium account created! Please sign in.' : '✅ Account created! Please sign in.';
+                setStatus(DOM.registerStatus, msg, 'success');
+                showToast(isPremium ? 'Premium registration submitted!' : 'Registration successful!');
+                setTimeout(() => {
+                    document.querySelector('.tab-btn[data-tab="signin"]').click();
+                    setVal('login-user', username);
+                    setStatus(DOM.loginStatus, isPremium ? 'Premium account created! Sign in above.' : 'Account created! Sign in above.', 'success');
+                    DOM.registerForm.reset();
+                    DOM.premiumSection.style.display = 'none';
+                    DOM.registerBtn.classList.remove('premium-btn');
+                    DOM.planFree.checked = true;
+                }, 1500);
+            } else {
+                const msg = result?.message || 'Registration failed. Please try again.';
+                setStatus(DOM.registerStatus, msg, 'error');
+                showToast(msg, true);
+            }
+        } catch(err) {
+            setStatus(DOM.registerStatus, 'Server error. Please try again.', 'error');
+            showToast('Registration error', true);
+        } finally {
+            setLoading(DOM.registerBtn, false);
+        }
+    });
+
+    // ============================================================
+    // PLAN SELECTION
+    // ============================================================
+
+    DOM.planPremium.addEventListener('change', function() {
+        if (this.checked) {
+            DOM.premiumSection.style.display = 'block';
+            DOM.registerBtn.classList.add('premium-btn');
+            setTimeout(() => DOM.transactionId.focus(), 300);
+        }
+    });
+    DOM.planFree.addEventListener('change', function() {
+        if (this.checked) {
+            DOM.premiumSection.style.display = 'none';
+            DOM.registerBtn.classList.remove('premium-btn');
+            DOM.transactionId.value = '';
+        }
+    });
+
+    // ============================================================
+    // COPY KBZ
+    // ============================================================
+
+    DOM.copyBtn.addEventListener('click', function() {
+        const number = CONFIG.KBZ_NUMBER;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(number).then(() => showToast('✅ Copied: ' + number));
+        } else {
+            const input = document.createElement('input');
+            input.value = number;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('✅ Copied: ' + number);
+        }
+    });
+
+    // ============================================================
+    // NETWORK STATUS
+    // ============================================================
+
+    function updateConnection() {
+        const online = navigator.onLine;
+        DOM.connDot.className = 'dot ' + (online ? 'online' : 'offline');
+        DOM.connLabel.textContent = online ? 'Online' : 'Offline';
+    }
+    window.addEventListener('online', updateConnection);
+    window.addEventListener('offline', updateConnection);
+    updateConnection();
+
+    // ============================================================
+    // TABS
+    // ============================================================
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const tab = this.dataset.tab;
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + tab).classList.add('active');
+            setStatus(DOM.loginStatus, '', '');
+            setStatus(DOM.registerStatus, '', '');
+            clearErrors();
         });
+    });
+
+    // ============================================================
+    // AUTO-LOGIN WITH EXPIRY CHECK
+    // ============================================================
+
+    async function checkAutoLogin() {
+        try {
+            const user = JSON.parse(localStorage.getItem('kreative_user'));
+            const loginTime = parseInt(localStorage.getItem('kreative_login_time'), 10);
+            if (!user || !loginTime) return false;
+            if (Date.now() - loginTime > CONFIG.SESSION_DURATION) {
+                localStorage.removeItem('kreative_user');
+                localStorage.removeItem('kreative_premium');
+                localStorage.removeItem('kreative_login_time');
+                return false;
+            }
+            
+            // Check expiry from local storage first
+            const expiryDate = localStorage.getItem('kreative_expiry');
+            const daysRemaining = parseInt(localStorage.getItem('kreative_days_remaining'), 10);
+            
+            if (user.isPremium && daysRemaining !== null && !isNaN(daysRemaining)) {
+                // Show popup if expiring soon
+                const popupShown = showExpiryPopup(daysRemaining, expiryDate);
+                if (popupShown && daysRemaining <= 0) {
+                    // If expired, update local storage
+                    user.isPremium = false;
+                    localStorage.setItem('kreative_user', JSON.stringify(user));
+                    localStorage.setItem('kreative_premium', 'false');
+                    setTimeout(() => {
+                        window.location.href = 'free.html';
+                    }, 2000);
+                    return true;
+                }
+            }
+            
+            // If online, check with server
+            if (navigator.onLine) {
+                try {
+                    const result = await checkUserExpiry(user.username);
+                    if (result && result.success) {
+                        const userData = result.user;
+                        localStorage.setItem('kreative_expiry', userData.expiryDate || '');
+                        localStorage.setItem('kreative_days_remaining', String(userData.daysRemaining || ''));
+                        
+                        if (userData.isPremium !== user.isPremium) {
+                            user.isPremium = userData.isPremium;
+                            localStorage.setItem('kreative_user', JSON.stringify(user));
+                            localStorage.setItem('kreative_premium', userData.isPremium ? 'true' : 'false');
+                        }
+                        
+                        // Show popup if expiring soon
+                        if (userData.isPremium && userData.daysRemaining !== null && userData.daysRemaining <= 3) {
+                            const popupShown = showExpiryPopup(userData.daysRemaining, userData.expiryDate);
+                            if (popupShown && userData.daysRemaining <= 0) {
+                                setTimeout(() => {
+                                    window.location.href = 'free.html';
+                                }, 2000);
+                                return true;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Server expiry check failed, using local data');
+                }
+            }
+            
+            const isPremium = localStorage.getItem('kreative_premium') === 'true';
+            window.location.href = isPremium ? 'premium.html' : 'free.html';
+            return true;
+        } catch(e) { 
+            console.warn('Auto-login error:', e);
+            return false; 
+        }
     }
 
-    const headerRight = document.querySelector('.header-right');
-    if (headerRight) {
-        const subscribeBtn = document.createElement('button');
-        subscribeBtn.className = 'btn-header';
-        subscribeBtn.id = 'btnSubscribe';
-        subscribeBtn.textContent = '🔔 Subscribe';
-        subscribeBtn.style.background = '#8b5cf6';
-        subscribeBtn.style.color = '#fff';
-        subscribeBtn.addEventListener('click', requestNotificationPermission);
-        headerRight.insertBefore(subscribeBtn, headerRight.firstChild);
+    // ============================================================
+    // HELP / ABOUT
+    // ============================================================
+
+    DOM.helpLink.addEventListener('click', e => { e.preventDefault(); showToast('📧 Contact: support@kkl.education'); });
+    DOM.aboutLink.addEventListener('click', e => { e.preventDefault(); showToast('📚 Kreative Kid\'s Lab © 2026'); });
+
+    // ============================================================
+    // CLEAR ERRORS ON FOCUS
+    // ============================================================
+
+    document.querySelectorAll('.field input').forEach(el => {
+        el.addEventListener('focus', function() {
+            this.classList.remove('error');
+            const panel = this.closest('.panel');
+            if (panel) {
+                const statusEl = panel.querySelector('.status');
+                if (statusEl) setStatus(statusEl, '', '');
+            }
+        });
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+
+    function init() {
+        console.log('✅ Kreative login system initialized');
+        console.log('📡 API URL:', CONFIG.API_URL);
+        
+        // Check auto-login first
+        const autoLoggedIn = checkAutoLogin();
+        
+        if (!autoLoggedIn) {
+            console.log('👤 Manual login required');
+            DOM.planFree.checked = true;
+            DOM.premiumSection.style.display = 'none';
+        }
     }
 
-    console.log(' FCM initialized successfully!');
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+
+})();
 </script>
+
 </body>
 </html>

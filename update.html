@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Upgrade to Premium · Kreative</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 30%, #eef2f7, #d9e0eb);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .glass-panel {
+            width: 100%;
+            max-width: 440px;
+            padding: 32px 28px 28px;
+            background: rgba(255, 255, 255, 0.42);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-radius: 56px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 30px 60px -20px rgba(0, 20, 40, 0.25), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.38);
+            max-height: 98vh;
+            overflow-y: auto;
+        }
+
+        .glass-panel::-webkit-scrollbar {
+            width: 3px;
+        }
+        .glass-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .brand h1 {
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: -0.02em;
+            color: #1c1c1e;
+            background: linear-gradient(145deg, #1c1c1e, #3a3a3e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .brand h1 span {
+            font-weight: 400;
+            color: #6b6b70;
+            background: none;
+            -webkit-text-fill-color: #6b6b70;
+        }
+        .brand .sub {
+            font-size: 14px;
+            font-weight: 500;
+            color: #5b5b60;
+            letter-spacing: 0.02em;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .brand .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #d4880f);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 14px;
+            border-radius: 20px;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-info {
+            background: rgba(0, 122, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 122, 255, 0.08);
+        }
+        .user-info .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #8e8e93;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .user-info .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1e;
+            margin-top: 2px;
+        }
+        .user-info .value .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        .status-badge.free {
+            background: #e5e5ea;
+            color: #8e8e93;
+        }
+        .status-badge.premium {
+            background: #fef3c7;
+            color: #b8860b;
+        }
+
+        .plan-box {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 215, 0, 0.02));
+            border: 1.5px solid rgba(255, 215, 0, 0.25);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+        .plan-box .title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #b8860b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .plan-box .title .badge {
+            background: #b8860b;
+            color: white;
+            font-size: 9px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .plan-box .details {
+            font-size: 13px;
+            color: #5b5b60;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+        .plan-box .details strong {
+            color: #1c1c1e;
+        }
+        .plan-box .kbz-info {
+            background: rgba(0, 122, 255, 0.06);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-top: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .plan-box .kbz-info .number {
+            font-weight: 700;
+            color: #007aff;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+        .plan-box .kbz-info .copy-btn {
+            background: rgba(0, 122, 255, 0.1);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #007aff;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .plan-box .kbz-info .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #3a3a3e;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+        .field input {
+            width: 100%;
+            padding: 16px 18px;
+            border: 1.5px solid rgba(0, 0, 0, 0.06);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            font-size: 16px;
+            font-family: inherit;
+            color: #1c1c1e;
+            outline: none;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .field input:focus {
+            border-color: #007aff;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 6px rgba(0, 122, 255, 0.08);
+        }
+        .field input::placeholder {
+            color: #8e8e93;
+            opacity: 0.5;
+            text-transform: none;
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+        .field input.error {
+            border-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .field .hint {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-top: 4px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #f59e0b, #d4880f);
+            color: white;
+            font-weight: 600;
+            font-size: 17px;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 8px 24px -6px rgba(245, 158, 11, 0.35);
+            margin-top: 4px;
+            font-family: inherit;
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: default;
+        }
+        .btn-primary.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .btn-primary.secondary {
+            background: #007aff;
+            box-shadow: 0 8px 24px -6px rgba(0, 122, 255, 0.3);
+        }
+
+        .status {
+            min-height: 28px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 14px;
+            color: #3a3a3e;
+            transition: 0.2s;
+        }
+        .status.error {
+            color: #ff3b30;
+        }
+        .status.success {
+            color: #34c759;
+        }
+        .status.info {
+            color: #007aff;
+        }
+        .status.warning {
+            color: #f59e0b;
+        }
+
+        .meta-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b6b70;
+            border-top: 0.5px solid rgba(0, 0, 0, 0.05);
+            padding-top: 14px;
+        }
+        .meta-bar .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 10px;
+            margin-right: 6px;
+        }
+        .dot.online {
+            background: #34c759;
+        }
+        .dot.offline {
+            background: #ff9500;
+        }
+        .meta-bar a {
+            color: #007aff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .meta-bar a:active {
+            opacity: 0.6;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(28, 28, 30, 0.92);
+            backdrop-filter: blur(16px);
+            padding: 12px 28px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 90%;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .already-premium {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .already-premium .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .already-premium h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1c1c1e;
+            margin-bottom: 8px;
+        }
+        .already-premium p {
+            font-size: 14px;
+            color: #5b5b60;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 460px) {
+            .glass-panel {
+                padding: 20px 14px;
+                border-radius: 36px;
+            }
+            .brand h1 {
+                font-size: 24px;
+            }
+            .field input {
+                padding: 14px 16px;
+            }
+            .plan-box {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-panel">
+
+    <div class="brand">
+        <h1>Kreative<span>Bookshelf</span></h1>
+        <div class="sub">Upgrade to Premium</div>
+        <span class="badge">⭐ Premium</span>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-info" id="userInfo">
+        <div class="label">Current Account</div>
+        <div class="value" id="userDisplay">
+            <span id="usernameDisplay">Loading...</span>
+            <span class="status-badge free" id="statusBadge">Free</span>
+        </div>
+    </div>
+
+    <!-- Upgrade Form -->
+    <div id="upgradeFormContainer">
+        <div class="plan-box">
+            <div class="title">
+                ⭐ Premium Plan
+                <span class="badge">5,000 MMK</span>
+            </div>
+            <div class="details">
+                <strong>✓ Unlimited books</strong><br />
+                ✓ All badges & stickers<br />
+                ✓ Premium certificates<br />
+                ✓ Priority support
+            </div>
+            <div class="kbz-info">
+                <span>💳 KBZ Pay</span>
+                <span class="number">09771055911</span>
+                <button type="button" class="copy-btn" id="copyKbzBtn">Copy</button>
+            </div>
+            <div class="details" style="font-size:12px; color:#8e8e93; margin-top:4px;">
+                Send <strong>5,000 MMK</strong> to the number above and enter your Transaction ID below.
+            </div>
+        </div>
+
+        <form id="upgradeForm">
+            <div class="field">
+                <label>Transaction ID</label>
+                <input type="text" id="transaction-id" placeholder="Enter your KBZ Pay Transaction ID" />
+                <div class="hint">Example: TXN123456 or KBZ202601011234</div>
+            </div>
+            <button type="submit" class="btn-primary" id="upgradeBtn">⬆ Upgrade to Premium</button>
+        </form>
+        <div class="status" id="upgradeStatus"></div>
+    </div>
+
+    <!-- Already Premium Message -->
+    <div id="alreadyPremiumContainer" style="display: none;">
+        <div class="already-premium">
+            <span class="icon">⭐</span>
+            <h2>You're Already Premium!</h2>
+            <p>You already have premium access. Enjoy unlimited reading!</p>
+            <button class="btn-primary secondary" id="goToPremiumBtn">Go to Premium</button>
+        </div>
+    </div>
+
+    <div class="meta-bar">
+        <span><span class="dot online" id="conn-dot"></span><span id="conn-label">Online</span></span>
+        <span><a href="#" id="help-link">Help</a> · <a href="#" id="about-link">About</a></span>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        const CONFIG = {
+            API_URL: 'https://script.google.com/macros/s/AKfycbyQ4EIWl_UT97WbT0YaONtkgYNLX3DPAUh2_Q8QbYpdoTXvpp8F1Xo68X1uUNp9Dhg/exec',
+            KBZ_NUMBER: '09771055911'
+        };
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const DOM = {
+            usernameDisplay: document.getElementById('usernameDisplay'),
+            statusBadge: document.getElementById('statusBadge'),
+            userInfo: document.getElementById('userInfo'),
+            upgradeForm: document.getElementById('upgradeForm'),
+            upgradeFormContainer: document.getElementById('upgradeFormContainer'),
+            alreadyPremiumContainer: document.getElementById('alreadyPremiumContainer'),
+            goToPremiumBtn: document.getElementById('goToPremiumBtn'),
+            transactionId: document.getElementById('transaction-id'),
+            upgradeBtn: document.getElementById('upgradeBtn'),
+            upgradeStatus: document.getElementById('upgradeStatus'),
+            copyBtn: document.getElementById('copyKbzBtn'),
+            toast: document.getElementById('toast'),
+            connDot: document.getElementById('conn-dot'),
+            connLabel: document.getElementById('conn-label'),
+            helpLink: document.getElementById('help-link'),
+            aboutLink: document.getElementById('about-link')
+        };
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        let currentUser = null;
+
+        // ============================================================
+        // UTILITY FUNCTIONS
+        // ============================================================
+
+        function showToast(msg, isError) {
+            const el = DOM.toast;
+            el.textContent = msg;
+            el.style.background = isError ? 'rgba(255,59,48,0.92)' : 'rgba(28,28,30,0.92)';
+            el.classList.add('show');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => el.classList.remove('show'), 3800);
+        }
+
+        function setStatus(el, msg, type) {
+            el.textContent = msg;
+            el.className = 'status ' + (type || '');
+        }
+
+        function setLoading(btn, loading) {
+            if (!btn.dataset.originalText) {
+                btn.dataset.originalText = btn.textContent;
+            }
+            if (loading) {
+                btn.classList.add('loading');
+                btn.disabled = true;
+                btn.textContent = 'Please wait…';
+            } else {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btn.textContent = btn.dataset.originalText;
+            }
+        }
+
+        function getVal(id) {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : '';
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.field input').forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+
+        function updateConnectionStatus() {
+            const online = navigator.onLine;
+            DOM.connDot.className = 'dot ' + (online ? 'online' : 'offline');
+            DOM.connLabel.textContent = online ? 'Online' : 'Offline';
+        }
+
+        // ============================================================
+        // API CALL
+        // ============================================================
+
+        async function callApi(action, params, usePost) {
+            try {
+                if (usePost) {
+                    const res = await fetch(CONFIG.API_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({ action, ...params })
+                    });
+                    if (res.ok) {
+                        const text = await res.text();
+                        try {
+                            const data = JSON.parse(text);
+                            if (data && data.success !== undefined) return data;
+                        } catch (e) {}
+                    }
+                }
+            } catch (e) { console.warn('POST failed:', e.message); }
+
+            try {
+                const urlParams = new URLSearchParams();
+                urlParams.append('action', action);
+                Object.keys(params).forEach(key => {
+                    if (params[key] !== undefined && params[key] !== null && typeof params[key] !== 'object') {
+                        urlParams.append(key, String(params[key]));
+                    }
+                });
+                urlParams.append('t', Date.now());
+                const url = CONFIG.API_URL + '?' + urlParams.toString();
+                const res = await fetch(url);
+                const text = await res.text();
+                try {
+                    const data = JSON.parse(text);
+                    return data;
+                } catch (e) {
+                    return { success: false, message: 'Invalid server response' };
+                }
+            } catch (error) {
+                return { success: false, message: 'Network error: ' + error.message };
+            }
+        }
+
+        // ============================================================
+        // CHECK USER STATUS
+        // ============================================================
+
+        async function checkUserStatus() {
+            try {
+                // Try to get user from localStorage
+                const userData = localStorage.getItem('kreative_user');
+                if (!userData) {
+                    showToast('Please login first', true);
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                    return false;
+                }
+
+                currentUser = JSON.parse(userData);
+                const username = currentUser.username;
+
+                // Check with server for latest status
+                const result = await callApi('getUserStatus', { username });
+
+                if (result && result.success) {
+                    const user = result.user;
+                    const isPremium = user.isPremium === true;
+                    const premiumStatus = user.premiumStatus || 'FALSE';
+
+                    // Update display
+                    DOM.usernameDisplay.textContent = username;
+
+                    if (isPremium || premiumStatus === 'TRUE') {
+                        DOM.statusBadge.textContent = '⭐ Premium';
+                        DOM.statusBadge.className = 'status-badge premium';
+                        // Show already premium message
+                        DOM.upgradeFormContainer.style.display = 'none';
+                        DOM.alreadyPremiumContainer.style.display = 'block';
+                    } else {
+                        DOM.statusBadge.textContent = '📖 Free';
+                        DOM.statusBadge.className = 'status-badge free';
+                        DOM.upgradeFormContainer.style.display = 'block';
+                        DOM.alreadyPremiumContainer.style.display = 'none';
+                    }
+                    return true;
+                } else {
+                    showToast('Error checking account status', true);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
+                showToast('Error checking account status', true);
+                return false;
+            }
+        }
+
+        // ============================================================
+        // UPGRADE TO PREMIUM
+        // ============================================================
+
+        DOM.upgradeForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearErrors();
+
+            const transactionId = getVal('transaction-id');
+
+            if (!transactionId) {
+                setStatus(DOM.upgradeStatus, 'Please enter your Transaction ID', 'error');
+                DOM.transactionId.classList.add('error');
+                return;
+            }
+
+            if (transactionId.length < 4) {
+                setStatus(DOM.upgradeStatus, 'Please enter a valid Transaction ID (min 4 chars)', 'error');
+                DOM.transactionId.classList.add('error');
+                return;
+            }
+
+            if (!currentUser || !currentUser.username) {
+                showToast('Please login first', true);
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+                return;
+            }
+
+            setLoading(DOM.upgradeBtn, true);
+            setStatus(DOM.upgradeStatus, 'Processing your upgrade…', 'info');
+
+            try {
+                const payload = {
+                    username: currentUser.username,
+                    transactionId: transactionId,
+                    action: 'upgradePremium'
+                };
+
+                const result = await callApi('upgradePremium', payload, true);
+
+                if (result && result.success) {
+                    setStatus(DOM.upgradeStatus, result.message || '✅ Premium upgrade submitted! Pending verification.', 'success');
+                    showToast(result.message || 'Upgrade submitted successfully!');
+
+                    // Clear form
+                    DOM.transactionId.value = '';
+
+                    // Update local user data
+                    if (result.user) {
+                        const updatedUser = { ...currentUser, ...result.user };
+                        localStorage.setItem('kreative_user', JSON.stringify(updatedUser));
+                        currentUser = updatedUser;
+                    }
+
+                    // Refresh status after a moment
+                    setTimeout(() => {
+                        checkUserStatus();
+                    }, 2000);
+
+                } else {
+                    const msg = result?.message || 'Upgrade failed. Please try again.';
+                    setStatus(DOM.upgradeStatus, msg, 'error');
+                    showToast(msg, true);
+                }
+            } catch (err) {
+                console.error('Upgrade error:', err);
+                setStatus(DOM.upgradeStatus, 'Server error. Please try again.', 'error');
+                showToast('Upgrade error: ' + (err.message || 'Unknown error'), true);
+            } finally {
+                setLoading(DOM.upgradeBtn, false);
+            }
+        });
+
+        // ============================================================
+        // GO TO PREMIUM
+        // ============================================================
+
+        DOM.goToPremiumBtn.addEventListener('click', function() {
+            window.location.href = 'premium.html';
+        });
+
+        // ============================================================
+        // COPY KBZ NUMBER
+        // ============================================================
+
+        DOM.copyBtn.addEventListener('click', function() {
+            const number = CONFIG.KBZ_NUMBER;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(number)
+                    .then(() => showToast('✅ Copied: ' + number))
+                    .catch(() => fallbackCopy(number));
+            } else {
+                fallbackCopy(number);
+            }
+        });
+
+        function fallbackCopy(text) {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('✅ Copied: ' + text);
+        }
+
+        // ============================================================
+        // HELP / ABOUT
+        // ============================================================
+
+        DOM.helpLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showToast('📧 Contact: support@kkl.education');
+        });
+
+        DOM.aboutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showToast('📚 Kreative Kid\'s Lab © 2026');
+        });
+
+        // ============================================================
+        // CLEAR ERRORS ON FOCUS
+        // ============================================================
+
+        document.querySelectorAll('.field input').forEach(el => {
+            el.addEventListener('focus', function() {
+                this.classList.remove('error');
+                const statusEl = DOM.upgradeStatus;
+                if (statusEl) setStatus(statusEl, '', '');
+            });
+        });
+
+        // ============================================================
+        // NETWORK STATUS
+        // ============================================================
+
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        updateConnectionStatus();
+
+        // ============================================================
+        // INIT
+        // ============================================================
+
+        async function init() {
+            console.log('✅ Upgrade to Premium page loaded');
+            console.log('📡 API URL:', CONFIG.API_URL);
+
+            const statusOk = await checkUserStatus();
+
+            if (!statusOk) {
+                // User not logged in, redirect to login
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
+</script>
+
+</body>
+</html>
