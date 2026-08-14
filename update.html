@@ -283,6 +283,25 @@
             background: #007aff;
             box-shadow: 0 8px 24px -6px rgba(0, 122, 255, 0.3);
         }
+        .btn-primary.home {
+            background: rgba(28, 28, 30, 0.08);
+            color: #1c1c1e;
+            box-shadow: none;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-weight: 500;
+            font-size: 15px;
+        }
+        .btn-primary.home:active {
+            background: rgba(28, 28, 30, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
 
         .status {
             min-height: 28px;
@@ -447,7 +466,12 @@
                 <input type="text" id="transaction-id" placeholder="Enter your KBZ Pay Transaction ID" />
                 <div class="hint">Example: TXN123456 or KBZ202601011234</div>
             </div>
-            <button type="submit" class="btn-primary" id="upgradeBtn">⬆ Upgrade to Premium</button>
+            
+            <!-- Button Group -->
+            <div class="btn-group">
+                <button type="submit" class="btn-primary" id="upgradeBtn">⬆ Upgrade to Premium</button>
+                <button type="button" class="btn-primary home" id="goHomeBtn">🏠 Go Back Home</button>
+            </div>
         </form>
         <div class="status" id="upgradeStatus"></div>
     </div>
@@ -458,7 +482,10 @@
             <span class="icon">⭐</span>
             <h2>You're Already Premium!</h2>
             <p>You already have premium access. Enjoy unlimited reading!</p>
-            <button class="btn-primary secondary" id="goToPremiumBtn">Go to Premium</button>
+            <div class="btn-group">
+                <button class="btn-primary secondary" id="goToPremiumBtn">Go to Premium</button>
+                <button type="button" class="btn-primary home" id="goHomeBtnAlt">🏠 Go Back Home</button>
+            </div>
         </div>
     </div>
 
@@ -493,6 +520,8 @@
             upgradeFormContainer: document.getElementById('upgradeFormContainer'),
             alreadyPremiumContainer: document.getElementById('alreadyPremiumContainer'),
             goToPremiumBtn: document.getElementById('goToPremiumBtn'),
+            goHomeBtn: document.getElementById('goHomeBtn'),
+            goHomeBtnAlt: document.getElementById('goHomeBtnAlt'),
             transactionId: document.getElementById('transaction-id'),
             upgradeBtn: document.getElementById('upgradeBtn'),
             upgradeStatus: document.getElementById('upgradeStatus'),
@@ -560,6 +589,17 @@
         }
 
         // ============================================================
+        // GO BACK HOME
+        // ============================================================
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        DOM.goHomeBtn.addEventListener('click', goHome);
+        DOM.goHomeBtnAlt.addEventListener('click', goHome);
+
+        // ============================================================
         // API CALL
         // ============================================================
 
@@ -611,7 +651,6 @@
 
         async function checkUserStatus() {
             try {
-                // Try to get user from localStorage
                 const userData = localStorage.getItem('kreative_user');
                 if (!userData) {
                     showToast('Please login first', true);
@@ -624,7 +663,6 @@
                 currentUser = JSON.parse(userData);
                 const username = currentUser.username;
 
-                // Check with server for latest status
                 const result = await callApi('getUserStatus', { username });
 
                 if (result && result.success) {
@@ -632,13 +670,11 @@
                     const isPremium = user.isPremium === true;
                     const premiumStatus = user.premiumStatus || 'FALSE';
 
-                    // Update display
                     DOM.usernameDisplay.textContent = username;
 
                     if (isPremium || premiumStatus === 'TRUE') {
                         DOM.statusBadge.textContent = '⭐ Premium';
                         DOM.statusBadge.className = 'status-badge premium';
-                        // Show already premium message
                         DOM.upgradeFormContainer.style.display = 'none';
                         DOM.alreadyPremiumContainer.style.display = 'block';
                     } else {
@@ -705,17 +741,14 @@
                     setStatus(DOM.upgradeStatus, result.message || '✅ Premium upgrade submitted! Pending verification.', 'success');
                     showToast(result.message || 'Upgrade submitted successfully!');
 
-                    // Clear form
                     DOM.transactionId.value = '';
 
-                    // Update local user data
                     if (result.user) {
                         const updatedUser = { ...currentUser, ...result.user };
                         localStorage.setItem('kreative_user', JSON.stringify(updatedUser));
                         currentUser = updatedUser;
                     }
 
-                    // Refresh status after a moment
                     setTimeout(() => {
                         checkUserStatus();
                     }, 2000);
@@ -812,7 +845,6 @@
             const statusOk = await checkUserStatus();
 
             if (!statusOk) {
-                // User not logged in, redirect to login
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2000);
