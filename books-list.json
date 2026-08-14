@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "updated": "2024-01-15",
   "books": [
-    {"id":19,"title":"The Pal Cat","cover":"https://koolwin.github.io/bookshelf/covers/book19.png", "localPath": "books/book19/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book19/index.html"},
-    {"id":20,"title":"The Pup in The Mud","cover":"https://koolwin.github.io/bookshelf/covers/book20.png", "localPath": "books/book20/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book20/index.html"}
+    {"id":19,"title":"The Pal Cat","cover":"https://koolwin.github.io/bookshelf/covers/book19.png", "localPath": "onlineUrl": "https://koolwin.github.io/bookshelf/books/book19/index.html"},
+    {"id":20,"title":"The Pup in The Mud","cover":"https://koolwin.github.io/bookshelf/covers/book20.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book20/index.html"}
   ]
 }
