@@ -334,7 +334,7 @@
             <button class="menu-item" data-action="log"><span class="icon">📖</span> Reading Log</button>
             <div class="menu-divider"></div>
             <button class="menu-item" data-action="sync"><span class="icon">🔄</span> Sync Books</button>
-            <button class="menu-item" data-action="buy"><span class="icon">🔑</span> Get Premium</button>
+            <button class="menu-item" data-action="buy"><span class="icon">🔑</span> Buy Code</button>
         </div>
         
         <div class="shelf-container" id="shelf-container">
@@ -1742,7 +1742,7 @@
                             case 'rewards': renderRewards(bookManager); openModal('rewardsModal'); break;
                             case 'log': renderLog(bookManager); openModal('logModal'); break;
                             case 'sync': bookManager.syncRemoteBooks(); break;
-                            case 'buy': openWebView('https://bookcode.kkl.education','Book Code'); break;
+                            case 'buy': openWebView('update.html','Get Premium'); break;
                         }
                     },300);
                 });
