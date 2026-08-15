@@ -4,6 +4,7 @@
   "books": [
     {"id":19,"title":"The Pal Cat","cover":"https://koolwin.github.io/bookshelf/covers/book19.png", "localPath": "books/book19/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book19/index.html"},
     {"id":20,"title":"The Pup in The Mud","cover":"https://koolwin.github.io/bookshelf/covers/book20.png", "localPath": "books/book20/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book20/index.html"},
-    {"id":21,"title":"The Big Box","cover":"https://koolwin.github.io/bookshelf/covers/book21.png", "localPath": "books/book21/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book21/index.html"}
+    {"id":21,"title":"The Big Box","cover":"https://koolwin.github.io/bookshelf/covers/book21.png", "localPath": "books/book21/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book21/index.html"},
+    {"id":22,"title":"The Wet Pet","cover":"https://koolwin.github.io/bookshelf/covers/book22.png", "localPath": "books/book22/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book22/index.html"}
   ]
 }
