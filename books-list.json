@@ -1,29 +1,12 @@
 {
   "version": "1.0.0",
   "updated": "2024-01-15",
-  "baseUrl": "https://koolwin.github.io/bookshelf/",
   "books": [
-    {"id":19,"title":"The Pal Cat","cover":"https://koolwin.github.io/bookshelf/covers/book19.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book19/index.html"},
-    {"id":20,"title":"The Pup in The Mud","cover":"https://koolwin.github.io/bookshelf/covers/book20.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book20/index.html"},
-    {"id":21,"title":"Book 21","cover":"https://koolwin.github.io/bookshelf/covers/book21.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book21/index.html"},
-    {"id":22,"title":"Book 22","cover":"https://koolwin.github.io/bookshelf/covers/book22.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book22/index.html"},
-    {"id":23,"title":"Book 23","cover":"https://koolwin.github.io/bookshelf/covers/book23.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book23/index.html"},
-    {"id":24,"title":"Book 24","cover":"https://koolwin.github.io/bookshelf/covers/book24.png", "onlineUrl": "https://koolwin.github.io/bookshelf/books/book24/index.html"},
-    {"id":25,"title":"Book 25","cover":"https://koolwin.github.io/bookshelf2/covers/book25.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book25/index.html"},
-    {"id":26,"title":"Book 26","cover":"https://koolwin.github.io/bookshelf2/covers/book26.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book26/index.html"},
-    {"id":27,"title":"Book 27","cover":"https://koolwin.github.io/bookshelf2/covers/book27.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book27/index.html"},
-    {"id":28,"title":"Book 28","cover":"https://koolwin.github.io/bookshelf2/covers/book28.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book28/index.html"},
-    {"id":29,"title":"Book 29","cover":"https://koolwin.github.io/bookshelf2/covers/book29.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book29/index.html"},
-    {"id":30,"title":"Book 30","cover":"https://koolwin.github.io/bookshelf2/covers/book30.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book30/index.html"},
-    {"id":31,"title":"Book 31","cover":"https://koolwin.github.io/bookshelf2/covers/book31.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book31/index.html"},
-    {"id":32,"title":"Book 32","cover":"https://koolwin.github.io/bookshelf2/covers/book32.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book32/index.html"},
-    {"id":33,"title":"Book 33","cover":"https://koolwin.github.io/bookshelf2/covers/book33.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book33/index.html"},
-    {"id":34,"title":"Book 34","cover":"https://koolwin.github.io/bookshelf2/covers/book34.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book34/index.html"},
-    {"id":35,"title":"Book 35","cover":"https://koolwin.github.io/bookshelf2/covers/book35.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book35/index.html"},
-    {"id":36,"title":"Book 36","cover":"https://koolwin.github.io/bookshelf2/covers/book36.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book36/index.html"},
-    {"id":37,"title":"Book 37","cover":"https://koolwin.github.io/bookshelf2/covers/book37.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book37/index.html"},
-    {"id":38,"title":"Book 38","cover":"https://koolwin.github.io/bookshelf2/covers/book38.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book38/index.html"},
-    {"id":39,"title":"Book 39","cover":"https://koolwin.github.io/bookshelf2/covers/book39.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book39/index.html"},
-    {"id":40,"title":"Book 40","cover":"https://koolwin.github.io/bookshelf2/covers/book40.png", "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book40/index.html"}
+    {"id":19,"title":"The Pal Cat","cover":"https://koolwin.github.io/bookshelf/covers/book19.png", "localPath": "books/book19/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book19/index.html"},
+    {"id":20,"title":"The Pup in The Mud","cover":"https://koolwin.github.io/bookshelf/covers/book20.png", "localPath": "books/book20/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book20/index.html"},
+    {"id":21,"title":"The Big Box","cover":"https://koolwin.github.io/bookshelf/covers/book21.png", "localPath": "books/book21/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book21/index.html"},
+    {"id":22,"title":"The Wet Pet","cover":"https://koolwin.github.io/bookshelf/covers/book22.png", "localPath": "books/book22/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book22/index.html"},
+    {"id":23,"title":"The Fun Trip","cover":"https://koolwin.github.io/bookshelf/covers/book23.png", "localPath": "books/book23/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book23/index.html"},
+    {"id":24,"title":"The Big Light","cover":"https://koolwin.github.io/bookshelf/covers/book24.png", "localPath": "books/book24/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book24/index.html"}
   ]
 }
