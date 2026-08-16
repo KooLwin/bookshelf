@@ -34,7 +34,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Kreative Bookshelf</title>
     
-    <!-- Google Analytics (gtag) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1WDTM3GRWP"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -43,7 +42,6 @@
         gtag('config', 'G-1WDTM3GRWP');
     </script>
 
-    <!-- Firebase SDK v12.17.1 with Module format -->
     <script type="importmap">
     {
         "imports": {
@@ -58,7 +56,6 @@
     </script>
 
     <style>
-        /* ===== CSS ===== */
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
         html,body{width:100%;height:100%;overflow:hidden;background:#f8f9fc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1a1a2e;position:relative}
         #app{width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#f8f9fc;overflow:hidden;padding:8px 12px 4px 12px;position:relative;z-index:1}
@@ -314,6 +311,20 @@
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
+        
+        .offline-indicator {
+            display: none;
+            background: #f59e0b;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .offline-indicator.active {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -322,6 +333,7 @@
             <div class="header-left">
                 <button class="hamburger-btn" id="hamburgerBtn">☰</button>
                 <h1>📚 <span>Kreative</span>Bookshelf</h1>
+                <span class="offline-indicator" id="offlineIndicator">📡 OFFLINE</span>
             </div>
             <div class="header-center" id="headerCenter">
                 <span class="points-display" id="pointsDisplay">⭐ 0 pts</span>
@@ -412,8 +424,6 @@
         </div>
     </div>
     
-    <!-- Certificate Modal ကိုဖြုတ်ထား -->
-
     <div class="modal-overlay" id="redeemCodeModal">
         <div class="modal-content">
             <button class="modal-close" id="closeRedeemModal">✕</button>
@@ -444,9 +454,6 @@
     </script>
 
     <script type="module">
-        // ============================================================
-        // 1. FIREBASE INITIALIZATION
-        // ============================================================
         import { initializeApp } from "firebase/app";
         import { getAnalytics, logEvent } from "firebase/analytics";
         import { getAuth, onAuthStateChanged, signInAnonymously } from "firebase/auth";
@@ -476,9 +483,6 @@
 
         console.log('🔥 Firebase initialized successfully!');
 
-        // ============================================================
-        // 2. AUTH - Anonymous Sign In
-        // ============================================================
         let currentUser = null;
         let userId = null;
 
@@ -506,9 +510,6 @@
             }
         });
 
-        // ============================================================
-        // 3. FIRESTORE DATA FUNCTIONS
-        // ============================================================
         async function loadUserDataFromFirestore(uid) {
             try {
                 const userRef = doc(db, 'users', uid);
@@ -567,70 +568,6 @@
             }
         }
 
-        // ============================================================
-        // 4. PRE-LOAD BOOKS LIST
-        // ============================================================
-        let BOOKS_LIST = null;
-        let BOOKS_LOADED = false;
-        
-        function loadBooksList() {
-            const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
-            
-            fetch(githubUrl + '?t=' + Date.now())
-                .then(response => {
-                    if (!response.ok) throw new Error('GitHub file not found');
-                    return response.json();
-                })
-                .then(data => {
-                    BOOKS_LIST = data;
-                    BOOKS_LOADED = true;
-                    console.log('✅ Books list loaded from GitHub:', BOOKS_LIST);
-                    localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
-                    if (window.bookManager && window.bookManager.processRemoteData) {
-                        window.bookManager.processRemoteData(BOOKS_LIST);
-                    }
-                })
-                .catch(() => {
-                    console.warn('⚠️ Cannot load from GitHub. Trying cache...');
-                    const cached = localStorage.getItem('kreative_remote_books_cache');
-                    if (cached) {
-                        try {
-                            const data = JSON.parse(cached);
-                            BOOKS_LIST = data;
-                            BOOKS_LOADED = true;
-                            console.log('✅ Books list loaded from cache');
-                            if (window.bookManager && window.bookManager.processRemoteData) {
-                                window.bookManager.processRemoteData(BOOKS_LIST);
-                            }
-                            return;
-                        } catch(e) {}
-                    }
-                    
-                    fetch('books-list.json')
-                        .then(response => {
-                            if (!response.ok) throw new Error('Local file not found');
-                            return response.json();
-                        })
-                        .then(data => {
-                            BOOKS_LIST = data;
-                            BOOKS_LOADED = true;
-                            console.log('✅ Books list loaded from local file');
-                            if (window.bookManager && window.bookManager.processRemoteData) {
-                                window.bookManager.processRemoteData(BOOKS_LIST);
-                            }
-                        })
-                        .catch(() => {
-                            console.warn('⚠️ Cannot load books-list.json from anywhere.');
-                            showNotification('ℹ️ No new books found. Using built-in books.');
-                        });
-                });
-        }
-        
-        loadBooksList();
-
-        // ============================================================
-        // 5. CONFIGURATION
-        // ============================================================
         const CONFIG={
             DAILY_LIMIT:3,
             STORAGE_KEY:'kreative_books_data',
@@ -709,9 +646,6 @@
             };
         }
         
-        // ============================================================
-        // 6. USER MANAGER
-        // ============================================================
         class UserManager {
             constructor() {
                 this.userName = this.loadUserName();
@@ -730,9 +664,6 @@
             getUserName() { return this.userName || 'Reader'; }
         }
         
-        // ============================================================
-        // 7. POINTS MANAGER
-        // ============================================================
         class PointsManager{
             constructor(){
                 this.data=this.loadData();
@@ -815,11 +746,9 @@
             getMaxNewBooksToday(){return CONFIG.DAILY_LIMIT+this.getExtraBooksToday();}
             canReadNewToday(){return this.getTodayNewCount()<this.getMaxNewBooksToday();}
             
-            // ===== REDEEM CODE - FIXED =====
             async redeemCode(code) {
                 const upperCode = code.toUpperCase().trim();
                 
-                // Validate code format
                 if(upperCode.length !== 5){
                     return {success: false, message: '⚠️ Code must be exactly 5 characters.'};
                 }
@@ -827,14 +756,12 @@
                     return {success: false, message: '⚠️ Code must contain only letters and numbers.'};
                 }
                 
-                // Check if already used locally
                 const usedCodes = JSON.parse(localStorage.getItem('kreative_used_codes') || '[]');
                 if(usedCodes.includes(upperCode)){
                     return {success: false, message: '❌ This code has already been redeemed!'};
                 }
                 
                 try {
-                    // Call API
                     const url = CONFIG.API_URL + '?code=' + encodeURIComponent(upperCode) + '&userId=' + encodeURIComponent(this.getUserName());
                     console.log('📡 Calling API:', url);
                     
@@ -843,16 +770,13 @@
                     console.log('📡 API Response:', result);
                     
                     if(result.success){
-                        // Add points
                         this.data.totalPoints += result.points;
                         this.saveData();
                         
-                        // Mark code as used
                         usedCodes.push(upperCode);
                         localStorage.setItem('kreative_used_codes', JSON.stringify(usedCodes));
                         this.updateUI();
                         
-                        // Log to Firebase
                         logEvent(analytics, 'redeem_code', {
                             code_used: upperCode,
                             points_earned: result.points
@@ -1082,91 +1006,312 @@
         }
         
         // ============================================================
-        // 8. BOOK MANAGER
+        // BOOK MANAGER - FIXED: Uses onlineUrl from JSON directly
         // ============================================================
         class BookManager{
             constructor(){
                 this.points=new PointsManager();
                 this.books={};
                 this.isSyncing=false;
+                this.isOffline = !navigator.onLine;
                 this.init();
             }
+            
             init(){
+                // 1. Load built-in books (1-18)
                 this.books={...CONFIG.BUILTIN_BOOKS};
+                console.log('📚 Loaded ' + Object.keys(this.books).length + ' built-in books (1-18)');
+                
+                // 2. Load cached remote books from localStorage
                 const cached=localStorage.getItem('kreative_remote_books');
                 if(cached){
                     try{
                         const data=JSON.parse(cached);
+                        let count = 0;
                         Object.keys(data).forEach(key=>{
-                            if(!this.books[key])this.books[key]=data[key];
+                            if(!this.books[key]){
+                                // Use onlineUrl from cache as-is
+                                if (!data[key].onlineUrl) {
+                                    // Only set fallback if missing
+                                    data[key].onlineUrl = 'https://koolwin.github.io/bookshelf/books/' + key + '/index.html';
+                                }
+                                data[key].localPath = null;
+                                data[key].isBuiltin = false;
+                                data[key].isRemote = true;
+                                this.books[key]=data[key];
+                                count++;
+                            }
                         });
+                        console.log('✅ Loaded ' + count + ' cached remote books (19+)');
                     }catch(e){}
-                }
-                
-                if (BOOKS_LOADED && BOOKS_LIST) {
-                    this.processRemoteData(BOOKS_LIST);
                 }
                 
                 this.updateUI();
                 this.points.updateUI();
+                this.updateOfflineStatus();
+                
+                if (navigator.onLine) {
+                    console.log('📡 Online - checking for new books...');
+                    setTimeout(() => {
+                        this.loadBooksList();
+                    }, 1000);
+                } else {
+                    console.log('📡 Offline - using cached books only');
+                    showNotification('📡 Offline mode - using cached books');
+                }
             }
             
+            updateOfflineStatus() {
+                const indicator = document.getElementById('offlineIndicator');
+                if (!navigator.onLine) {
+                    indicator.classList.add('active');
+                    this.isOffline = true;
+                } else {
+                    indicator.classList.remove('active');
+                    this.isOffline = false;
+                }
+            }
+            
+            // ===== GET BOOK URL =====
+            getBookUrl(bookId){
+                const book = this.books[bookId];
+                if(!book) {
+                    console.warn('⚠️ Book not found:', bookId);
+                    return null;
+                }
+                
+                console.log('🔍 Getting URL for book:', bookId, 'isBuiltin:', book.isBuiltin);
+                
+                // Built-in books (1-18) use local path
+                if(book.isBuiltin === true) {
+                    const url = book.localPath || 'books/' + bookId + '/index.html';
+                    console.log('📖 Built-in book URL:', url);
+                    return url;
+                }
+                
+                // Remote books (19+) - use onlineUrl as-is from JSON
+                if(book.onlineUrl) {
+                    console.log('🌐 Remote book URL:', book.onlineUrl);
+                    return book.onlineUrl;
+                }
+                
+                // Fallback
+                const fallbackUrl = 'https://koolwin.github.io/bookshelf/books/' + bookId + '/index.html';
+                console.log('🌐 Remote book fallback URL:', fallbackUrl);
+                return fallbackUrl;
+            }
+            
+            // ===== PROCESS REMOTE DATA - FIXED =====
             processRemoteData(remoteData){
                 let newBooksCount = 0;
-                if(remoteData.books && Array.isArray(remoteData.books)){
-                    for(const book of remoteData.books){
-                        const bookId = String(book.id);
-                        if(!this.books[bookId]){
-                            const onlineUrl = CONFIG.BASE_URL + 'books/' + bookId + '/index.html';
-                            this.books[bookId] = {
-                                title: book.title,
-                                cover: book.cover || 'covers/default.png',
-                                onlineUrl: onlineUrl,
-                                isBuiltin: false,
-                                isRemote: true,
-                                localPath: book.localPath || null
-                            };
-                            newBooksCount++;
-                        }
-                    }
+                
+                if (!remoteData || !remoteData.books || !Array.isArray(remoteData.books)) {
+                    console.warn('⚠️ Invalid remote data format:', remoteData);
+                    return 0;
                 }
+                
+                console.log('📚 Processing ' + remoteData.books.length + ' remote books...');
+                
+                for(const book of remoteData.books){
+                    if (!book.id) {
+                        console.warn('⚠️ Book without id found:', book);
+                        continue;
+                    }
+                    
+                    // Convert to number and create proper key
+                    const bookIdNum = parseInt(book.id);
+                    const bookKey = 'book' + bookIdNum;
+                    
+                    // Skip built-in books (1-18)
+                    if (bookIdNum <= 18) {
+                        console.log('⏭️ Skipping built-in book:', bookKey);
+                        continue;
+                    }
+                    
+                    // --- IMPORTANT: Use onlineUrl from JSON directly ---
+                    // DO NOT rebuild it!
+                    let onlineUrl = book.onlineUrl;
+                    
+                    // Only create fallback if onlineUrl is missing
+                    if (!onlineUrl) {
+                        onlineUrl = 'https://koolwin.github.io/bookshelf/books/' + bookKey + '/index.html';
+                        console.warn('⚠️ No onlineUrl for book:', bookKey, 'using fallback');
+                    }
+                    
+                    // Check if book already exists
+                    if(this.books[bookKey]){
+                        if (!this.books[bookKey].isBuiltin) {
+                            this.books[bookKey].title = book.title || this.books[bookKey].title;
+                            this.books[bookKey].cover = book.cover || this.books[bookKey].cover;
+                            // Keep the onlineUrl from JSON (do not rebuild)
+                            this.books[bookKey].onlineUrl = onlineUrl;
+                            this.books[bookKey].localPath = null;
+                            console.log('🔄 Updated remote book:', bookKey, '->', onlineUrl);
+                        }
+                        continue;
+                    }
+                    
+                    // Add new remote book (19+)
+                    this.books[bookKey] = {
+                        title: book.title || 'Unknown Title',
+                        cover: book.cover || 'covers/default.png',
+                        onlineUrl: onlineUrl,  // Use the exact URL from JSON
+                        isBuiltin: false,
+                        isRemote: true,
+                        localPath: null,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    newBooksCount++;
+                    console.log('✅ Added remote book: ' + bookKey + ' -> ' + onlineUrl);
+                }
+                
+                // Cache remote books
                 const remoteCache = {};
                 Object.keys(this.books).forEach(key => {
                     if(!this.books[key].isBuiltin) remoteCache[key] = this.books[key];
                 });
                 localStorage.setItem('kreative_remote_books', JSON.stringify(remoteCache));
+                
+                console.log('📚 Processed ' + newBooksCount + ' new remote books');
                 this.updateUI();
-                if(newBooksCount > 0){
-                    showNotification('📚 Found ' + newBooksCount + ' new book(s)');
-                }
+                
                 return newBooksCount;
             }
             
-            getBookUrl(bookId){
-                const book=this.books[bookId];
-                if(!book)return null;
-                if(book.isBuiltin)return book.localPath;
-                if(book.localPath) return book.localPath;
-                if(book.onlineUrl)return book.onlineUrl;
-                return CONFIG.BASE_URL+'books/'+bookId+'/index.html';
+            // ===== LOAD BOOKS LIST =====
+            loadBooksList() {
+                console.log('📚 Loading books list from GitHub...');
+                
+                if (!navigator.onLine) {
+                    console.log('📡 Offline - using cached books');
+                    this.updateOfflineStatus();
+                    return;
+                }
+                
+                const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                
+                fetch(proxyUrl + encodeURIComponent(githubUrl) + '&t=' + Date.now())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Proxy failed');
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('✅ Books loaded from GitHub (via proxy)');
+                        this.handleBooksData(data);
+                    })
+                    .catch(() => {
+                        return fetch(githubUrl + '?t=' + Date.now());
+                    })
+                    .then(response => {
+                        if (response && response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Direct fetch failed');
+                    })
+                    .then(data => {
+                        console.log('✅ Books loaded from GitHub (direct)');
+                        this.handleBooksData(data);
+                    })
+                    .catch((error) => {
+                        console.warn('⚠️ GitHub fetch failed:', error);
+                        this.fetchFromLocal();
+                    });
             }
+            
+            fetchFromLocal() {
+                console.log('📡 Trying local file...');
+                fetch('books-list.json?t=' + Date.now())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Local file not found');
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('✅ Books loaded from local file');
+                        this.handleBooksData(data);
+                    })
+                    .catch(() => {
+                        console.warn('⚠️ Cannot load books-list.json from anywhere.');
+                        if (!this.isOffline) {
+                            showNotification('ℹ️ Using cached books. Check internet.');
+                        }
+                    });
+            }
+            
+            // ===== HANDLE BOOKS DATA - FIXED =====
+            handleBooksData(data) {
+                if (!data || !data.books || !Array.isArray(data.books)) {
+                    console.warn('⚠️ Invalid books data:', data);
+                    return;
+                }
+                
+                // IMPORTANT: Do NOT modify onlineUrl here
+                // Let the JSON data be used as-is
+                
+                localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
+                const newCount = this.processRemoteData(data);
+                
+                if (newCount > 0) {
+                    showNotification('📚 ' + newCount + ' new book(s) added!');
+                }
+            }
+            
+            getBook(bookId){
+                return this.books[bookId] || null;
+            }
+            
+            getAllBooks(){
+                const builtInKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin === true);
+                const builtInBooks = builtInKeys.map(key => ({
+                    id: key,
+                    ...this.books[key],
+                    readToday: this.isBookReadToday(key),
+                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
+                    isNew: this.isNewBook(key),
+                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
+                }));
+                
+                const remoteKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin !== true);
+                const sortedRemoteKeys = remoteKeys.sort((a, b) => {
+                    const numA = parseInt(a.replace('book', ''), 10);
+                    const numB = parseInt(b.replace('book', ''), 10);
+                    return numA - numB;
+                });
+                const remoteBooks = sortedRemoteKeys.map(key => ({
+                    id: key,
+                    ...this.books[key],
+                    readToday: this.isBookReadToday(key),
+                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
+                    isNew: this.isNewBook(key),
+                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
+                }));
+                
+                return [...builtInBooks, ...remoteBooks];
+            }
+            
             isBookReadToday(bookId){return this.points.isReadToday(bookId);}
             isNewBook(bookId){return this.points.isNewBook(bookId);}
             getTodayNewCount(){return this.points.getTodayNewCount();}
             getMaxNewBooksToday(){return this.points.getMaxNewBooksToday();}
             canReadNewToday(){return this.points.canReadNewToday();}
+            
             async openBook(bookId){
                 const book=this.books[bookId];
                 if(!book){showNotification('❌ Book not found');return;}
+                
                 const url=this.getBookUrl(bookId);
-                if(!url){showNotification('❌ Cannot open book');return;}
+                if(!url){showNotification('❌ Cannot open book - URL not found');return;}
+                
                 const isNew=this.isNewBook(bookId);
                 const isReadToday=this.isBookReadToday(bookId);
+                
                 if(isNew && !isReadToday && !this.canReadNewToday()){
                     showNotification('🔒 Daily limit reached. Read existing books or wait until tomorrow!');
                     return;
                 }
+                
                 openWebView(url, book.title);
+                
                 if(isNew && !isReadToday){
                     if(this.canReadNewToday()){
                         const result=this.points.addPoints(bookId,book.title);
@@ -1182,124 +1327,111 @@
                     showNotification('📖 '+book.title+' (Re-read)');
                 }
             }
-            getBook(bookId){return this.books[bookId]||null;}
-            getAllBooks(){
-                const builtInKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin === true);
-                const builtInBooks = builtInKeys.map(key => ({
-                    id: key,
-                    ...this.books[key],
-                    readToday: this.isBookReadToday(key),
-                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
-                    isNew: this.isNewBook(key),
-                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
-                }));
-                const remoteKeys = Object.keys(this.books).filter(key => this.books[key].isBuiltin !== true);
-                const sortedRemoteKeys = remoteKeys.sort((a, b) => {
-                    const numA = parseInt(a.replace('book', ''), 10);
-                    const numB = parseInt(b.replace('book', ''), 10);
-                    return numA - numB;
-                });
-                const remoteBooks = sortedRemoteKeys.map(key => ({
-                    id: key,
-                    ...this.books[key],
-                    readToday: this.isBookReadToday(key),
-                    readBefore: this.points.data.booksRead.some(b => b.bookId === key),
-                    isNew: this.isNewBook(key),
-                    isNewToday: this.isNewBook(key) && this.isBookReadToday(key)
-                }));
-                return [...builtInBooks, ...remoteBooks];
-            }
+            
             getPointsManager(){return this.points;}
+            
             setSyncButtonState(syncing){
                 const btn=document.getElementById('btnSync');
                 if(!btn)return;
                 if(syncing){btn.classList.add('syncing');btn.textContent='⏳ Syncing...';}
                 else{btn.classList.remove('syncing');btn.textContent='🔄 Sync';}
             }
+            
             updateUI(){
                 const allBooks=this.getAllBooks();
                 renderBooks(allBooks,this);
                 this.points.updateUI();
+                this.updateOfflineStatus();
             }
+            
             syncRemoteBooks(){
                 const self = this;
-                if(self.isSyncing) return;
+                if(self.isSyncing) {
+                    showNotification('⏳ Already syncing...');
+                    return;
+                }
+                
                 self.isSyncing = true;
                 self.setSyncButtonState(true);
+                showNotification('🔄 Syncing books...');
+                
+                if (!navigator.onLine) {
+                    self.isSyncing = false;
+                    self.setSyncButtonState(false);
+                    self.updateOfflineStatus();
+                    showNotification('📡 No internet. Using cached books.');
+                    return;
+                }
                 
                 const githubUrl = 'https://koolwin.github.io/bookshelf/books-list.json';
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
                 
-                fetch(githubUrl + '?t=' + Date.now())
-                    .then(r => {
-                        if (!r.ok) throw new Error('GitHub not found');
-                        return r.json();
+                fetch(proxyUrl + encodeURIComponent(githubUrl) + '&t=' + Date.now())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Proxy failed');
+                        return response.json();
                     })
                     .then(data => {
-                        BOOKS_LIST = data;
-                        BOOKS_LOADED = true;
-                        localStorage.setItem('kreative_remote_books_cache', JSON.stringify(data));
-                        const newCount = self.processRemoteData(data);
+                        self.handleBooksData(data);
                         self.isSyncing = false;
                         self.setSyncButtonState(false);
-                        if (newCount > 0) {
-                            showNotification('✅ Found ' + newCount + ' new book(s)!');
-                        } else {
-                            showNotification('✅ Sync completed - No new books');
-                        }
+                        const totalBooks = data.books ? data.books.length : 0;
+                        showNotification('✅ Sync complete! (' + totalBooks + ' books available)');
+                        self.updateOfflineStatus();
                     })
                     .catch(() => {
-                        const cached = localStorage.getItem('kreative_remote_books_cache');
-                        if (cached) {
-                            try {
-                                const data = JSON.parse(cached);
-                                const newCount = self.processRemoteData(data);
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                showNotification('✅ Using cached books (' + newCount + ' loaded)');
-                                return;
-                            } catch(e) {}
+                        return fetch(githubUrl + '?t=' + Date.now());
+                    })
+                    .then(response => {
+                        if (response && response.ok) {
+                            return response.json();
                         }
-                        
-                        fetch('books-list.json')
-                            .then(r => {
-                                if (!r.ok) throw new Error('Local not found');
-                                return r.json();
-                            })
-                            .then(data => {
-                                const newCount = self.processRemoteData(data);
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                showNotification('✅ Local sync completed');
-                            })
-                            .catch(() => {
-                                self.isSyncing = false;
-                                self.setSyncButtonState(false);
-                                showNotification('ℹ️ No books found. Check internet.');
-                            });
+                        throw new Error('Direct fetch failed');
+                    })
+                    .then(data => {
+                        self.handleBooksData(data);
+                        self.isSyncing = false;
+                        self.setSyncButtonState(false);
+                        const totalBooks = data.books ? data.books.length : 0;
+                        showNotification('✅ Sync complete! (' + totalBooks + ' books available)');
+                        self.updateOfflineStatus();
+                    })
+                    .catch(() => {
+                        self.fetchFromLocal();
+                        self.isSyncing = false;
+                        self.setSyncButtonState(false);
+                        self.updateOfflineStatus();
+                        showNotification('ℹ️ Using local/cached books.');
                     });
             }
+            
             autoSync(){
                 setInterval(() => {
                     if(navigator.onLine){
+                        console.log('🔄 Auto-sync checking for updates...');
                         this.syncRemoteBooks();
                     }
                 }, 300000);
             }
-            triggerAutoSync(){
-                if(navigator.onLine){
+            
+            checkSyncOnVisibility() {
+                if (!document.hidden && navigator.onLine) {
+                    console.log('👁️ Tab visible - checking for updates...');
                     this.syncRemoteBooks();
                 }
             }
         }
         
         // ============================================================
-        // 9. RENDER FUNCTIONS
+        // RENDER FUNCTIONS
         // ============================================================
         function renderBooks(bookList,manager){
             const container=document.getElementById('shelf-rows');
             const rows=chunkArray(bookList,4);
             let html='';
             const canReadNew = manager.canReadNewToday();
+            const isOffline = manager.isOffline;
+            
             for(const row of rows){
                 html+='<div class="shelf-row"><div class="book-grid">';
                 for(const book of row){
@@ -1309,9 +1441,11 @@
                     const isNew=book.isNew!==undefined?book.isNew:true;
                     const isNewToday=book.isNewToday||false;
                     const shouldLock = !isBuiltin && !canReadNew && isNew && !readToday && !isNewToday;
+                    
                     let statusClass='pending';
                     let statusIcon='🌐';
                     let label='';
+                    
                     if(shouldLock){
                         statusClass = 'locked-status';
                         statusIcon = '🔒';
@@ -1332,20 +1466,26 @@
                         statusClass='pending';
                         statusIcon='📚';
                     }
-                    const onlineBadge=!isBuiltin?'<div class="offline-badge">🌐 Online</div>':'';
+                    
+                    const offlineBadge = (!isBuiltin && isOffline) ? 
+                        '<div class="offline-badge">📡 Offline</div>' : 
+                        (!isBuiltin ? '<div class="offline-badge">🌐 Online</div>' : '');
+                    
                     let badgeIcon='';
                     if(shouldLock) badgeIcon = '🔒';
                     else if(isNewToday)badgeIcon='⭐';
                     else if(readToday)badgeIcon='📖';
                     else if(readBefore&&!readToday)badgeIcon='🔄';
                     else if(isNew)badgeIcon='📚';
+                    else if(!isBuiltin) badgeIcon='🌐';
+                    
                     html+='<div class="book-card '+(shouldLock ? 'locked' : '')+'" data-book="'+book.id+'">';
                     html+='<div class="cover-wrap" id="cover-'+book.id+'">';
                     if(shouldLock) html+='<div class="lock-icon">🔒</div>';
                     html+='<img src="'+book.cover+'" alt="'+book.title+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
                     html+='<div class="placeholder" style="display:none;">📖</div>';
                     if(badgeIcon && !shouldLock)html+='<div class="badge-icon">'+badgeIcon+'</div>';
-                    html+=onlineBadge;
+                    html+=offlineBadge;
                     html+='</div>';
                     html+='<div class="book-info"><span class="book-title">'+book.title+'</span>';
                     if(label)html+='<span class="today-label">'+label+'</span>';
@@ -1354,6 +1494,7 @@
                 html+='</div></div>';
             }
             container.innerHTML=html;
+            
             container.querySelectorAll('.book-card .cover-wrap img').forEach(img=>{
                 const coverWrap=img.closest('.cover-wrap');
                 if(img.complete&&img.naturalWidth>0)setAspectRatio(coverWrap,img.naturalWidth,img.naturalHeight);
@@ -1362,6 +1503,7 @@
                     img.addEventListener('error',function(){coverWrap.style.aspectRatio='4 / 3';});
                 }
             });
+            
             container.querySelectorAll('.book-card:not(.locked)').forEach(el=>{
                 el.addEventListener('click',function(e){
                     e.stopPropagation();
@@ -1370,10 +1512,12 @@
                 });
             });
         }
+        
         function setAspectRatio(coverWrap,width,height){
             if(width>0&&height>0)coverWrap.style.aspectRatio=width+' / '+height;
             else coverWrap.style.aspectRatio='4 / 3';
         }
+        
         function chunkArray(arr,size){const result=[];for(let i=0;i<arr.length;i+=size)result.push(arr.slice(i,i+size));return result;}
         
         function openModal(id){
@@ -1494,6 +1638,7 @@
             }
             renderChart(points);
         }
+        
         function renderChart(points){
             const container=document.getElementById('chartBars');
             const data=points.getWeeklyData();
@@ -1508,6 +1653,7 @@
             }
             container.innerHTML=html;
         }
+        
         function renderBadges(manager){
             const points=manager.getPointsManager();
             const grid=document.getElementById('badgeGrid');
@@ -1525,6 +1671,7 @@
             }
             grid.innerHTML=html;
         }
+        
         function renderStickers(manager){
             const points=manager.getPointsManager();
             const grid=document.getElementById('stickerGrid');
@@ -1543,32 +1690,6 @@
             grid.innerHTML=html;
         }
         
-        // Certificate related functions - ထားခဲ့ပေမယ့် ဘယ်နေရာမှမသုံးတော့ပါ
-        function renderCertificates(manager){
-            // ဒီ function ကိုဘယ်နေရာမှမခေါ်တော့ပါ
-            console.log('Certificate feature disabled');
-        }
-        
-        function editCertName(milestone){
-            // ဒီ function ကိုဘယ်နေရာမှမခေါ်တော့ပါ
-            console.log('Certificate feature disabled');
-        }
-        
-        async function exportSingleCertificate(milestone){
-            // ဒီ function ကိုဘယ်နေရာမှမခေါ်တော့ပါ
-            console.log('Certificate feature disabled');
-        }
-        
-        async function exportAllCertificatesPDF() {
-            // ဒီ function ကိုဘယ်နေရာမှမခေါ်တော့ပါ
-            console.log('Certificate feature disabled');
-        }
-        
-        async function exportCertificate(format){
-            // ဒီ function ကိုဘယ်နေရာမှမခေါ်တော့ပါ
-            console.log('Certificate feature disabled');
-        }
-        
         function openWebView(url,title=''){
             const iframe=document.getElementById('book-iframe');
             const container=document.getElementById('webview-container');
@@ -1580,6 +1701,7 @@
                 if(container.requestFullscreen){try{container.requestFullscreen();}catch(e){}}
             }catch(error){console.error('Error opening book:',error);showNotification('❌ Cannot open book');}
         }
+        
         function showNotification(msg){
             const el=document.getElementById('notification');
             el.textContent=msg;
@@ -1605,7 +1727,6 @@
             openModal('redeemCodeModal');
         }
 
-        // ===== HANDLE REDEEM CODE - FIXED =====
         async function handleRedeemCode(){
             const input = document.getElementById('codeInput');
             const code = input.value.trim().toUpperCase();
@@ -1629,7 +1750,6 @@
                 return;
             }
             
-            // Show loading
             const btn = document.getElementById('btnSubmitCode');
             const originalText = btn.textContent;
             btn.textContent = '⏳ Checking...';
@@ -1685,17 +1805,12 @@
         }
         
         // ============================================================
-        // 10. INITIALIZATION
+        // INITIALIZATION
         // ============================================================
         let bookManager;
         document.addEventListener('DOMContentLoaded',function(){
             bookManager=new BookManager();
             window.bookManager=bookManager;
-            
-            // Certificate functions တွေကို window မှာ assign မလုပ်တော့ပါ
-            // window.exportSingleCertificate = exportSingleCertificate; // ဖြုတ်ထား
-            // window.editCertName = editCertName; // ဖြုတ်ထား
-            // window.exportCertificate = exportCertificate; // ဖြုတ်ထား
             
             showSplashAd();
             
@@ -1710,26 +1825,12 @@
                 openBuyPoints();
             });
             
-            // Certificate export buttons - ဖြုတ်ထား
-            // document.getElementById('exportPdfBtn').addEventListener('click', function(e) {
-            //     e.stopPropagation();
-            //     exportCertificate('pdf');
-            // });
-            // document.getElementById('exportPngBtn').addEventListener('click', function(e) {
-            //     e.stopPropagation();
-            //     exportCertificate('png');
-            // });
-            // document.getElementById('exportGalleryBtn').addEventListener('click', function(e) {
-            //     e.stopPropagation();
-            //     exportCertificate('gallery');
-            // });
-            // document.getElementById('printBtn').addEventListener('click', function(e) {
-            //     e.stopPropagation();
-            //     window.print();
-            // });
-            
-            document.getElementById('btnSync').addEventListener('click',function(){bookManager.syncRemoteBooks();});
-            document.getElementById('btnBuyCode').addEventListener('click',function(){openWebView('update.html','Get Premium');});
+            document.getElementById('btnSync').addEventListener('click',function(){
+                bookManager.syncRemoteBooks();
+            });
+            document.getElementById('btnBuyCode').addEventListener('click',function(){
+                openWebView('update.html','Get Premium');
+            });
             document.getElementById('btnRedeemCode').addEventListener('click', openRedeemModal);
             document.getElementById('btnSubmitCode').addEventListener('click', handleRedeemCode);
             document.getElementById('codeInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') handleRedeemCode(); });
@@ -1741,7 +1842,6 @@
             document.getElementById('btnBadges').addEventListener('click',function(){renderBadges(bookManager);openModal('badgesModal');});
             document.getElementById('btnStickers').addEventListener('click',function(){renderStickers(bookManager);openModal('stickersModal');});
             
-            // Hamburger menu button
             document.getElementById('hamburgerBtn').addEventListener('click',function(e){
                 e.stopPropagation();
                 toggleMobileMenu(true);
@@ -1749,7 +1849,6 @@
             document.getElementById('menuClose').addEventListener('click',function(){toggleMobileMenu(false);});
             document.getElementById('mobileOverlay').addEventListener('click',function(){toggleMobileMenu(false);});
             
-            // Mobile menu items
             document.querySelectorAll('.menu-item[data-action]').forEach(item=>{
                 item.addEventListener('click',function(){
                     const action=this.dataset.action;
@@ -1781,150 +1880,154 @@
             bookManager.autoSync();
             
             document.addEventListener('visibilitychange', function(){
-                if(!document.hidden && bookManager){
-                    setTimeout(() => {
-                        bookManager.triggerAutoSync();
-                    }, 500);
-                }
+                bookManager.checkSyncOnVisibility();
+            });
+            
+            window.addEventListener('online', function(){
+                console.log('🌐 Online - syncing books...');
+                bookManager.updateOfflineStatus();
+                setTimeout(() => {
+                    bookManager.syncRemoteBooks();
+                }, 1000);
+            });
+            
+            window.addEventListener('offline', function(){
+                console.log('📡 Offline - switching to cached books');
+                bookManager.updateOfflineStatus();
+                showNotification('📡 You are offline. Using cached books.');
             });
             
             if(window.innerWidth > 820 && screen.orientation && screen.orientation.lock){
                 screen.orientation.lock('landscape').catch(()=>{});
             }
-            // Certificate notification ကိုဖြုတ်ထား
-            // setTimeout(()=>{
-            //     const certs=bookManager.getPointsManager().getCertificates();
-            //     if(certs.length>0){
-            //         showNotification('📜 You have '+certs.length+' certificate(s)!');
-            //     }
-            // },5000);
         });
+        
         window.addEventListener('resize',function(){if(bookManager)bookManager.updateUI();});
         window.addEventListener('orientationchange',function(){setTimeout(()=>{if(bookManager)bookManager.updateUI();},300);});
     </script>
-<!-- Firebase Cloud Messaging -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
-    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+    <!-- Firebase Cloud Messaging -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
+        import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBl6MK40r4rrVQ3w3RTzEgioxYoOJIb4RA",
-        authDomain: "k-reader-cde45.firebaseapp.com",
-        projectId: "k-reader-cde45",
-        storageBucket: "k-reader-cde45.firebasestorage.app",
-        messagingSenderId: "732905849808",
-        appId: "1:732905849808:web:edf0f30a07b2c57ea1afd5",
-        measurementId: "G-JC8RSEZ5L3"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl6MK40r4rrVQ3w3RTzEgioxYoOJIb4RA",
+            authDomain: "k-reader-cde45.firebaseapp.com",
+            projectId: "k-reader-cde45",
+            storageBucket: "k-reader-cde45.firebasestorage.app",
+            messagingSenderId: "732905849808",
+            appId: "1:732905849808:web:edf0f30a07b2c57ea1afd5",
+            measurementId: "G-JC8RSEZ5L3"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const messaging = getMessaging(app);
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const messaging = getMessaging(app);
 
-    const VAPID_KEY = 'BASjJdEoZ9nrhkMvAcYM8NtN_Qrj5jlHMacm-pkj7BzcofRnY01jqTdXAeggVKSfj89QP3NpdozLQTQpbjoxcCw';
+        const VAPID_KEY = 'BASjJdEoZ9nrhkMvAcYM8NtN_Qrj5jlHMacm-pkj7BzcofRnY01jqTdXAeggVKSfj89QP3NpdozLQTQpbjoxcCw';
 
-    async function requestNotificationPermission() {
-        try {
-            const permission = await Notification.requestPermission();
-            
-            if (permission === 'granted') {
-                console.log('✅ Notification permission granted');
-                const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-                console.log('✅ FCM Token:', token);
-                await saveTokenToServer(token);
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({ type: 'SUBSCRIBE_PUSH' });
+        async function requestNotificationPermission() {
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    console.log('✅ Notification permission granted');
+                    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+                    console.log('✅ FCM Token:', token);
+                    await saveTokenToServer(token);
+                    if (navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage({ type: 'SUBSCRIBE_PUSH' });
+                    }
+                    logEvent(analytics, 'push_subscribed', { token_obtained: true });
+                    return token;
+                } else {
+                    console.warn('❌ Notification permission denied');
+                    showNotification('🔔 Please enable notifications for better experience');
                 }
-                logEvent(analytics, 'push_subscribed', { token_obtained: true });
-                return token;
-            } else {
-                console.warn('❌ Notification permission denied');
-                showNotification('🔔 Please enable notifications for better experience');
+            } catch (error) {
+                console.error('❌ Error getting FCM token:', error);
             }
-        } catch (error) {
-            console.error('❌ Error getting FCM token:', error);
+            return null;
         }
-        return null;
-    }
 
-    async function saveTokenToServer(token) {
-        try {
-            const userId = localStorage.getItem('fcm_user_id') || 'user_' + Date.now();
-            const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js');
-            const db = getFirestore();
-            await setDoc(doc(db, 'fcm_tokens', userId), {
-                token: token,
-                userId: userId,
-                createdAt: new Date().toISOString(),
-                userAgent: navigator.userAgent,
-                platform: navigator.platform
-            }, { merge: true });
-            console.log('✅ FCM Token saved to Firestore');
-        } catch (error) {
-            console.warn('⚠️ Failed to save token to server:', error);
-            localStorage.setItem('fcm_token', token);
+        async function saveTokenToServer(token) {
+            try {
+                const userId = localStorage.getItem('fcm_user_id') || 'user_' + Date.now();
+                const { getFirestore, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js');
+                const db = getFirestore();
+                await setDoc(doc(db, 'fcm_tokens', userId), {
+                    token: token,
+                    userId: userId,
+                    createdAt: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform
+                }, { merge: true });
+                console.log('✅ FCM Token saved to Firestore');
+            } catch (error) {
+                console.warn('⚠️ Failed to save token to server:', error);
+                localStorage.setItem('fcm_token', token);
+            }
         }
-    }
 
-    onMessage(messaging, (payload) => {
-        console.log('📨 Foreground message received:', payload);
-        const title = payload.notification?.title || '📚 Kreative Bookshelf';
-        const body = payload.notification?.body || 'New update available!';
-        const bookId = payload.data?.bookId || null;
-        showNotification(`🔔 ${title}: ${body}`);
-        logEvent(analytics, 'notification_received', { title: title, book_id: bookId });
-        if (bookId) {
-            setTimeout(() => {
-                if (confirm(`📖 Open "${title}" now?`)) {
+        onMessage(messaging, (payload) => {
+            console.log('📨 Foreground message received:', payload);
+            const title = payload.notification?.title || '📚 Kreative Bookshelf';
+            const body = payload.notification?.body || 'New update available!';
+            const bookId = payload.data?.bookId || null;
+            showNotification(`🔔 ${title}: ${body}`);
+            logEvent(analytics, 'notification_received', { title: title, book_id: bookId });
+            if (bookId) {
+                setTimeout(() => {
+                    if (confirm(`📖 Open "${title}" now?`)) {
+                        if (window.bookManager) {
+                            window.bookManager.openBook(bookId);
+                        }
+                    }
+                }, 1000);
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered');
+                    registration.pushManager.getSubscription()
+                        .then(subscription => {
+                            if (subscription) {
+                                console.log('✅ Existing push subscription found');
+                            } else {
+                                console.log('ℹ️ No push subscription found');
+                            }
+                        });
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+                
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data?.type === 'OPEN_BOOK') {
+                    const bookId = event.data.bookId;
                     if (window.bookManager) {
                         window.bookManager.openBook(bookId);
                     }
                 }
-            }, 1000);
-        }
-    });
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered');
-                registration.pushManager.getSubscription()
-                    .then(subscription => {
-                        if (subscription) {
-                            console.log('✅ Existing push subscription found');
-                        } else {
-                            console.log('ℹ️ No push subscription found');
-                        }
-                    });
-            })
-            .catch(error => {
-                console.error('❌ Service Worker registration failed:', error);
             });
-            
-        navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data?.type === 'OPEN_BOOK') {
-                const bookId = event.data.bookId;
-                if (window.bookManager) {
-                    window.bookManager.openBook(bookId);
-                }
-            }
-        });
-    }
+        }
 
-    const headerRight = document.querySelector('.header-right');
-    if (headerRight) {
-        const subscribeBtn = document.createElement('button');
-        subscribeBtn.className = 'btn-header';
-        subscribeBtn.id = 'btnSubscribe';
-        subscribeBtn.textContent = '🔔 Subscribe';
-        subscribeBtn.style.background = '#8b5cf6';
-        subscribeBtn.style.color = '#fff';
-        subscribeBtn.addEventListener('click', requestNotificationPermission);
-        headerRight.insertBefore(subscribeBtn, headerRight.firstChild);
-    }
+        const headerRight = document.querySelector('.header-right');
+        if (headerRight) {
+            const subscribeBtn = document.createElement('button');
+            subscribeBtn.className = 'btn-header';
+            subscribeBtn.id = 'btnSubscribe';
+            subscribeBtn.textContent = '🔔 Subscribe';
+            subscribeBtn.style.background = '#8b5cf6';
+            subscribeBtn.style.color = '#fff';
+            subscribeBtn.addEventListener('click', requestNotificationPermission);
+            headerRight.insertBefore(subscribeBtn, headerRight.firstChild);
+        }
 
-    console.log(' FCM initialized successfully!');
-</script>
+        console.log(' FCM initialized successfully!');
+    </script>
 </body>
 </html>
