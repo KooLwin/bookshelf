@@ -7,6 +7,7 @@
     {"id":21,"title":"The Big Box","cover":"https://koolwin.github.io/bookshelf/covers/book21.png", "localPath": "books/book21/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book21/index.html"},
     {"id":22,"title":"The Wet Pet","cover":"https://koolwin.github.io/bookshelf/covers/book22.png", "localPath": "books/book22/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book22/index.html"},
     {"id":23,"title":"The Fun Trip","cover":"https://koolwin.github.io/bookshelf/covers/book23.png", "localPath": "books/book23/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book23/index.html"},
-    {"id":24,"title":"The Big Light","cover":"https://koolwin.github.io/bookshelf/covers/book24.png", "localPath": "books/book24/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book24/index.html"}
+    {"id":24,"title":"The Big Light","cover":"https://koolwin.github.io/bookshelf/covers/book24.png", "localPath": "books/book24/index.html", "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf/books/book24/index.html"},
+        {"id":25,"title":"Book 25","cover":"https://koolwin.github.io/bookshelf2/covers/book25.png", "localPath": null, "isBuiltin": false, "onlineUrl": "https://koolwin.github.io/bookshelf2/books/book25/index.html"}
   ]
 }
