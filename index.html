@@ -138,6 +138,35 @@
         .popup-modal .btn-close-popup.warning { background: #f59e0b; }
         .popup-modal .btn-close-popup.danger { background: #dc2626; }
         
+        /* Download Progress */
+        .download-section {
+            margin-top: 16px;
+            padding: 12px 14px;
+            background: rgba(0,122,255,0.04);
+            border-radius: 16px;
+            border: 1px solid rgba(0,122,255,0.08);
+        }
+        .download-section .dl-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: #5b5b60;
+            margin-bottom: 6px;
+        }
+        .download-section .dl-header .dl-status { font-weight: 400; }
+        .download-section .dl-status.downloading { color: #007aff; }
+        .download-section .dl-status.done { color: #34c759; }
+        .download-section .dl-status.paused { color: #f59e0b; }
+        .download-section .dl-status.error { color: #ff3b30; }
+        .dl-progress-bar { width: 100%; height: 4px; background: rgba(0,0,0,0.06); border-radius: 10px; overflow: hidden; }
+        .dl-progress-fill { height: 100%; background: linear-gradient(90deg, #007aff, #34c759); border-radius: 10px; width: 0%; transition: width 0.3s ease; }
+        .dl-details { display: flex; justify-content: space-between; font-size: 10px; color: #8e8e93; margin-top: 4px; }
+        .file-list { display: none !important; }
+        .dl-btn { background: rgba(0,122,255,0.08); border: none; border-radius: 12px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: #007aff; cursor: pointer; font-family: inherit; margin-top: 4px; }
+        .dl-btn:active { transform: scale(0.95); }
+        .dl-btn:disabled { opacity: 0.4; cursor: default; }
+
         @media (max-width: 460px) { .glass-panel { padding: 20px 14px; border-radius: 36px; } .brand h1 { font-size: 24px; } .field input { padding: 14px 16px; } .radio-option .radio-label { padding: 12px 8px; font-size: 13px; } .plan-box { padding: 12px; } .popup-modal { padding: 24px 18px; } }
     </style>
 </head>
@@ -173,6 +202,24 @@
             <button type="submit" class="btn-primary" id="login-btn">Sign In</button>
         </form>
         <div class="status" id="login-status"></div>
+
+        <!-- Download Progress -->
+        <div class="download-section" id="downloadSection" style="display:none;">
+            <div class="dl-header">
+                <span>📥 Downloading Content</span>
+                <span class="dl-status" id="dlStatus">Starting...</span>
+            </div>
+            <div class="dl-progress-bar"><div class="dl-progress-fill" id="dlProgressFill"></div></div>
+            <div class="dl-details">
+                <span id="dlDownloaded">0 MB</span>
+                <span id="dlTotal">/ 0 MB</span>
+                <span id="dlSpeed">0 MB/s</span>
+            </div>
+            <div style="text-align:center; margin-top:4px;">
+                <button class="dl-btn" id="dlBtn" style="display:none;">⏸️ Pause</button>
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </div>
     </div>
 
     <!-- REGISTER -->
@@ -238,7 +285,7 @@
 
     const CONFIG = {
         API_URL: 'https://script.google.com/macros/s/AKfycbyQ4EIWl_UT97WbT0YaONtkgYNLX3DPAUh2_Q8QbYpdoTXvpp8F1Xo68X1uUNp9Dhg/exec',
-        SESSION_DURATION: 24 * 60 * 60 * 1000,
+        SESSION_DURATION: 30 * 24 * 60 * 60 * 1000, // 30 days
         KBZ_NUMBER: '09771055911'
     };
 
@@ -272,8 +319,309 @@
         popupIcon: $('popupIcon'),
         popupTitle: $('popupTitle'),
         popupMessage: $('popupMessage'),
-        popupBtn: $('popupBtn')
+        popupBtn: $('popupBtn'),
+        // Download elements
+        downloadSection: $('downloadSection'),
+        dlStatus: $('dlStatus'),
+        dlProgressFill: $('dlProgressFill'),
+        dlDownloaded: $('dlDownloaded'),
+        dlTotal: $('dlTotal'),
+        dlSpeed: $('dlSpeed'),
+        dlBtn: $('dlBtn'),
+        fileList: $('fileList')
     };
+
+    // ============================================================
+    // DOWNLOAD MANAGER - Background Download for Offline
+    // ============================================================
+    class KreativeDownloadManager {
+        constructor() {
+            this.dbName = 'KreativeCourseDB';
+            this.dbVersion = 1;
+            this.db = null;
+            this.courseFiles = [];
+            this.totalSize = 0;
+            this.downloadedSize = 0;
+            this.isDownloading = false;
+            this.isPaused = false;
+            this.currentFileIndex = 0;
+            this.fileStatus = {};
+            this.startTime = null;
+            this.autoDownloadStarted = false;
+            this.downloadComplete = false;
+            this.init();
+        }
+
+        async init() {
+            await this.initIndexedDB();
+            await this.loadProgress();
+            // Check if already downloaded
+            const allDownloaded = await this.isAllDownloaded();
+            if (allDownloaded) {
+                this.downloadComplete = true;
+                this.updateUI('done', '✅ Ready Offline');
+                return;
+            }
+            // Auto-start download if online
+            if (navigator.onLine) {
+                await this.startAutoDownload();
+            }
+        }
+
+        initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(this.dbName, this.dbVersion);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('files')) {
+                        db.createObjectStore('files', { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains('metadata')) {
+                        db.createObjectStore('metadata', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (event) => {
+                    this.db = event.target.result;
+                    resolve();
+                };
+                request.onerror = (event) => { reject(event.target.error); };
+            });
+        }
+
+        async loadProgress() {
+            try {
+                const metadata = await this.getMetadata('downloadProgress');
+                if (metadata) {
+                    this.downloadedSize = metadata.downloadedSize || 0;
+                    this.currentFileIndex = metadata.currentFileIndex || 0;
+                    this.fileStatus = metadata.fileStatus || {};
+                    this.autoDownloadStarted = metadata.autoDownloadStarted || false;
+                }
+                const files = await this.getAllFiles();
+                let total = 0;
+                for (const file of files) {
+                    total += file.size || 0;
+                    this.fileStatus[file.id] = { status: 'done' };
+                }
+                if (total > 0) this.downloadedSize = total;
+            } catch (e) { console.log('Load progress error:', e); }
+        }
+
+        async getMetadata(id) {
+            return new Promise((resolve) => {
+                if (!this.db) { resolve(null); return; }
+                const transaction = this.db.transaction(['metadata'], 'readonly');
+                const store = transaction.objectStore('metadata');
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async saveMetadata(id, data) {
+            return new Promise((resolve) => {
+                if (!this.db) { resolve(); return; }
+                const transaction = this.db.transaction(['metadata'], 'readwrite');
+                const store = transaction.objectStore('metadata');
+                const request = store.put({ ...data, id });
+                request.onsuccess = () => resolve();
+                request.onerror = () => resolve();
+            });
+        }
+
+        async getAllFiles() {
+            return new Promise((resolve) => {
+                if (!this.db) { resolve([]); return; }
+                const transaction = this.db.transaction(['files'], 'readonly');
+                const store = transaction.objectStore('files');
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve([]);
+            });
+        }
+
+        async saveFile(id, data, size) {
+            return new Promise((resolve, reject) => {
+                if (!this.db) { reject('Database not initialized'); return; }
+                const transaction = this.db.transaction(['files'], 'readwrite');
+                const store = transaction.objectStore('files');
+                const request = store.put({ id, data, size, timestamp: Date.now() });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async getFile(id) {
+            return new Promise((resolve) => {
+                if (!this.db) { resolve(null); return; }
+                const transaction = this.db.transaction(['files'], 'readonly');
+                const store = transaction.objectStore('files');
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async isAllDownloaded() {
+            const files = await this.getAllFiles();
+            return files.length >= (this.courseFiles.length || 0) && this.courseFiles.length > 0;
+        }
+
+        async startAutoDownload() {
+            if (this.autoDownloadStarted || this.isDownloading) return;
+            // Load course files from course_files.js if available
+            if (typeof courseFiles !== 'undefined' && courseFiles.length > 0) {
+                this.courseFiles = courseFiles;
+                this.totalSize = courseFiles.reduce((sum, f) => sum + f.size, 0);
+            } else {
+                // Try to fetch from server
+                try {
+                    const resp = await fetch('course_files.json');
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        this.courseFiles = data;
+                        this.totalSize = data.reduce((sum, f) => sum + f.size, 0);
+                    }
+                } catch (e) { console.warn('No course files found'); }
+            }
+            if (this.courseFiles.length === 0) return;
+
+            this.autoDownloadStarted = true;
+            DOM.downloadSection.style.display = 'block';
+            this.isDownloading = true;
+            this.startTime = Date.now();
+            this.updateUI('downloading', '⏳ Downloading...');
+            await this.downloadFiles();
+        }
+
+        async downloadFiles() {
+            for (let i = this.currentFileIndex; i < this.courseFiles.length && !this.isPaused; i++) {
+                const file = this.courseFiles[i];
+                const existing = await this.getFile(file.id);
+                if (existing) {
+                    this.fileStatus[file.id] = { status: 'done' };
+                    this.downloadedSize += existing.size || 0;
+                    this.currentFileIndex = i + 1;
+                    this.updateUI();
+                    continue;
+                }
+                try {
+                    this.fileStatus[file.id] = { status: 'downloading' };
+                    const response = await fetch(file.path);
+                    if (!response.ok) throw new Error('Failed to fetch: ' + response.status);
+                    const data = await response.arrayBuffer();
+                    const size = data.byteLength;
+                    await this.saveFile(file.id, data, size);
+                    this.downloadedSize += size;
+                    this.fileStatus[file.id] = { status: 'done' };
+                    this.currentFileIndex = i + 1;
+                    this.updateUI();
+                    if (i % 3 === 0) await this.saveProgress();
+                } catch (error) {
+                    console.error('Download error for', file.id, error);
+                    this.fileStatus[file.id] = { status: 'error', error: error.message };
+                    // Retry logic
+                    let retries = 0;
+                    while (retries < 3 && !this.isPaused) {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        try {
+                            const response = await fetch(file.path);
+                            if (response.ok) {
+                                const data = await response.arrayBuffer();
+                                const size = data.byteLength;
+                                await this.saveFile(file.id, data, size);
+                                this.downloadedSize += size;
+                                this.fileStatus[file.id] = { status: 'done' };
+                                this.currentFileIndex = i + 1;
+                                this.updateUI();
+                                break;
+                            }
+                        } catch (e) { retries++; }
+                    }
+                    if (this.fileStatus[file.id].status !== 'done') {
+                        this.isPaused = true;
+                        this.updateUI('paused', '⏸️ Paused');
+                        return;
+                    }
+                }
+            }
+            const allDownloaded = await this.isAllDownloaded();
+            if (allDownloaded) {
+                this.isDownloading = false;
+                this.downloadComplete = true;
+                this.updateUI('done', '✅ Ready Offline');
+                await this.cacheForOffline();
+                await this.saveProgress();
+            }
+        }
+
+        async cacheForOffline() {
+            try {
+                const cache = await caches.open('kreative-course-v1');
+                const files = await this.getAllFiles();
+                for (const file of files) {
+                    const response = new Response(file.data, {
+                        headers: { 'Content-Type': this.getContentType(file.id) }
+                    });
+                    await cache.put('/' + file.id, response);
+                }
+            } catch (e) { console.log('Cache error:', e); }
+        }
+
+        getContentType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const types = {
+                'html': 'text/html', 'css': 'text/css', 'js': 'application/javascript',
+                'json': 'application/json', 'png': 'image/png', 'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg', 'gif': 'image/gif', 'svg': 'image/svg+xml',
+                'mp3': 'audio/mpeg', 'mp4': 'video/mp4', 'webm': 'video/webm',
+                'pdf': 'application/pdf', 'xml': 'application/xml',
+                'cur': 'image/x-win-bitmap', 'ico': 'image/x-icon',
+                'woff': 'font/woff', 'woff2': 'font/woff2', 'ttf': 'font/ttf',
+                'eot': 'application/vnd.ms-fontobject', 'otf': 'font/otf'
+            };
+            return types[ext] || 'application/octet-stream';
+        }
+
+        async saveProgress() {
+            await this.saveMetadata('downloadProgress', {
+                downloadedSize: this.downloadedSize,
+                currentFileIndex: this.currentFileIndex,
+                fileStatus: this.fileStatus,
+                autoDownloadStarted: this.autoDownloadStarted,
+                lastUpdated: Date.now()
+            });
+        }
+
+        updateUI(status, statusText) {
+            const progress = this.totalSize > 0 ? Math.min((this.downloadedSize / this.totalSize) * 100, 100) : 0;
+            DOM.dlProgressFill.style.width = progress + '%';
+            DOM.dlDownloaded.textContent = (this.downloadedSize / (1024 * 1024)).toFixed(1) + ' MB';
+            DOM.dlTotal.textContent = '/ ' + (this.totalSize / (1024 * 1024)).toFixed(1) + ' MB';
+            if (this.startTime && this.downloadedSize > 0) {
+                const elapsed = (Date.now() - this.startTime) / 1000;
+                if (elapsed > 0) {
+                    const speed = this.downloadedSize / elapsed / (1024 * 1024);
+                    DOM.dlSpeed.textContent = speed.toFixed(1) + ' MB/s';
+                }
+            }
+            if (status) {
+                DOM.dlStatus.textContent = statusText || status;
+                DOM.dlStatus.className = 'dl-status ' + status;
+            }
+            if (status === 'done') {
+                DOM.dlBtn.style.display = 'none';
+            } else if (this.isDownloading && !this.isPaused) {
+                DOM.dlBtn.style.display = 'inline-block';
+                DOM.dlBtn.textContent = '⏸️ Pause';
+                DOM.dlBtn.onclick = () => { this.isPaused = true; this.updateUI('paused', '⏸️ Paused'); };
+            } else if (this.isPaused) {
+                DOM.dlBtn.style.display = 'inline-block';
+                DOM.dlBtn.textContent = '▶️ Resume';
+                DOM.dlBtn.onclick = () => { this.isPaused = false; this.updateUI('downloading', '⏳ Downloading...'); this.downloadFiles(); };
+            }
+        }
+    }
 
     // ============================================================
     // POPUP FUNCTIONS
@@ -297,49 +645,6 @@
             this.classList.remove('active');
         }
     });
-
-    // ============================================================
-    // CHECK EXPIRY ON APP START
-    // ============================================================
-
-    async function checkUserExpiry(username) {
-        try {
-            const url = CONFIG.API_URL + '?action=checkExpiry&username=' + encodeURIComponent(username) + '&t=' + Date.now();
-            const response = await fetch(url);
-            const result = await response.json();
-            return result;
-        } catch (error) {
-            console.warn('Expiry check failed:', error);
-            return null;
-        }
-    }
-
-    // ============================================================
-    // SHOW EXPIRY POPUP
-    // ============================================================
-
-    function showExpiryPopup(daysRemaining, expiryDate) {
-        if (daysRemaining <= 0) {
-            showPopup(
-                '🔴',
-                'Premium Expired',
-                'Your Premium subscription has expired on ' + expiryDate + '. You have been moved to Free plan.',
-                'OK, I understand',
-                'danger'
-            );
-            return true;
-        } else if (daysRemaining <= 3) {
-            showPopup(
-                '⏰',
-                'Premium Expiry Reminder',
-                'Your Premium subscription will expire in ' + daysRemaining + ' days on ' + expiryDate + '. Please renew to continue enjoying premium features.',
-                'OK, Got it!',
-                'warning'
-            );
-            return true;
-        }
-        return false;
-    }
 
     // ============================================================
     // SHOW TOAST
@@ -415,6 +720,160 @@
     }
 
     // ============================================================
+    // CHECK EXPIRY FROM LOCAL STORAGE
+    // ============================================================
+
+    function checkLocalExpiry() {
+        try {
+            const user = JSON.parse(localStorage.getItem('kreative_user'));
+            if (!user) return null;
+            const expiryDate = user.expiryDate || localStorage.getItem('kreative_expiry') || '';
+            if (!expiryDate) return { isPremium: user.isPremium || false, daysRemaining: null, expiryDate: null };
+            const expiry = new Date(expiryDate);
+            const now = new Date();
+            const daysRemaining = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+            return { isPremium: user.isPremium || false, daysRemaining, expiryDate };
+        } catch(e) { return null; }
+    }
+
+    // ============================================================
+    // SHOW EXPIRY POPUP
+    // ============================================================
+
+    function showExpiryPopup(daysRemaining, expiryDate) {
+        if (daysRemaining <= 0) {
+            showPopup(
+                '🔴',
+                'Premium Expired',
+                'Your Premium subscription has expired on ' + expiryDate + '. You have been moved to Free plan.',
+                'OK, I understand',
+                'danger'
+            );
+            return true;
+        } else if (daysRemaining <= 3) {
+            showPopup(
+                '⏰',
+                'Premium Expiry Reminder',
+                'Your Premium subscription will expire in ' + daysRemaining + ' days on ' + expiryDate + '. Please renew to continue enjoying premium features.',
+                'OK, Got it!',
+                'warning'
+            );
+            return true;
+        }
+        return false;
+    }
+
+    // ============================================================
+    // AUTO-LOGIN WITH REDIRECT - NO RE-LOGIN REQUIRED
+    // ============================================================
+
+    async function checkAutoLogin() {
+        try {
+            const userStr = localStorage.getItem('kreative_user');
+            const loginTime = parseInt(localStorage.getItem('kreative_login_time'), 10);
+            if (!userStr || !loginTime) return false;
+            
+            const user = JSON.parse(userStr);
+            if (Date.now() - loginTime > CONFIG.SESSION_DURATION) {
+                // Session expired, but keep user data for offline
+                localStorage.setItem('kreative_session_expired', 'true');
+                return false;
+            }
+
+            // Check expiry from local storage first
+            const expiryData = checkLocalExpiry();
+            let isPremium = user.isPremium || false;
+            let daysRemaining = null;
+            let expiryDate = user.expiryDate || '';
+
+            if (expiryData) {
+                daysRemaining = expiryData.daysRemaining;
+                expiryDate = expiryData.expiryDate || expiryDate;
+                // If premium expired, switch to free
+                if (isPremium && daysRemaining !== null && daysRemaining <= 0) {
+                    isPremium = false;
+                    user.isPremium = false;
+                    user.plan = 'free';
+                    localStorage.setItem('kreative_user', JSON.stringify(user));
+                    localStorage.setItem('kreative_premium', 'false');
+                    showPopup(
+                        '🔴',
+                        'Premium Expired',
+                        'Your Premium subscription has expired. You have been automatically switched to Free plan.',
+                        'OK, Got it!',
+                        'danger'
+                    );
+                    setTimeout(() => {
+                        window.location.href = 'free.html';
+                    }, 2000);
+                    return true;
+                }
+                // Show reminder if expiring soon
+                if (isPremium && daysRemaining !== null && daysRemaining <= 3 && daysRemaining > 0) {
+                    showExpiryPopup(daysRemaining, expiryDate);
+                }
+            }
+
+            // Verify with server if online
+            if (navigator.onLine) {
+                try {
+                    const result = await callApi('checkExpiry', { username: user.username });
+                    if (result && result.success) {
+                        const serverData = result.user;
+                        // Update local storage with server data
+                        if (serverData.isPremium !== undefined) {
+                            isPremium = serverData.isPremium;
+                            user.isPremium = isPremium;
+                            user.plan = isPremium ? 'premium' : 'free';
+                            user.expiryDate = serverData.expiryDate || '';
+                            localStorage.setItem('kreative_user', JSON.stringify(user));
+                            localStorage.setItem('kreative_premium', isPremium ? 'true' : 'false');
+                            localStorage.setItem('kreative_expiry', serverData.expiryDate || '');
+                            localStorage.setItem('kreative_days_remaining', String(serverData.daysRemaining || ''));
+                            
+                            // If server says premium expired
+                            if (!isPremium && user.isPremium !== false) {
+                                showPopup(
+                                    '🔴',
+                                    'Premium Expired',
+                                    'Your Premium subscription has expired. You have been automatically switched to Free plan.',
+                                    'OK, Got it!',
+                                    'danger'
+                                );
+                                setTimeout(() => {
+                                    window.location.href = 'free.html';
+                                }, 2000);
+                                return true;
+                            }
+                            // Show reminder if expiring soon
+                            if (isPremium && serverData.daysRemaining !== null && serverData.daysRemaining <= 3 && serverData.daysRemaining > 0) {
+                                showExpiryPopup(serverData.daysRemaining, serverData.expiryDate);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Server expiry check failed, using local data');
+                }
+            }
+
+            // Redirect based on plan
+            const redirectTo = isPremium ? 'premium.html' : 'free.html';
+            
+            // Start background download if not already downloaded
+            if (typeof downloadManager !== 'undefined' && !downloadManager.downloadComplete) {
+                downloadManager.startAutoDownload();
+            }
+            
+            window.location.href = redirectTo;
+            return true;
+            
+        } catch(e) { 
+            console.warn('Auto-login error:', e);
+            return false; 
+        }
+    }
+
+    // ============================================================
     // LOGIN - WITH EXPIRY CHECK
     // ============================================================
 
@@ -434,36 +893,42 @@
         try {
             const result = await callApi('login', { username, password });
             if (result && result.success) {
-                // Check expiry and show popup
                 const user = result.user;
+                
+                // Check expiry and show popup
                 if (user.isPremium && user.daysRemaining !== null) {
                     const popupShown = showExpiryPopup(user.daysRemaining, user.expiryDate);
-                    if (popupShown) {
-                        // If expired, redirect to free
-                        if (user.daysRemaining <= 0) {
-                            setTimeout(() => {
-                                window.location.href = 'free.html';
-                            }, 2000);
-                            setStatus(DOM.loginStatus, 'Premium expired. Redirecting to Free...', 'warning');
-                            setLoading(DOM.loginBtn, false);
-                            return;
-                        }
+                    if (popupShown && user.daysRemaining <= 0) {
+                        // Expired, redirect to free
+                        setStatus(DOM.loginStatus, 'Premium expired. Redirecting to Free...', 'warning');
+                        setTimeout(() => {
+                            window.location.href = 'free.html';
+                        }, 2000);
+                        setLoading(DOM.loginBtn, false);
+                        return;
                     }
                 }
                 
                 setStatus(DOM.loginStatus, 'Welcome back! Redirecting…', 'success');
                 showToast('Signed in successfully');
-                if (result.user) {
-                    try {
-                        localStorage.setItem('kreative_user', JSON.stringify(result.user));
-                        localStorage.setItem('kreative_premium', result.user.isPremium ? 'true' : 'false');
-                        localStorage.setItem('kreative_login_time', String(Date.now()));
-                        localStorage.setItem('kreative_expiry', result.user.expiryDate || '');
-                        localStorage.setItem('kreative_days_remaining', String(result.user.daysRemaining || ''));
-                    } catch(e) {}
+                
+                // Save user data
+                try {
+                    localStorage.setItem('kreative_user', JSON.stringify(user));
+                    localStorage.setItem('kreative_premium', user.isPremium ? 'true' : 'false');
+                    localStorage.setItem('kreative_login_time', String(Date.now()));
+                    localStorage.setItem('kreative_expiry', user.expiryDate || '');
+                    localStorage.setItem('kreative_days_remaining', String(user.daysRemaining || ''));
+                    localStorage.removeItem('kreative_session_expired');
+                } catch(e) {}
+                
+                // Start background download
+                if (typeof downloadManager !== 'undefined') {
+                    downloadManager.startAutoDownload();
                 }
+                
                 setTimeout(() => {
-                    const isPremium = result.user?.isPremium === true;
+                    const isPremium = user?.isPremium === true;
                     window.location.href = isPremium ? 'premium.html' : 'free.html';
                 }, 1500);
             } else {
@@ -553,6 +1018,18 @@
                 const msg = isPremium ? '✅ Premium account created! Please sign in.' : '✅ Account created! Please sign in.';
                 setStatus(DOM.registerStatus, msg, 'success');
                 showToast(isPremium ? 'Premium registration submitted!' : 'Registration successful!');
+                
+                // Save user data for auto-login
+                if (result.user) {
+                    try {
+                        localStorage.setItem('kreative_user', JSON.stringify(result.user));
+                        localStorage.setItem('kreative_premium', result.user.isPremium ? 'true' : 'false');
+                        localStorage.setItem('kreative_login_time', String(Date.now()));
+                        localStorage.setItem('kreative_expiry', result.user.expiryDate || '');
+                        localStorage.setItem('kreative_days_remaining', String(result.user.daysRemaining || ''));
+                    } catch(e) {}
+                }
+                
                 setTimeout(() => {
                     document.querySelector('.tab-btn[data-tab="signin"]').click();
                     setVal('login-user', username);
@@ -644,81 +1121,6 @@
     });
 
     // ============================================================
-    // AUTO-LOGIN WITH EXPIRY CHECK
-    // ============================================================
-
-    async function checkAutoLogin() {
-        try {
-            const user = JSON.parse(localStorage.getItem('kreative_user'));
-            const loginTime = parseInt(localStorage.getItem('kreative_login_time'), 10);
-            if (!user || !loginTime) return false;
-            if (Date.now() - loginTime > CONFIG.SESSION_DURATION) {
-                localStorage.removeItem('kreative_user');
-                localStorage.removeItem('kreative_premium');
-                localStorage.removeItem('kreative_login_time');
-                return false;
-            }
-            
-            // Check expiry from local storage first
-            const expiryDate = localStorage.getItem('kreative_expiry');
-            const daysRemaining = parseInt(localStorage.getItem('kreative_days_remaining'), 10);
-            
-            if (user.isPremium && daysRemaining !== null && !isNaN(daysRemaining)) {
-                // Show popup if expiring soon
-                const popupShown = showExpiryPopup(daysRemaining, expiryDate);
-                if (popupShown && daysRemaining <= 0) {
-                    // If expired, update local storage
-                    user.isPremium = false;
-                    localStorage.setItem('kreative_user', JSON.stringify(user));
-                    localStorage.setItem('kreative_premium', 'false');
-                    setTimeout(() => {
-                        window.location.href = 'free.html';
-                    }, 2000);
-                    return true;
-                }
-            }
-            
-            // If online, check with server
-            if (navigator.onLine) {
-                try {
-                    const result = await checkUserExpiry(user.username);
-                    if (result && result.success) {
-                        const userData = result.user;
-                        localStorage.setItem('kreative_expiry', userData.expiryDate || '');
-                        localStorage.setItem('kreative_days_remaining', String(userData.daysRemaining || ''));
-                        
-                        if (userData.isPremium !== user.isPremium) {
-                            user.isPremium = userData.isPremium;
-                            localStorage.setItem('kreative_user', JSON.stringify(user));
-                            localStorage.setItem('kreative_premium', userData.isPremium ? 'true' : 'false');
-                        }
-                        
-                        // Show popup if expiring soon
-                        if (userData.isPremium && userData.daysRemaining !== null && userData.daysRemaining <= 3) {
-                            const popupShown = showExpiryPopup(userData.daysRemaining, userData.expiryDate);
-                            if (popupShown && userData.daysRemaining <= 0) {
-                                setTimeout(() => {
-                                    window.location.href = 'free.html';
-                                }, 2000);
-                                return true;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Server expiry check failed, using local data');
-                }
-            }
-            
-            const isPremium = localStorage.getItem('kreative_premium') === 'true';
-            window.location.href = isPremium ? 'premium.html' : 'free.html';
-            return true;
-        } catch(e) { 
-            console.warn('Auto-login error:', e);
-            return false; 
-        }
-    }
-
-    // ============================================================
     // HELP / ABOUT
     // ============================================================
 
@@ -744,14 +1146,19 @@
     // INIT
     // ============================================================
 
-    function init() {
+    let downloadManager = null;
+
+    async function init() {
         console.log('✅ Kreative login system initialized');
         console.log('📡 API URL:', CONFIG.API_URL);
         
-        // Check auto-login first
-        const autoLoggedIn = checkAutoLogin();
+        // Initialize download manager
+        downloadManager = new KreativeDownloadManager();
         
-        if (!autoLoggedIn) {
+        // Check if user is already logged in
+        const isLoggedIn = await checkAutoLogin();
+        
+        if (!isLoggedIn) {
             console.log('👤 Manual login required');
             DOM.planFree.checked = true;
             DOM.premiumSection.style.display = 'none';
@@ -763,6 +1170,5 @@
 
 })();
 </script>
-
 </body>
 </html>
